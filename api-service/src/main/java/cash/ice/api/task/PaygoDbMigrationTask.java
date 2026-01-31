@@ -61,8 +61,8 @@ public class PaygoDbMigrationTask extends DbMigrationTask {
                 mongoTemplate.save(MERCHANT_JSON, COLLECTION_NAME);
             }
         } catch (Throwable e) {
-            log.error(getClass().getSimpleName() + " failed: {}", e.getMessage(), e);
-            throw e;
+            log.warn("{} skipped (Mongo seed optional for minimal deploy): {}", getClass().getSimpleName(), e.getMessage());
+            // Do not rethrow: allow app to start without Paygo Mongo seed (e.g. on Render/Atlas)
         }
     }
 

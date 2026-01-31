@@ -44,8 +44,8 @@ public class EcocashDbMigrationTask extends DbMigrationTask {
                 mongoTemplate.save(GENERAL_MERCHANT_JSON, COLLECTION_NAME);
             }
         } catch (Throwable e) {
-            log.error(getClass().getSimpleName() + " failed: {}", e.getMessage(), e);
-            throw e;
+            log.warn("{} skipped (Mongo seed optional for minimal deploy): {}", getClass().getSimpleName(), e.getMessage());
+            // Do not rethrow: allow app to start without Ecocash Mongo seed (e.g. on Render/Atlas)
         }
     }
 

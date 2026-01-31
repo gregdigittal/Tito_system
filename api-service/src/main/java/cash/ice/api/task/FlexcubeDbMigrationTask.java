@@ -34,8 +34,8 @@ public class FlexcubeDbMigrationTask extends DbMigrationTask {
                 mongoTemplate.save(ACCOUNT_JSON, COLLECTION_NAME);
             }
         } catch (Throwable e) {
-            log.error(getClass().getSimpleName() + " failed: {}", e.getMessage(), e);
-            throw e;
+            log.warn("{} skipped (Mongo seed optional for minimal deploy): {}", getClass().getSimpleName(), e.getMessage());
+            // Do not rethrow: allow app to start without Flexcube Mongo seed (e.g. on Render/Atlas)
         }
     }
 
