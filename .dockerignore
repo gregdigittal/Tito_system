@@ -1,0 +1,26 @@
+# Build outputs
+target/
+**/target/
+
+# Git
+.git/
+.gitignore
+
+# Docs and misc (not needed for build)
+*.md
+.DS_Store
+
+# Optional: uncomment to exclude other modules' sources if only api-service is needed
+# (The build still needs pom.xml and api-service/; keep those.)
+# fee-service/
+# ledger-service/
+# sync-service/
+# paygo-service/
+# ecocash-service/
+# onemoney-service/
+# fbc-service/
+# mpesa-service/
+# emola-service/
+# zim-api-service/
+# posb-service/
+# e2e-tests/
