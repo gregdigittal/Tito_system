@@ -1,0 +1,43 @@
+logging:
+  pattern:
+    file: '%d{yyyy-MM-dd HH:mm:ss.SSS} %5p %-40.40logger{39} : %m%n'
+    console: '%clr(%d{yyyy-MM-dd HH:mm:ss.SSS}){faint} %clr(%5p) %clr([%-10.10thread]){blue} %clr(%-40.40logger{39}){cyan} %clr(:){faint} %m%n'
+  level:
+    root: INFO
+    org:
+      springframework: INFO
+      hibernate: INFO
+      apache:
+        kafka: WARN
+      mongodb:
+        driver: INFO
+    cash:
+      ice:
+        common: DEBUG
+        api: DEBUG
+        sync: DEBUG
+        fee: DEBUG
+        ledger: DEBUG
+        paygo: DEBUG
+        ecocash: DEBUG
+        onemoney: DEBUG
+        fbc: DEBUG
+        mpesa: DEBUG
+        emola: DEBUG
+        zim:
+          api: DEBUG
+logging.level.org.apache.http.wire: INFO
+logging.level.httpclient.wire: INFO
+#logging.level.org.springframework.security: DEBUG
+#logging.level.org.springframework.web: DEBUG
+#logging.level.org.springframework.ws.client.MessageTracing.sent: DEBUG
+#logging.level.org.springframework.ws.server.MessageTracing.sent: DEBUG
+#logging.level.org.springframework.ws.client.MessageTracing.received: TRACE
+#logging.level.org.springframework.ws.server.MessageTracing.received: TRACE
+---
+spring.config.activate.on-profile: icetech-k8s,uat-k8s,uat-k8s-perf,prod-k8s
+logging:
+  level:
+    org:
+      apache:
+        kafka: INFO

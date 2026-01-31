@@ -1,0 +1,40 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: payments-paygo-service
+  name: payments-paygo-service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: payments-paygo-service
+  strategy: {}
+  template:
+    metadata:
+      labels:
+        app: payments-paygo-service
+    spec:
+      containers:
+        - env:
+            - name: SPRING_PROFILES_ACTIVE
+              value: dev-k8s
+          envFrom:
+            - configMapRef:
+                name: payments-config-map
+            - secretRef:
+                name: payments-secret
+          image: dockerrepo.icecash.mobi:5000/payments/paygo-service:0.1.0.20
+          name: payments-paygo-service
+          ports:
+            - containerPort: 8285
+          resources:
+            limits:
+              cpu: '1'
+              memory: 1G
+            requests:
+              cpu: 100m
+              memory: 512Mi
+      restartPolicy: Always
+      imagePullSecrets:
+        - name: dockerreg

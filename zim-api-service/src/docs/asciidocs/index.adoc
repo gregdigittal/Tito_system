@@ -1,0 +1,161 @@
+= Zim Payment API Guide
+Pavlo Slyvka<pavlo@ice.cash>
+v1.0, 2024-05-01
+:toc: right
+:toclevels: 4
+:sectnums:
+
+Api for Zim payments.
+
+[[mpesa_payments]]
+== MPESA Payment API
+
+[[mpesa_payments_sync_request]]
+=== Synchronous Payment
+
+include::{snippets}/mpesa-payment/sync-post/endpoint.adoc[]
+to process MPESA payments synchronously. Request and response parameters are passed as a `JSON` object. Payment processing typically goes through several microservices and the endpoint waits for the payment to succeed or fail.
+
+[discrete]
+==== Request fields:
+include::{snippets}/mpesa-payment/sync-post/request-fields.adoc[]
+[discrete]
+==== Response fields:
+include::{snippets}/mpesa-payment/sync-post/response-fields.adoc[]
+[discrete]
+==== Request example:
+include::{snippets}/mpesa-payment/sync-post/http-request.adoc[]
+[discrete]
+==== Response example:
+include::{snippets}/mpesa-payment/sync-post/http-response.adoc[]
+
+
+[[mpesa_payments_async_request]]
+=== Asynchronous Payment
+
+include::{snippets}/mpesa-payment/async-post/endpoint.adoc[]
+to create and start a new MPESA payment processing.
+It is processed asynchronously by several microservices. This may take some time, therefore, in order to get a real result of payment processing, the end device must perform <<mpesa_payments_get_response, payment status polling>> by `vendorRef` from time to time until it receives the final status: either `SUCCESS` or `ERROR`. `PROCESSING` status means that the payment is not finished and the end device needs to check the status again later. Request and response parameters are passed as a `JSON` object.
+
+[discrete]
+==== Request fields:
+include::{snippets}/mpesa-payment/async-post/request-fields.adoc[]
+[discrete]
+==== Response fields:
+include::{snippets}/mpesa-payment/async-post/response-fields.adoc[]
+[discrete]
+==== Request example:
+include::{snippets}/mpesa-payment/async-post/http-request.adoc[]
+[discrete]
+==== Response example:
+include::{snippets}/mpesa-payment/async-post/http-response.adoc[]
+
+
+[[mpesa_payments_get_request]]
+=== GET Payment Request
+
+include::{snippets}/mpesa-payment/get-request/endpoint.adoc[]
+. It returns payment request by `\{vendorRef\}`.
+
+[discrete]
+==== Request path parameters:
+include::{snippets}/mpesa-payment/get-request/path-parameters.adoc[]
+[discrete]
+==== Response fields:
+include::{snippets}/mpesa-payment/get-request/response-fields.adoc[]
+[discrete]
+==== Request example:
+include::{snippets}/mpesa-payment/get-request/http-request.adoc[]
+[discrete]
+==== Response example:
+include::{snippets}/mpesa-payment/get-request/http-response.adoc[]
+
+
+[[mpesa_payments_get_response]]
+=== GET Payment Response
+
+include::{snippets}/mpesa-payment/get-response/endpoint.adoc[]
+. It returns payment result by `\{vendorRef\}`.
+
+[discrete]
+==== Request path parameters:
+include::{snippets}/mpesa-payment/get-response/path-parameters.adoc[]
+[discrete]
+==== Response fields
+include::{snippets}/mpesa-payment/get-response/response-fields.adoc[]
+[discrete]
+==== Request example
+include::{snippets}/mpesa-payment/get-response/http-request.adoc[]
+[discrete]
+==== Response example
+include::{snippets}/mpesa-payment/get-response/http-response.adoc[]
+
+[[posb_payments]]
+== POSB Payment API
+Sequence of method calls::
+. <<posb_payments_sync_request, Payment>>
+. <<posb_payments_sync_otp_request, OTP confirmation>>
+
+'''
+
+[[posb_payments_sync_request]]
+=== Synchronous Payment
+
+include::{snippets}/zim-posb-payment/sync-post/endpoint.adoc[]
+to process POSB payments synchronously. After a successful request, an OTP (one-time password) is sent to the client's mobile phone, which is required to confirm the payment on the next step. The response status is usually `OTP_WAITING` which means that the payment needs to be confirmed with a OTP. Request and response parameters are passed as a `JSON` object. Payment processing typically goes through several microservices and the endpoint waits for the payment to succeed or fail.
+
+[discrete]
+==== Request fields:
+include::{snippets}/zim-posb-payment/sync-post/request-fields.adoc[]
+[discrete]
+==== Response fields:
+include::{snippets}/zim-posb-payment/sync-post/response-fields.adoc[]
+[discrete]
+==== Request example:
+include::{snippets}/zim-posb-payment/sync-post/http-request.adoc[]
+[discrete]
+==== Response example:
+include::{snippets}/zim-posb-payment/sync-post/http-response.adoc[]
+
+[[posb_payments_sync_otp_request]]
+=== Synchronous OTP Request
+
+include::{snippets}/zim-posb-payment-otp/sync-post/endpoint.adoc[]
+to confirm the payment with OTP (one-time password) synchronously. Request and response parameters are passed as a `JSON` object. Payment processing typically goes through several microservices and the endpoint waits for the payment to succeed or fail.
+
+[discrete]
+==== Request fields:
+include::{snippets}/zim-posb-payment-otp/sync-post/request-fields.adoc[]
+[discrete]
+==== Response fields:
+include::{snippets}/zim-posb-payment-otp/sync-post/response-fields.adoc[]
+[discrete]
+==== Request example:
+include::{snippets}/zim-posb-payment-otp/sync-post/http-request.adoc[]
+[discrete]
+==== Response example:
+include::{snippets}/zim-posb-payment-otp/sync-post/http-response.adoc[]
+
+
+[[ecocash_payments]]
+== Ecocash Payment API
+
+[[ecocash_payments_sync_request]]
+=== Synchronous Payment
+
+include::{snippets}/zim-ecocash-payment/sync-post/endpoint.adoc[]
+to process Ecocash payments synchronously. Request and response parameters are passed as a `JSON` object. Payment processing typically goes through several microservices and the endpoint waits for the payment to succeed or fail.
+
+[discrete]
+==== Request fields:
+include::{snippets}/zim-ecocash-payment/sync-post/request-fields.adoc[]
+[discrete]
+==== Response fields:
+include::{snippets}/zim-ecocash-payment/sync-post/response-fields.adoc[]
+[discrete]
+==== Request example:
+include::{snippets}/zim-ecocash-payment/sync-post/http-request.adoc[]
+[discrete]
+==== Response example:
+include::{snippets}/zim-ecocash-payment/sync-post/http-response.adoc[]
+

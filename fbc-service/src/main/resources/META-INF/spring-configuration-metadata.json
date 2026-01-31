@@ -1,0 +1,14 @@
+{
+  "properties": [
+    {
+      "name": "spring.cache.redis.custom-ttl.fbcPoolBalance",
+      "type": "java.lang.String",
+      "description": "Custom TTL for fbcPoolBalance redis cache"
+    },
+    {
+      "name": "ice.cash.fbc.group",
+      "type": "java.lang.String",
+      "description": "FBC service listener Group ID."
+    }
+  ]
+}

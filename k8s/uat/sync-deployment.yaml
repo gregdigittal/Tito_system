@@ -1,0 +1,40 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: payments-sync-service
+  name: payments-sync-service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: payments-sync-service
+  strategy: {}
+  template:
+    metadata:
+      labels:
+        app: payments-sync-service
+    spec:
+      containers:
+        - env:
+            - name: SPRING_PROFILES_ACTIVE
+              value: uat-k8s
+          envFrom:
+            - configMapRef:
+                name: payments-config-map
+            - secretRef:
+                name: payments-secret
+          image: dockerrepo.icecash.mobi:5000/payments/sync-service:0.1.0.21
+          name: payments-sync-service
+          ports:
+            - containerPort: 8282
+          resources:
+            limits:
+              cpu: '4'
+              memory: 4G
+            requests:
+              cpu: 100m
+              memory: 1G
+      restartPolicy: Always
+      imagePullSecrets:
+        - name: dockerreg

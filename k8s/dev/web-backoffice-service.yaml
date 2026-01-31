@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: web-backoffice
+  name: web-backoffice
+spec:
+  ports:
+    - name: "8882"
+      port: 8882
+      targetPort: 80
+  selector:
+    app: web-backoffice
+  type: ClusterIP

@@ -1,0 +1,40 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: payments-posb-service
+  name: payments-posb-service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: payments-posb-service
+  strategy: {}
+  template:
+    metadata:
+      labels:
+        app: payments-posb-service
+    spec:
+      containers:
+        - env:
+            - name: SPRING_PROFILES_ACTIVE
+              value: prod-k8s
+          envFrom:
+            - configMapRef:
+                name: payments-config-map-zim
+            - secretRef:
+                name: payments-secret-zim
+          image: dockerrepo.icecash.mobi:5000/payments/posb-service:0.1.0.6
+          name: payments-posb-service
+          ports:
+            - containerPort: 8293
+          resources:
+            limits:
+              cpu: '1'
+              memory: 1G
+            requests:
+              cpu: 100m
+              memory: 512Mi
+      restartPolicy: Always
+      imagePullSecrets:
+        - name: dockerreg

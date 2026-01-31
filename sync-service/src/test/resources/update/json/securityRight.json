@@ -1,0 +1,8 @@
+{
+  "action": "UPDATE",
+  "right": "PAYMENT",
+  "data": {
+    "Description": "Payment right",
+    "RightType": "Finance"
+  }
+}

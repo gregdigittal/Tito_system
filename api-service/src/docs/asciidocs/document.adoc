@@ -1,0 +1,97 @@
+= Documents API Guide
+Pavlo Slyvka<pavlo@ice.cash>
+1.0.0, 31/3/2022
+:toc: left
+:sectnums:
+:toclevels: 4
+
+The API provides REST endpoints to work with KYC (Know Your Customer) documentation. `MinIO` is used as internal storage for documents. There are two common usage scenarios:
+
+ - Documents are uploaded in bulk and not assigned to any particular entity, a back office user will then go through each "unassigned" document and assign it to a particular entity ID.
+ - The entity and document type are known and the document is uploaded directly against that entity ID and stored as that particular type.
+
+[[documents_get_request]]
+== GET all documents request
+
+include::{snippets}/document/get/endpoint.adoc[]
+. This endpoint uses paging, so providing the optional `page` and `size` parameters will return `size` amount of documents on the `page` page. By default, page = 0, size = 10.
+
+If the `unassigned` parameter is `false`, all unassigned documents are returned, the entityId and addressId parameters are ignored.
+
+If the `unassigned` parameter is `true`, all documents assigned to the provided `entityId` or `addressId` parameter are returned. If the entityId and addressId parameters are omitted, then all available documents, both assigned and unassigned, are returned.
+
+=== Request query parameters
+include::{snippets}/document/get/query-parameters.adoc[]
+=== Curl example
+include::{snippets}/document/get/curl-request.adoc[]
+=== HTTP Request example
+include::{snippets}/document/get/http-request.adoc[]
+=== HTTP Response example
+include::{snippets}/document/get/http-response.adoc[]
+
+
+[[documents_get_content_request]]
+== GET document content request
+
+include::{snippets}/document/get-content/endpoint.adoc[]
+. It retrieves document with the id given by `\{id\}` and returns its content.
+
+=== Request path parameters
+include::{snippets}/document/get-content/path-parameters.adoc[]
+=== Curl example
+include::{snippets}/document/get-content/curl-request.adoc[]
+=== HTTP Request example
+include::{snippets}/document/get-content/http-request.adoc[]
+=== HTTP Response example
+include::{snippets}/document/get-content/http-response.adoc[]
+
+
+[[documents_upload_request]]
+== Upload documents request
+
+include::{snippets}/document/upload/endpoint.adoc[]
+to upload the documents. It uses `multipart/form-data` parameters. It is possible to upload multiple documents with one request. Each such document must be loaded with a separate `files` parameter. If the `entityId` or `addressId` parameter is specified, the document is assigned to the provided entity or address.
+
+=== Request parts
+include::{snippets}/document/upload/request-parts.adoc[]
+=== Curl example
+include::{snippets}/document/upload/curl-request.adoc[]
+=== HTTP Request example
+include::{snippets}/document/upload/http-request.adoc[]
+=== HTTP Response example
+include::{snippets}/document/upload/http-response.adoc[]
+
+
+[[documents_update_request]]
+== Update document request
+
+include::{snippets}/document/update/endpoint.adoc[]
+to update the document. It uses json object which contains the following fields:
+
+=== Request fields
+include::{snippets}/document/update/request-fields.adoc[]
+=== Request body example:
+[source,json]
+include::{snippets}/document/update/request-body.adoc[]
+=== Curl example
+include::{snippets}/document/update/curl-request.adoc[]
+=== HTTP Request example
+include::{snippets}/document/update/http-request.adoc[]
+=== HTTP Response example
+include::{snippets}/document/update/http-response.adoc[]
+
+
+[[documents_delete_request]]
+== Delete document request
+
+include::{snippets}/document/delete/endpoint.adoc[]
+. It deletes the document with the ID given by `\{id\}`.
+
+=== Request path parameters
+include::{snippets}/document/delete/path-parameters.adoc[]
+=== Curl example
+include::{snippets}/document/delete/curl-request.adoc[]
+=== HTTP Request example
+include::{snippets}/document/delete/http-request.adoc[]
+=== HTTP Response example
+include::{snippets}/document/delete/http-response.adoc[]

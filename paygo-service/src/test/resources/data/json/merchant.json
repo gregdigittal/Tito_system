@@ -1,0 +1,17 @@
+{
+  "id": "6c464e00-1b49-4051-b222-5786ea60efba",
+  "name": "ICEcash",
+  "active": true,
+  "addressLine1": "shop 1",
+  "addressLine2": "shop 2",
+  "city": "Harare",
+  "countryCode": "ZWE",
+  "transactionCode": "PGCBZ",
+  "description": "merchant desc",
+  "emailAddress": "info@icecash.org",
+  "mspReference": "626105b844fc193b8e5560cd",
+  "phoneNumber": "+263773123124",
+  "region": "Mashonaland",
+  "url": "http://icecash.test.org",
+  "created": "2022-04-12T22:25:05.899031+02:00"
+}

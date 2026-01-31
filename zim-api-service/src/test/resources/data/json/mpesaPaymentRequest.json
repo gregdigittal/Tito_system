@@ -1,0 +1,18 @@
+{
+  "vendorRef": "vendorRefTest1",
+  "bankName": "mpesa",
+  "accountNumber": "258843120879",
+  "amount": 10,
+  "metaData": {
+    "walletId": 99,
+    "transactionCode": "MTP",
+    "sessionId": 912984,
+    "channel": "WEB",
+    "accountId": 20528257,
+    "partnerId": 0,
+    "accountFundId": 20078466,
+    "cardNumber": "8811060000010302",
+    "paymentDescription": "Fund card",
+    "organisation": "Revimo"
+  }
+}

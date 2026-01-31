@@ -1,0 +1,14 @@
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: payments-zim-api-service
+  labels:
+    app: payments-zim-api-service
+    release: prometheus-operator
+spec:
+  selector:
+    matchLabels:
+      app: payments-zim-api-service
+  endpoints:
+    - port: "8592"
+      path: "/actuator/prometheus"

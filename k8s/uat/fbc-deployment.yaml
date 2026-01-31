@@ -1,0 +1,40 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: payments-fbc-service
+  name: payments-fbc-service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: payments-fbc-service
+  strategy: {}
+  template:
+    metadata:
+      labels:
+        app: payments-fbc-service
+    spec:
+      containers:
+        - env:
+            - name: SPRING_PROFILES_ACTIVE
+              value: uat-k8s
+          envFrom:
+            - configMapRef:
+                name: payments-config-map-zim
+            - secretRef:
+                name: payments-secret-zim
+          image: dockerrepo.icecash.mobi:5000/payments/fbc-service:0.1.0.24
+          name: payments-fbc-service
+          ports:
+            - containerPort: 8288
+          resources:
+            limits:
+              cpu: '1'
+              memory: 1G
+            requests:
+              cpu: 100m
+              memory: 512Mi
+      restartPolicy: Always
+      imagePullSecrets:
+        - name: dockerreg

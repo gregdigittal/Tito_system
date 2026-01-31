@@ -1,0 +1,9 @@
+{
+  "action": "UPDATE",
+  "documentTypeId": 8,
+  "accountTypeId": 3,
+  "data": {
+    "DocumentType": "Application Form",
+    "Required": false
+  }
+}

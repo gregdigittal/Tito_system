@@ -1,0 +1,236 @@
+
+type Query {
+    allEntities(page: Int = 0, size: Int = 30, sort: SortInput): EntitiesPageable
+    entity(id: ID): Entity
+    searchEntities(searchBy: EntitiesSearchCriteria!, searchInput: String!, exactMatch: Boolean = true, page: Int = 0, size: Int = 30, sort: SortInput): EntitiesPageable
+    existsUserId(idTypeId: ID!, idNumber: String!, isEntity: Boolean! = true, forceCheck: Boolean! = false): Boolean
+    existsUserEmail(email: String!, isEntity: Boolean! = true, forceCheck: Boolean! = false): Boolean
+    existsUserMsisdn(msisdn: String!, checkOnlyPrimary: Boolean! = true, forceCheck: Boolean! = false): Boolean
+    allEntityTypes(page: Int = 0, size: Int = 30, sort: SortInput): [EntityType]
+    allEntityTypeGroups(page: Int = 0, size: Int = 30, sort: SortInput): [EntityTypeGroup]
+    allAccounts(page: Int = 0, size: Int = 30, sort: SortInput): [Account]
+    accounts(page: Int = 0, size: Int = 30, sort: SortInput): [Account]
+    accountById(id: ID!): Account
+    accountStatement(id: ID, accountType: String = "Primary", currency: String, config: ConfigInput, page: Int = 0, size: Int = 30, sort: SortInput): TransactionsPageableMoz
+    allAccountTypes(page: Int = 0, size: Int = 30, sort: SortInput): [AccountType]
+    accountTypeById(id: ID!): AccountType
+    allCurrencies(page: Int = 0, size: Int = 30, sort: SortInput): [Currency]
+    allLanguages(page: Int = 0, size: Int = 30, sort: SortInput): [Language]
+    allCountries(page: Int = 0, size: Int = 30, sort: SortInput): [Country]
+    allSecurityGroups(page: Int = 0, size: Int = 30, sort: SortInput): [SecurityGroup]
+    allIdTypes(page: Int = 0, size: Int = 30, sort: SortInput): [EntityIdType]
+    dictionary(languageId: ID!, sections: [String]! = [], env: String!): [Dictionary]
+    dictionaryMap(languageId: ID!, sections: [String]! = [], env: String!): JSON
+    documentTypes(countryId: ID): [DocumentType]
+    transactionCodes(currencyId: ID, page: Int = 0, size: Int = 300, sort: SortInput): TransactionCodesPageable
+
+#    Backoffice:
+    staffMember(id: ID, config: ConfigInput): StaffMember
+    searchStaffMembers(searchText: String, status: LoginStatus, page: Int = 0, size: Int = 30, sort: SortInput, config: ConfigInput): [StaffMember]
+    journals(journalStatus: JournalStatus!, days: Int! = 30, page: Int = 0, size: Int = 30, sort: SortInput): JournalPageable
+
+#    Moz:
+    userRegistrationAgreement(locale: String, accountType: AccountTypeMoz!): Dictionary
+    userMoz(id: ID, config: ConfigInput): UserMoz
+    lookupEntityMoz(lookupBy: EntityLookupType!, idType: IdTypeMoz, value: String!): [Entity]
+    routesMoz: [Route]
+    vehicles(page: Int = 0, size: Int = 30, sort: SortInput): VehiclesPageable
+    userPosDevicesMoz(linkedToVehicle: Boolean = false, id: ID, config: ConfigInput, page: Int = 0, size: Int = 30, sort: SortInput): DevicesPageable
+    userSimpleAccountInfoMoz(device: String!): SimpleAccountInfoMoz
+    tagInfoMoz(tagNumber: String!): TagInfoMoz
+    userPaymentDevicesMoz(id: ID, config: ConfigInput, page: Int = 0, size: Int = 30, sort: SortInput): InitiatorsPageable
+    userStatementMoz(id: ID, accountType: String!, currency: String! = "MZN", vrnId: ID, tagId: ID, transactionCode: String, description: String, config: ConfigInput, page: Int = 0, size: Int = 30, sort: SortInput): TransactionsPageableMoz
+    transactionStatisticsMoz(statisticsType: StatisticsTypeMoz!, days: Int!): [TransactionStatisticsMoz]
+
+#    FNDS:
+    userFNDS: UserFNDS
+    productsFNDS: [ProductFNDS]
+    entitiesSearchFNDS(accountType: AccountTypeKen!, idType: IdTypeKen, idNumber: String, mobile: String, page: Int = 0, size: Int = 30, sort: SortInput): UsersFNDSPageable
+    deviceProductsFNDS(deviceSerialOrCode: String!): [EntityProductFNDS]
+
+    paymentRequest(vendorRef: String!): PaymentRequest
+    paymentResponse(vendorRef: String!): PaymentResponse
+    allPendingPayments(page: Int = 0, size: Int = 30, sort: SortInput): [PendingPayment]
+    pendingPaymentById(id: ID!): PendingPayment
+    transactionLimits(filter: TransactionLimitFilterInput!, page: Int = 0, size: Int = 30, sort: SortInput): TransactionLimitsPageable
+    routesKen: [RouteKen]
+}
+
+type Mutation {
+#    Moz:
+    registerIndividualUserMoz(user: RegisterUserMozInput!, optionalData: OptionalEntityRegisterData, otp: String, removeDocumentsOnFail: Boolean! = false): Entity
+    registerCorporateUserMoz(company: RegisterCompanyMozInput!, representative: RegisterUserMozInput!, optionalData: OptionalEntityRegisterData, otp: String, removeDocumentsOnFail: Boolean! = false): Entity
+    addOrUpdateMsisdnMoz(type: MsisdnType!, msisdn: String!, oldMsisdn: String, description: String, otp: String!): Entity
+    loginUserMoz(request: LoginUserRequest!): LoginResponse
+    loginPosDeviceMoz(device: String!, username: String!, password: String!): LoginResponse
+    createVehicle(vehicle: VehicleInput!): Vehicle
+    updateVehicle(id: ID!, vehicleDetails: VehicleInput!): Vehicle
+    deleteVehicle(id: ID!): Vehicle
+    registerDeviceMoz(request: RegisterDeviceMozRequest!): String
+    linkPosDeviceMoz(posDeviceSerial: String!, entityId: ID!, otp: String!): Device
+    linkVehicleToPosDeviceMoz(posDeviceSerial: String!, vehicleId: ID!): Device
+    linkNfcTagMoz(nfcTag: LinkNfcTagRequest!, otp: String!): TagInfoMoz
+    topupAccountMoz(accountNumber: String!, provider: MoneyProviderMoz!, mobile: String!, amount: Float!): PaymentResponse
+    makePaymentMoz(paymentRequest: PaymentRequestInput!): PaymentResponse
+    makeBulkPaymentMoz(payments: [PaymentRequestInput]!): PaymentResponse
+    interAccountTransferMoz(fromAccountType: String! = "Primary", toAccountType: String!, currency: String! = "MZN", amount: Float!, config: ConfigInput): Entity
+    updateEntityLocale(locale: String!): Entity
+    sendOtpToAccount(otpType: OtpType!, accountNumber: String!, resend: Boolean! = false): String
+    sendOtpToEntity(otpType: OtpType!, entityId: ID!, resend: Boolean! = false): String
+    sendOtp(otpType: OtpType!, msisdn: String!, resend: Boolean! = false): String
+
+    linkTagStartMoz(device: String!, accountNumber: String!, dateTime: DateTime): String
+    linkTagValidateOtpMoz(requestId: String!, otp: String!): LinkTagOtpResponse
+    linkTagRegisterTagMoz(requestId: String!, tagNumber: String!): Initiator
+
+#    Backoffice:
+    newStaffMember(staffMember: NewStaffMemberInput!, url: String, sendEmail: Boolean! = true): StaffMember
+    activateNewStaffMember(key: String!, newPassword: String!): StaffMember
+    registerStaffMember(staffMember: StaffMemberInput!, password: String): StaffMember
+    updateStaffMemberMsisdn(msisdn: String!, config: ConfigInput): StaffMember
+    updateStaffMemberMfaType(mfaType: MfaType, config: ConfigInput): StaffMember
+    updateStaffMember(id: ID, staffMember: StaffMemberUpdate!, config: ConfigInput, sendEmail: Boolean! = true): StaffMember
+    deleteStaffMember(id: ID!): StaffMember
+    deleteCurrentStaffMember: StaffMember
+    loginStaffMember(request: LoginUserRequest!): LoginResponse
+    enterLoginMfaCode(mfaRequest: LoginMfaRequest!): LoginResponse
+    enterLoginBackupCode(mfaRequest: LoginMfaRequest!): LoginResponse
+    resendOtpCode(username: String!): Boolean
+    checkStaffMemberTotpCode(totpCode: String!): Boolean
+    forgotStaffMemberPassword(email: String!, url: String, sendEmail: Boolean! = true): Boolean
+    resetStaffMemberPassword(key: String!, newPassword: String!): StaffMember
+    generateNewBackupCodesForId(id: ID!): StaffMember
+    generateNewBackupCodes: StaffMember
+    refreshStaffMemberAccessToken(refreshToken: String!): LoginResponse
+    invalidateStaffMemberRefreshToken(refreshToken: String!): LoginResponse
+    updateStaffMemberLoginStatus(email: String!, loginStatus: LoginStatus!): StaffMember
+    updateStaffMemberPassword(oldPassword: String!, newPassword: String!): StaffMember
+
+    createJournal(journal: JournalInput!, fees: [JournalFeeInput], url: String, sendEmail: Boolean! = true): Journal
+    rejectJournal(journalId: ID!): Journal
+    acceptJournal(journalId: ID!): Journal
+
+    simpleRegisterEntity(entity: SimpleRegisterEntityInput!): Entity
+    registerEntity(entity: RegisterEntityInput!): Entity
+    updateEntity(entityId: ID!, details: EntityUpdate!): Entity
+    updateEntityMfa(id: ID!, mfaType: MfaType): Entity
+    generateNewEntityPassword(id: ID!): Entity
+    checkEntityTotpCode(totpCode: String!): Boolean
+    updateInitiatorStatus(initiatorId: ID!, status: String!): Initiator
+    resetInitiatorPIN(initiatorId: ID!): Initiator
+    setAccountActive(id: ID!, active: Boolean!): Account
+
+    updateEntityPassword(oldPassword: String!, newPassword: String!): Entity
+    updateEntityLoginStatus(username: String!, loginStatus: LoginStatus!): Entity
+    enterEntityLoginBackupCode(mfaRequest: LoginMfaRequest!): LoginResponse
+    generateNewBackupCodesForEntityId(id: ID!): Entity
+    generateNewBackupCodesForCurrentEntity: Entity
+    forgotEntityPassword(email: String!, sendEmail: Boolean! = true): Boolean
+    resetEntityPassword(key: String, newPassword: String!): Entity
+
+    #   FNDS:
+    registerUserFNDS(user: RegisterUserKenInput!, otp: String, removeDocumentsOnFail: Boolean! = false): UserFNDS
+    loginUserFNDS(request: LoginUserRequest!): LoginResponse
+    makePaymentFNDS(paymentRequest: PaymentRequestInput!): PaymentResponse
+    makeBulkPaymentFNDS(payments: [PaymentRequestInput]!): PaymentResponse
+
+    #   General:
+    refreshAccessToken(refreshToken: String!): LoginResponse
+    invalidateRefreshToken(refreshToken: String!): LoginResponse
+
+    updateCurrentEntity(entity: EntityUpdate!): Entity
+    deleteCurrentEntity: StaffMember
+    deleteEntity(id: ID!): Entity
+    addAccount(account: AccountInput!): Account
+    updateAccount(id: ID!, account: AccountInput): Account
+    deleteAccount(id: ID!): Account
+    addAccountType(accountType: AccountTypeInput!): AccountType
+    updateAccountType(id: ID!, accountType: AccountTypeInput!): AccountType
+    deleteAccountType(id: ID!): AccountType
+    addLanguage(language: LanguageInput!): Language
+    updateLanguage(id: ID!, language: LanguageInput!): Language
+    deleteLanguage(id: ID!): Language
+    addDictionary(dictionary: DictionaryInput!): Dictionary
+    updateDictionary(id: ID!, dictionary: DictionaryInput!): Dictionary
+    deleteDictionary(id: ID!): Dictionary
+    loginEntity(request: LoginUserRequest!): LoginResponse
+    enterEntityLoginMfaCode(mfaRequest: LoginMfaRequest!): LoginResponse
+    resendEntityOtpCode(username: String!): Boolean
+
+    makePayment(paymentRequest: PaymentRequestInput!, waitForResponse: Boolean = false): PaymentResponse
+    addPendingPayment(payment: PendingPaymentInput!): PendingPayment
+    updatePendingPayment(id: ID!, payment: PendingPaymentInput!): PendingPayment
+    approvePayment(paymentId: ID!): PendingPayment
+    rejectPayment(paymentId: ID!): PendingPayment
+    createPaymentCollection(paymentCollection: PendingPaymentCollectionInput!): PendingPaymentCollection
+    approvePaymentCollection(collectionId: ID!): Boolean
+    rejectPaymentCollection(collectionId: ID!): Boolean
+    deletePendingPaymentDocument(paymentId: ID!, documentId: ID!): Boolean
+    addOrUpdateTransactionLimit(transactionLimit: TransactionLimitInput!): TransactionLimit
+    setTransactionLimitActive(transactionLimit: TransactionLimitInput!, active: Boolean!): TransactionLimit
+    deleteTransactionLimit(id: ID!): TransactionLimit
+}
+
+enum OtpType {
+    MOZ_REG_USER, MOZ_POS_LINK, MOZ_TAG_LINK, MOZ_MSISDN_UPDATE, FNDS_REG_USER
+}
+
+input SortInput {
+    asc: [String]
+    desc: [String]
+    by: [SortProperty]
+}
+
+input SortProperty {
+    prop: String
+    dir: SortDirection = ASC
+}
+
+enum SortDirection {
+    ASC, DESC
+}
+
+input ConfigInput {
+    auth: Int
+    noEmails: Boolean
+}
+
+type Country {
+    id: ID
+    isoCode: String
+    name: String
+}
+
+type Currency {
+    id: ID
+    isoCode: String
+    active: Boolean
+    postilionCode: Int
+}
+
+type DocumentType {
+    id: ID
+    name: String
+}
+
+type SecurityGroup {
+    id: ID
+    name: String
+    description: String
+    active: Boolean
+    metaData: JSON
+    rightsList: [String]
+    rights: [SecurityRight]
+}
+
+type SecurityRight {
+    id: ID
+    name: String
+    description: String
+    rightType: String
+}
+
+scalar Date
+scalar LocalTime
+scalar DateTime
+scalar JSON

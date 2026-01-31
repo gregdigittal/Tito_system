@@ -1,0 +1,173 @@
+server:
+  port: 8281
+  shutdown: graceful
+management:
+  endpoint:
+    health:
+      show-details: always
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+spring:
+  lifecycle:
+    timeout-per-shutdown-phase: 1m
+  main:
+    allow-circular-references: true
+  graphql:
+    graphiql:
+      enabled: true
+      path: /graphiql
+  servlet:
+    multipart:
+      max-file-size: 32MB
+      max-request-size: 32MB
+spring.graphql.schema.printer.enabled: true
+ice:
+  cash:
+    mongodb:
+      request-collection: PaymentRequest
+      response-collection: PaymentResponse
+    date-format: yyyy-MM-dd'T'HH:mmXX
+    ip-whitelist:
+      disable-check: false
+      password: p@ssw0rd1
+    cors:
+      path-pattern: /**
+      allowed-origins: http://localhost:8080
+      allowed-methods: GET,POST,PUT,DELETE,PATCH
+    notification:
+      fake-sms-mobiles: 000000000000, 263000000000, 263000000001
+      fake-emails: test@ice.cash
+    payment:
+      group: ${kafka.prefix}.api-service
+    entities:
+      security-disabled: false
+      validate-email-uniqueness: false
+      validate-phone-uniqueness: false
+      validate-id-uniqueness: false
+      password-digits-amount: 4
+      password-send-sms: true
+      forgot-password-email-template: entity_forgot_password
+      forgot-password-email-from: support@ice.cash
+      mfa:
+        access-token-expiration: 5m
+        otp-digits-amount: 6
+        otp-send-sms: true
+        otp-code-expiration: 5m
+        totp-qr-code-digits: 6
+        totp-qr-code-period: 30
+        backup-codes-amount: 6
+        max-wrong-login-attempts: 3
+        max-wrong-login-period:
+        expired-tokens-cleanup-cron: 0 2 0 * * *
+      statement-export-csv:
+        file-name: statement.csv
+        max-records: 100000
+        max-days: 90
+    staff:
+      security-disabled: false
+      password-digits-amount: 4
+      password-send-sms: true
+      email-after-update: true
+      email-after-create-journal: true
+      create-user-email-template: staff_create_user
+      update-user-email-template: staff_update_user
+      create-journal-email-template: journal_create
+      update-user-email-change-description-template: <p>$index. $change<p/>
+      forgot-password-email-template: staff_forgot_password
+      forgot-password-email-from: support@ice.cash
+      notifications-email-from: notifications@ice.cash
+      create-journal-emails-to: pavlo@ice.cash
+      export-csv:
+        file-name: users.csv
+        max-records: 30000
+      mfa:
+        access-token-expiration: 5m
+        otp-digits-amount: 6
+        otp-send-sms: true
+        otp-code-expiration: 5m
+        totp-qr-code-digits: 6
+        totp-qr-code-period: 30
+        backup-codes-amount: 6
+        max-wrong-login-attempts: 3
+        max-wrong-login-period:
+        expired-tokens-cleanup-cron: 1 0 0 * * *
+    otp:
+      data-collection: OtpData
+      request-expiration-duration: 5m
+      resend-msisdn-change-after: 1m
+      expired-requests-cleanup-cron: 0 */60 * * * *
+    moz:
+      security-disabled: false
+      validate-email-uniqueness: true
+      validate-phone-uniqueness: true
+      validate-id-uniqueness: true
+      validate-company-uniqueness: true
+      validate-company-nuel-uniqueness: true
+      user-reg-check-otp: true
+      entity-reg-by-staff-check-otp: false
+      new-user-security-group-id: 1000
+      suspense-account-number: 33333333820
+      subsidy-pool-account-number: 33333333840
+      fnds-suspense-account-number: 33333333830
+      photo-bucket-name: dev-moz
+      photo-base-folder: /driver-photo/
+      register-notification-sms-enable: true
+      register-notification-sms-message-en: "Welcome to ICEcash.\nYour registration was successful and your user number is %s.\nTo access the platform, use your user number and chosen PIN.\nThanks"
+      register-notification-sms-message-pt: "Bem vindo a ICEcash.\nO seu registo foi bem sucedido, e o seu numero de usuario e %s.\nPara acender a plataforma, use o seu número de usuario e o PIN escolhido.\nObrigado"
+      payment-timeout-duration: 60s
+      payment-confirmation-sms-enable: true
+      payment-confirmation-sms-message-en: "No.%s - %s -\nPaid %s. Account balance %s. Subsidy balance is %s. For questions, 845656565."
+      payment-confirmation-sms-message-pt: "Nr.%s - %s -\nPagou %s. Saldo da conta %s. Saldo do subsidio e %s. Para duvidas, 845656565."
+      offload-fail-ticket-subject: <DEVICE_CODE> Failed offload transactions
+      offload-fail-ticket-body: Please refer to attached payloads for failed transactions from device <DEVICE_SERIAL>
+      offload-fail-ticket-priority: 1
+      device-code-characters: 4
+      vehicle-validate-owner: true
+      link-pos-validate-agent: true
+      link-pos-validate-owner: true
+      link-tag-check-otp: true
+      link-tag-validate-device: true
+      link-tag-data-collection: MozLinkTagData
+      link-tag-otp-digits-amount: 4
+      link-tag-request-expiration-duration: 5m
+      link-tag-expired-requests-cleanup-cron: 0 */20 * * * *
+      link-pos-check-otp: true
+      agent-regular-register-permissions: CommuterRegular, CommuterElders, CommuterDisabled, CommuterStudent, CommuterWarVeteran
+      agent-fematro-register-permissions: CommuterRegular, CommuterElders, CommuterDisabled, CommuterStudent, CommuterWarVeteran, TransportOwnerPrivate, TransportOwnerPublic, TaxiDriver, FareCollector
+      reg-agreement-prefix: moz.user.register.agreement.
+      simulate-topup-account: true
+    ken:
+      validate-email-uniqueness: false
+      validate-phone-uniqueness: false
+      validate-id-uniqueness: false
+      user-reg-check-otp: true
+      register-notification-sms-enable: true
+      register-notification-sms-message-en: "Your new Voucher Account Number is %s.\nYour PIN is %s."
+      payment-timeout-duration: 60s
+      payment-confirmation-sms-enable: true
+      payment-confirmation-sms-message-en: "Payment of %s KES made from %s at %s"
+
+---
+spring.config.activate.on-profile: local, local-perf
+minio:
+  url: http://localhost:19000/
+  access-name: admin
+  access-secret: 6CrxLxcHMU
+  bucket: test
+  folder: /documents/
+  payments-folder: /payments/
+ice:
+  cash:
+    ip-whitelist:
+      disable-check: true
+    moz:
+      security-disabled: true
+      validate-phone-uniqueness: false
+      photo-bucket-name: local-moz
+    staff:
+      security-disabled: true
+      activate-user-url: http://localhost:8281/activate_user/
+      reset-password-url: http://localhost:8281/reset_password/
+      review-journal-url: http://localhost:8281/review_journal/

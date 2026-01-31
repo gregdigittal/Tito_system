@@ -1,0 +1,50 @@
+
+input SimpleRegisterEntityInput {
+    firstName: String
+    lastName: String!
+    idTypeId: ID!
+    idNumber: String!
+    entityType: String!
+    mobile: String!
+    email: String!
+    company: String
+    card: String
+}
+
+input LoginUserRequest {
+    username: String!
+    password: String!
+}
+
+input LoginMfaRequest {
+    username: String!
+    code: String!
+}
+
+type LoginResponse {
+    status: LoginResponseStatus
+    mfaType: MfaType
+    msisdn: String
+    locale: String
+    qqq: String!
+    accessToken: AccessTokenResponse
+}
+
+enum LoginResponseStatus {
+    SUCCESS, MFA_REQUIRED
+}
+
+type AccessTokenResponse {
+    token: String
+    refreshToken:String
+    expiresIn: Int
+    refreshExpiresIn: Int
+    tokenType: String
+    idToken: String
+    notBeforePolicy: Int
+    sessionState: String
+    scope: String
+    error: String
+    errorDescription: String
+    errorUri: String
+}

@@ -1,0 +1,46 @@
+spring:
+  liquibase:
+    change-log: classpath:/db/changelog/liquibase-db-changelog-sync.xml
+    enabled: true
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    jdbc-url: ${mariadb.url}
+    username: ${mariadb.username}
+    password: ${mariadb.password}
+  legacy-datasource:
+    jdbc-url: ${legacy-db.url}
+    username: ${legacy-db.username}
+    password: ${legacy-db.password}
+    driver-class-name: com.microsoft.sqlserver.jdbc.SQLServerDriver
+  legacy-config-datasource:
+    jdbc-url: ${legacy-db.config-url}
+    username: ${legacy-db.username}
+    password: ${legacy-db.password}
+    driver-class-name: com.microsoft.sqlserver.jdbc.SQLServerDriver
+  jpa:
+    open-in-view: false
+    show-sql: false
+    hibernate:
+      ddl-auto: none
+    properties:
+      hibernate:
+        format_sql: true
+    database-platform: org.hibernate.dialect.MySQL8Dialect
+---
+spring.config.activate.on-profile: local
+mariadb:
+  url: jdbc:mysql://localhost:3306/icecash?allowPublicKeyRetrieval=true&useSSL=false&serverTimezone=Africa/Harare
+  username: root
+  password: 123456
+legacy-db:
+  url: jdbc:sqlserver://10.1.1.122:1433;databaseName=Test_Concerto_Zim
+  config-url: jdbc:sqlserver://10.1.1.122:1433;databaseName=Concerto_Config
+  username: Concerto
+  password: c0nc3rt0
+
+---
+spring.config.activate.on-profile: local-docker
+mariadb:
+  url: jdbc:mysql://mysql:3306/icecash?allowPublicKeyRetrieval=true&useSSL=false&serverTimezone=Africa/Harare
+  username: root
+  password: 123456

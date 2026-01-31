@@ -1,0 +1,14 @@
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: payments-fbc-service
+  labels:
+    app: payments-fbc-service
+    release: prometheus-operator
+spec:
+  selector:
+    matchLabels:
+      app: payments-fbc-service
+  endpoints:
+    - port: "8588"
+      path: "/actuator/prometheus"

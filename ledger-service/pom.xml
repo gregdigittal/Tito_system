@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>cash.ice</groupId>
+        <artifactId>ice-cash-payments</artifactId>
+        <version>0.1.1</version>
+    </parent>
+
+    <artifactId>ledger-service</artifactId>
+    <name>ledger-service</name>
+    <description>ICEcash Ledger service</description>
+    <packaging>jar</packaging>
+
+    <dependencies>
+        <dependency>
+            <groupId>cash.ice</groupId>
+            <artifactId>common</artifactId>
+            <version>0.1.1</version>
+        </dependency>
+        <dependency>
+            <groupId>cash.ice</groupId>
+            <artifactId>common-sqldb</artifactId>
+            <version>0.1.1</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-jpa</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.mysql</groupId>
+            <artifactId>mysql-connector-j</artifactId>
+            <scope>runtime</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-lang3</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.datatype</groupId>
+            <artifactId>jackson-datatype-jsr310</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+                <version>${spring.boot.version}</version>
+                <configuration>
+                    <mainClass>cash.ice.ledger.LedgerApplication</mainClass>
+                </configuration>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>build-info</goal>
+                            <goal>repackage</goal>
+                        </goals>
+                        <configuration>
+                            <finalName>${project.artifactId}</finalName>
+                            <additionalProperties>
+                                <id>${BUILD_ID}</id>
+                                <job.name>${JOB_NAME}</job.name>
+                                <job.url>${JOB_URL}</job.url>
+                                <number>${BUILD_NUMBER}</number>
+                                <name>${BUILD_NAME}</name>
+                            </additionalProperties>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+        <finalName>ledger-service</finalName>
+    </build>
+
+    <profiles>
+        <profile>
+            <id>default</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
+            <properties>
+                <BUILD_ID>N/A</BUILD_ID>
+                <JOB_NAME>N/A</JOB_NAME>
+                <JOB_URL>N/A</JOB_URL>
+                <BUILD_NUMBER>N/A</BUILD_NUMBER>
+                <BUILD_NAME>N/A</BUILD_NAME>
+            </properties>
+        </profile>
+        <profile>
+            <id>distribution</id>
+        </profile>
+    </profiles>
+</project>

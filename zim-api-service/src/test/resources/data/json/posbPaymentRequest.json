@@ -1,0 +1,11 @@
+{
+  "vendorRef": "vendorRefTest1",
+  "bankName": "POSB",
+  "accountNumber": "500005998256",
+  "amount": 0.20,
+  "metaData": {
+    "walletId": 1,
+    "paymentId": 101,
+    "approvePaymentFlat": true
+  }
+}

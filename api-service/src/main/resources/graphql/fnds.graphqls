@@ -1,0 +1,77 @@
+
+input RegisterUserKenInput {
+    accountType: AccountTypeKen!
+    firstName: String!
+    lastName: String!
+    idType: IdTypeKen!
+    idNumber: String!
+    mobile: String!
+    idUploadDocumentId: ID
+    biometricUploadDocumentId: ID
+    email: String
+    pin: String
+    locale: String = "en"
+}
+
+enum AccountTypeKen {
+    Farmer, AgriDealer, Agent
+}
+
+enum IdTypeKen {
+    NationalID, Passport
+}
+
+type UserFNDS {
+    id: ID
+    entityTypeId: ID
+    entityType: EntityType
+    fndsKesAccountBalance: Float
+    accounts: [Account]
+    firstName: String
+    lastName: String
+    idTypeId: ID
+    idType: EntityIdType
+    idNumber: String
+    status: EntityStatus
+    email: String
+    msisdn: [Msisdn]
+    relationships: [AccountRelationship]
+    loginStatus: LoginStatus
+    products: [EntityProductFNDS]
+    locale: String
+    createdDate: DateTime
+}
+
+type UsersFNDSPageable {
+    total: Int
+    content: [UserFNDS]
+}
+
+type EntityProductFNDS {
+    entityId: ID
+    entity: UserFNDS
+    productId: ID
+    product: ProductFNDS
+    relationship: ProductRelationshipType
+    active: Boolean
+    createdDate: DateTime
+    modifiedDate: DateTime
+}
+
+type ProductFNDS {
+    id: ID
+    productType: ProductType
+    name: String
+    description: String
+    currencyId: ID
+    currency: Currency
+    price: Float
+}
+
+enum ProductRelationshipType {
+    DealerStock, AssignedProducts
+}
+
+enum ProductType {
+    KIT
+}

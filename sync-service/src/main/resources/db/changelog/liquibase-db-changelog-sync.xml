@@ -1,0 +1,92 @@
+<?xml version="1.1" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.1.xsd">
+
+    <changeSet author="Pavlo.Slyvka" id="channel-insert-sync" runAlways="false" failOnError="true">
+        <customChange class="cash.ice.sync.task.DbMigrationTask">
+            <param name="serviceName" value="channelsSyncService" />
+        </customChange>
+    </changeSet>
+    <changeSet author="Pavlo.Slyvka" id="tax-declaration-insert-sync" runAlways="false" failOnError="true">
+        <customChange class="cash.ice.sync.task.DbMigrationTask">
+            <param name="serviceName" value="taxDeclarationSyncService" />
+        </customChange>
+    </changeSet>
+    <changeSet author="Pavlo.Slyvka" id="tax-reason-insert-sync" runAlways="false" failOnError="true">
+        <customChange class="cash.ice.sync.task.DbMigrationTask">
+            <param name="serviceName" value="taxReasonSyncService" />
+        </customChange>
+    </changeSet>
+   <changeSet author="Pavlo.Slyvka" id="payment-method-insert-sync" runAlways="false" failOnError="true">
+        <customChange class="cash.ice.sync.task.DbMigrationTask">
+            <param name="serviceName" value="paymentMethodSyncService" />
+        </customChange>
+    </changeSet>
+    <changeSet author="Pavlo.Slyvka" id="banks-insert-sync" runAlways="false" failOnError="true">
+        <customChange class="cash.ice.sync.task.DbMigrationTask">
+            <param name="serviceName" value="banksSyncService" />
+        </customChange>
+    </changeSet>
+    <changeSet author="Pavlo.Slyvka" id="currency-insert-sync" runAlways="false" failOnError="true">
+        <customChange class="cash.ice.sync.task.DbMigrationTask">
+            <param name="serviceName" value="currenciesSyncService" />
+        </customChange>
+    </changeSet>
+    <changeSet author="Pavlo.Slyvka" id="country-insert-sync" runAlways="false" failOnError="true">
+        <customChange class="cash.ice.sync.task.DbMigrationTask">
+            <param name="serviceName" value="countriesSyncService" />
+        </customChange>
+    </changeSet>
+    <changeSet author="Pavlo.Slyvka" id="account_type-insert-sync" runAlways="false" failOnError="true">
+        <customChange class="cash.ice.sync.task.DbMigrationTask">
+            <param name="serviceName" value="accountTypesSyncService" />
+        </customChange>
+    </changeSet>
+    <changeSet author="Pavlo.Slyvka" id="security-groups-insert-sync" runAlways="false" failOnError="true">
+        <customChange class="cash.ice.sync.task.DbMigrationTask">
+            <param name="serviceName" value="securityGroupsSyncService" />
+        </customChange>
+    </changeSet>
+    <changeSet author="Pavlo.Slyvka" id="entities-insert-sync" runAlways="false" failOnError="true">
+        <customChange class="cash.ice.sync.task.DbMigrationTask">
+            <param name="serviceName" value="entitiesSyncService" />
+        </customChange>
+    </changeSet>
+    <changeSet author="Pavlo.Slyvka" id="initiator_type-insert-init">
+        <sql>
+            INSERT INTO initiator_type (description, active, entity_id) VALUES ('cash', 1, null);
+            INSERT INTO initiator_type (description, active, entity_id) VALUES ('icecash', 1, null);
+            INSERT INTO initiator_type (description, active, entity_id) VALUES ('card', 1, (select id from entity where First_Name like '%CBZ Issuing Clearing Account%'));
+            INSERT INTO initiator_type (description, active, entity_id) VALUES ('cardInternational', 1, null);
+            INSERT INTO initiator_type (description, active, entity_id) VALUES ('ecocash', 1, (select id from entity where first_name = 'EcoCash TPI Account'));
+            INSERT INTO initiator_type (description, active, entity_id) VALUES ('netone', 1, (select id from entity where first_name = 'NetOne' and last_name = 'ICEcash'));
+        </sql>
+    </changeSet>
+    <changeSet author="Pavlo.Slyvka" id="accounts-insert-sync" runAlways="false" failOnError="true">
+        <customChange class="cash.ice.sync.task.DbMigrationTask">
+            <param name="serviceName" value="accountsSyncService" />
+        </customChange>
+    </changeSet>
+    <changeSet author="Pavlo.Slyvka" id="account_relationship-insert-sync" runAlways="false" failOnError="true">
+        <customChange class="cash.ice.sync.task.DbMigrationTask">
+            <param name="serviceName" value="accountRelationshipsSyncService" />
+        </customChange>
+    </changeSet>
+    <changeSet author="Pavlo.Slyvka" id="initiators-insert-sync" runAlways="false" failOnError="true">
+        <customChange class="cash.ice.sync.task.DbMigrationTask">
+            <param name="serviceName" value="initiatorsSyncService" />
+        </customChange>
+    </changeSet>
+    <changeSet author="Pavlo.Slyvka" id="document_type-insert-sync" runAlways="false" failOnError="true">
+        <customChange class="cash.ice.sync.task.DbMigrationTask">
+            <param name="serviceName" value="documentTypesSyncService" />
+        </customChange>
+    </changeSet>
+    <changeSet author="Pavlo.Slyvka" id="entities-auth" runAlways="false" failOnError="true">
+        <customChange class="cash.ice.sync.task.DbMigrationTask">
+            <param name="serviceName" value="entitiesAuthSyncService" />
+        </customChange>
+    </changeSet>
+
+</databaseChangeLog>

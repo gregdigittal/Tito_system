@@ -1,0 +1,14 @@
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: payments-ecocash-service
+  labels:
+    app: payments-ecocash-service
+    release: prometheus-operator
+spec:
+  selector:
+    matchLabels:
+      app: payments-ecocash-service
+  endpoints:
+    - port: "8586"
+      path: "/actuator/prometheus"

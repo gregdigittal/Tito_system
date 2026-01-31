@@ -1,0 +1,94 @@
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           targetNamespace="http://webservice.bccsgw.viettel.com/"
+           xmlns:web="http://webservice.bccsgw.viettel.com/"
+           xmlns:wsfw="http://services.wsfw.vas.viettel.com/"
+           xmlns:S="http://schemas.xmlsoap.org/soap/envelope/">
+
+    <xs:element name="Envelope" type="S:EnvelopeType"/>
+
+    <!-- Request Types -->
+
+    <xs:complexType name="EnvelopeType">
+        <xs:sequence>
+            <xs:element name="Header" type="web:HeaderType" minOccurs="0"/>
+            <xs:element name="Body" type="web:RequestBodyType"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="HeaderType"/>
+
+    <xs:complexType name="RequestBodyType">
+        <xs:sequence>
+            <xs:element name="gwOperation" type="web:GwOperationRequestType"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="GwOperationRequestType">
+        <xs:sequence>
+            <xs:element name="Input" type="web:InputType"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="InputType">
+        <xs:sequence>
+            <xs:element name="username" type="xs:string"/>
+            <xs:element name="password" type="xs:string"/>
+            <xs:element name="wscode" type="xs:string"/>
+            <xs:element name="param" type="web:ParamType" maxOccurs="unbounded"/>
+            <xs:element name="rawData" type="xs:string"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="ParamType">
+        <xs:attribute name="name" type="xs:string"/>
+        <xs:attribute name="value" type="xs:string"/>
+    </xs:complexType>
+
+    <!-- Response Types -->
+
+    <xs:complexType name="BodyType">
+        <xs:sequence>
+            <xs:element name="gwOperationResponse" type="web:GwOperationResponseType"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="GwOperationResponseType">
+        <xs:sequence>
+            <xs:element name="Result" type="web:ResultType"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="ResultType">
+        <xs:sequence>
+            <xs:element name="error" type="xs:string"/>
+            <xs:element name="return" type="xs:string"/>
+            <xs:element name="original" type="web:OriginalType"/>
+            <xs:element name="gwtransid" type="xs:string"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="OriginalType">
+        <xs:simpleContent>
+            <xs:extension base="xs:string">
+                <xs:attribute name="xmlns:S" type="xs:string"/>
+            </xs:extension>
+        </xs:simpleContent>
+    </xs:complexType>
+
+    <xs:element name="pushUssdMessageResponse" type="wsfw:PushUssdMessageResponseType"/>
+
+    <xs:complexType name="PushUssdMessageResponseType">
+        <xs:sequence>
+            <xs:element name="return" type="wsfw:ReturnType"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="ReturnType">
+        <xs:sequence>
+            <xs:element name="errorCode" type="xs:string"/>
+            <xs:element name="message" type="xs:string"/>
+            <xs:element name="reqeustId" type="xs:string"/>
+        </xs:sequence>
+    </xs:complexType>
+
+</xs:schema>

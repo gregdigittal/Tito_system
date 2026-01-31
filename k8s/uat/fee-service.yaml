@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: payments-fee-service
+  name: payments-fee-service
+spec:
+  ports:
+    - name: "8583"
+      port: 8583
+      targetPort: 8283
+  selector:
+    app: payments-fee-service
+  type: ClusterIP

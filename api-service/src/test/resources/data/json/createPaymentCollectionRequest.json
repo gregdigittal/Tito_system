@@ -1,0 +1,6 @@
+{
+  "sessionId": 50,
+  "paymentMethodId": 3,
+  "channel": "API",
+  "paymentIds": [1, 2]
+}

@@ -1,0 +1,16 @@
+{
+  "action": "UPDATE",
+  "legacyAccountId": 200,
+  "legacyWalletId": 1,
+  "data": {
+    "Active": true,
+    "Created_Date": "2018-04-16 15:43:45",
+    "Daily_Limit": 100.55,
+    "Overdraft": 50.23,
+    "Balance_Minimum": 10.81,
+    "Balance_Warning": 15,
+    "Balance_Minimum_Enforce": true,
+    "Send_Notification": true,
+    "Auto_Suck_Enabled": true
+  }
+}

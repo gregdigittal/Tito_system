@@ -1,0 +1,317 @@
+
+input RegisterUserMozInput {
+    accountType: AccountTypeMoz!
+    firstName: String!
+    lastName: String!
+    idType: IdTypeMoz!
+    idNumber: String!
+    idUploadDocumentId: ID
+    nuit: String
+    nuitUploadDocumentId: ID
+    mobile: String!
+    email: String
+    pin: String
+    locale: String = "en"
+}
+
+input RegisterCompanyMozInput {
+    name: String!
+    nuel: String!
+    nuelUploadDocumentId: ID
+    nuit: String!
+    nuitUploadDocumentId: ID
+    mobile: String!
+    email: String!
+    address: AddressInput!
+}
+
+input OptionalEntityRegisterData {
+    status: EntityStatus
+    loginStatus: LoginStatus
+    gender: Gender
+    citizenshipCountryId: ID
+    contactName: String
+    altContactName: String
+    altMobile: String
+    authorisationType: AuthorisationType! = SINGLE
+    corporateFee: Boolean! = false
+    transactionLimitTier: TransactionLimitTier
+    kycStatus: KycStatus! = NONE
+    address: AddressInput
+    company: String
+}
+
+enum AccountTypeMoz {
+    CommuterRegular, CommuterElders, CommuterDisabled, CommuterStudent, CommuterWarVeteran,
+    TransportOwnerPrivate, TransportOwnerPublic,
+    AgentRegular, AgentFematro,
+    TaxiDriver, FareCollector
+}
+
+enum IdTypeMoz {
+    ID, Passport, DIRE
+}
+
+type UserMoz {
+    id: ID
+    entityTypeId: ID
+    entityType: EntityType
+    accounts: [AccountMoz]
+    firstName: String
+    lastName: String
+    idTypeId: ID
+    idType: EntityIdType
+    idNumber: String
+    status: EntityStatus
+    email: String
+    msisdn: [Msisdn]
+    relationships: [AccountRelationship]
+    loginStatus: LoginStatus
+    locale: String
+    createdDate: DateTime
+}
+
+type AccountMoz {
+    id: ID
+    entityId: ID
+    entity: Entity
+    accountTypeId: ID
+    accountType: AccountType
+    accountNumber: String
+    accountStatus: AccountStatus
+    balance: Float
+    initiators: [Initiator]
+    transactions: [TransactionMoz]
+    createdDate: DateTime
+}
+
+type TransactionsPageableMoz {
+    total: Int
+    content: [TransactionMoz]
+}
+
+type TransactionMoz {
+    id: ID
+    sessionId: String
+    transactionCodeId: ID
+    transactionCode: TransactionCode
+    currencyId: ID
+    currency: Currency
+    amount: Float
+    initiatorId: ID
+    initiator: Initiator
+    initiatorTypeId: ID
+    initiatorType: InitiatorType
+    lines: [TransactionLine]
+    metaData: JSON
+    createdDate: DateTime
+    statementDate: DateTime
+}
+
+type TransactionCodesPageable {
+    total: Int
+    content: [TransactionCode]
+}
+
+type TransactionCode {
+    id: ID
+    code: String
+    description: String
+    active: Boolean
+    kycRequired: Boolean
+    additionalFees: [Fee]
+}
+
+type Fee {
+    id: ID
+    chargeType: ChargeType
+    srcAmountFeeId: ID
+    processOrder: Int
+    amount: Float
+    minCharge: Float
+    maxCharge: Float
+    currency: Currency
+    drEntityAccount: Account
+    crEntityAccount: Account
+    affordabilityCheck: Boolean
+    active: Boolean
+}
+
+enum ChargeType {
+    ORIGINAL, FIXED, PERCENT, LOOKUP
+}
+
+type TransactionLine {
+    id: ID
+    transactionCodeId: ID
+    transactionCode: TransactionCode
+    description: String
+    amount: Float
+    entityAccountId: ID
+    entityAccount: Account
+}
+
+type DevicesPageable {
+    total: Int
+    content: [Device]
+}
+
+type Device {
+    id: ID
+    code: String
+    serial: String
+    status: DeviceStatus
+    accountId: ID
+    account: Account
+    vehicleId: ID
+    vehicle: Vehicle
+    metaData: JSON
+    createdDate: DateTime
+}
+
+input RegisterDeviceMozRequest {
+    serialNumber: String!
+    metaData: JSON
+    productNumber: String
+    model: String
+    bootVersion: String
+    cpuType: String
+    rfidVersion: String
+    osVersion: String
+    imei: String
+    imsi: String
+}
+
+input VehicleInput {
+    vrn: String!
+    make: String!
+    model: String!
+    vehicleType: VehicleType!
+    routeId: ID
+    driverEntityId: ID
+    collectorEntityId: ID
+    status: VehicleStatus! = ACTIVE
+}
+
+type Vehicle {
+    id: ID
+    vrn: String
+    make: String
+    model: String
+    vehicleType: VehicleType
+    routeId: ID
+    route: Route
+    driverEntityId: ID
+    driverEntity: Entity
+    collectorEntityId: ID
+    collectorEntity: Entity
+    entityId: ID
+    entity: Entity
+    accountId: ID
+    account: Account
+    status: VehicleStatus
+}
+
+type VehiclesPageable {
+    total: Int
+    content: [Vehicle]
+}
+
+enum VehicleType {
+    TAXI
+}
+
+enum VehicleStatus {
+    ACTIVE, INACTIVE
+}
+
+enum EntityLookupType {
+    MSISDN, ID, ACCOUNT
+}
+
+input LinkNfcTagRequest {
+    device: String!
+    accountNumber: String!
+    tagNumber: String!
+    dateTime: DateTime
+}
+
+type LinkTagOtpResponse {
+    prepaidBalance: Float
+    subsidyBalance: Float
+    firstName: String
+    lastName: String
+}
+
+type TagInfoMoz {
+    prepaidBalance: Float
+    subsidyBalance: Float
+    firstName: String
+    lastName: String
+    accountNumber: String
+    status: String
+}
+
+type SimpleAccountInfoMoz {
+    accountId: ID
+    accountNumber: String
+    accountType: String
+    firstName: String
+    lastName: String
+    deviceCode: String
+    deviceStatus: DeviceStatus
+    route: Route
+}
+
+enum DeviceStatus {
+    ACTIVE, INACTIVE
+}
+
+enum StatisticsTypeMoz {
+    INCOME, EXPENSES
+}
+
+type TransactionStatisticsMoz {
+    day: Date
+    trips: Int
+    income: Float
+    prepaidExpenses: Float
+    subsidyExpenses: Float
+}
+
+type Route {
+    id: ID
+    name: String
+    active: Boolean
+    details: [RouteDetail]
+}
+
+type RouteDetail {
+    operatorType: OperatorType
+    minDistance: Float
+    minFare: Float
+    farePerKm: Float
+    maxFare: Float
+    maxDistance: Float
+}
+
+enum OperatorType {
+    PRIVATE, PUBLIC
+}
+
+type RouteKen {
+    name: String
+    active: Boolean
+    fares: [RouteFareKen]
+}
+
+type RouteFareKen {
+    startTime: LocalTime
+    endTime: LocalTime
+    peak: Boolean
+    price: Float
+}
+
+enum MoneyProviderMoz {
+    MPESA, EMOLA
+}

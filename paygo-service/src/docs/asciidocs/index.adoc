@@ -1,0 +1,170 @@
+= ICE Cash Payments PayGo Admin API
+:doctype: book
+:toc: left
+:toclevels: 4
+:sectlinks:
+
+[[paygo_financial_institutions]]
+== Financial Institutions
+Available Institutions to the PayGo Ecosystem
+
+[[paygo_financial_institutions_get]]
+=== GET Financial Institutions request
+
+`/api/v1/paygo/financial-institutions` endpoint listens for `GET` requests to get list of available financial institutions. Each FI contains the following list of fields:
+
+include::{snippets}/paygo/get-financial-institutions/response-fields.adoc[]
+==== Curl example
+include::{snippets}/paygo/get-financial-institutions/curl-request.adoc[]
+==== HTTP Request example
+include::{snippets}/paygo/get-financial-institutions/http-request.adoc[]
+==== HTTP Response example
+include::{snippets}/paygo/get-financial-institutions/http-response.adoc[]
+
+
+[[paygo_merchants]]
+== Merchants
+
+The API provides REST endpoints to work with PayGo Merchants.
+
+[[paygo_merchants_get]]
+=== GET Merchants request
+
+`/api/v1/paygo/merchant` endpoint listens for `GET` requests to get list of available merchants. Each Merchant contains the following list of fields:
+
+include::{snippets}/paygo/get-merchant/response-fields.adoc[]
+==== Curl example
+include::{snippets}/paygo/get-merchant/curl-request.adoc[]
+==== HTTP Request example
+include::{snippets}/paygo/get-merchant/http-request.adoc[]
+==== HTTP Response example
+include::{snippets}/paygo/get-merchant/http-response.adoc[]
+
+[[paygo_merchant_post]]
+=== POST Merchant request
+
+`/api/v1/paygo/merchant` endpoint listens for `POST` requests to add a new merchant. It uses json object which contains the following fields:
+
+include::{snippets}/paygo/post-merchant/request-fields.adoc[]
+==== Curl example
+include::{snippets}/paygo/post-merchant/curl-request.adoc[]
+==== HTTP Request example
+include::{snippets}/paygo/post-merchant/http-request.adoc[]
+==== HTTP Response example
+include::{snippets}/paygo/post-merchant/http-response.adoc[]
+
+[[paygo_merchant_put]]
+=== PUT Merchant request
+
+`/api/v1/paygo/merchant` endpoint listens for `PUT` requests to update an existing merchant. It uses json object which contains the following fields:
+
+include::{snippets}/paygo/put-merchant/request-fields.adoc[]
+==== Curl example
+include::{snippets}/paygo/put-merchant/curl-request.adoc[]
+==== HTTP Request example
+include::{snippets}/paygo/put-merchant/http-request.adoc[]
+==== HTTP Response example
+include::{snippets}/paygo/put-merchant/http-response.adoc[]
+
+[[paygo_merchant_delete]]
+=== DELETE Merchant request
+
+`/api/v1/paygo/merchant/(id)` endpoint listens for `DELETE` requests to delete an existing merchant with the id given by (id)
+
+==== Request path parameters
+include::{snippets}/paygo/delete-merchant/path-parameters.adoc[]
+==== Curl example
+include::{snippets}/paygo/delete-merchant/curl-request.adoc[]
+==== HTTP Request example
+include::{snippets}/paygo/delete-merchant/http-request.adoc[]
+==== HTTP Response example
+include::{snippets}/paygo/delete-merchant/http-response.adoc[]
+
+
+[[paygo_credential]]
+== Credentials
+
+The API provides REST endpoints to work with PayGo Credentials. Every credential is assigned to a specific Merchant.
+
+[[paygo_credentials_get]]
+=== GET Credentials request
+
+`/api/v1/paygo/merchant/credential/(merchantId)` endpoint listens for `GET` requests to get list of available credentials of merchant with the id given by (merchantId). Each Merchant Credential contains the following list of fields:
+
+include::{snippets}/paygo/get-merchant-credential/response-fields.adoc[]
+==== Curl example
+include::{snippets}/paygo/get-merchant-credential/curl-request.adoc[]
+==== HTTP Request example
+include::{snippets}/paygo/get-merchant-credential/http-request.adoc[]
+==== HTTP Response example
+include::{snippets}/paygo/get-merchant-credential/http-response.adoc[]
+
+[[paygo_credentials_post]]
+=== POST Credentials request
+
+`/api/v1/paygo/merchant/credential` endpoint listens for `POST` requests to add a new credential to a pre-created Merchant by its merchantId. It uses json object which contains the following fields:
+
+include::{snippets}/paygo/post-credential/request-fields.adoc[]
+==== Curl example
+include::{snippets}/paygo/post-credential/curl-request.adoc[]
+==== HTTP Request example
+include::{snippets}/paygo/post-credential/http-request.adoc[]
+==== HTTP Response example
+include::{snippets}/paygo/post-credential/http-response.adoc[]
+
+[[paygo_credential_put]]
+=== PUT Credential request
+
+`/api/v1/paygo/merchant/credential` endpoint listens for `PUT` requests to update an existing merchant credential. It uses json object which contains the following fields:
+
+include::{snippets}/paygo/put-credential/request-fields.adoc[]
+==== Curl example
+include::{snippets}/paygo/put-credential/curl-request.adoc[]
+==== HTTP Request example
+include::{snippets}/paygo/put-credential/http-request.adoc[]
+==== HTTP Response example
+include::{snippets}/paygo/put-credential/http-response.adoc[]
+
+[[paygo_credential_delete]]
+=== DELETE Credential request
+
+`/api/v1/paygo/merchant/(id)` endpoint listens for `DELETE` requests to delete an existing merchant credential with the id given by (id)
+
+==== Request path parameters
+include::{snippets}/paygo/delete-credential/path-parameters.adoc[]
+==== Curl example
+include::{snippets}/paygo/delete-credential/curl-request.adoc[]
+==== HTTP Request example
+include::{snippets}/paygo/delete-credential/http-request.adoc[]
+==== HTTP Response example
+include::{snippets}/paygo/delete-credential/http-response.adoc[]
+
+
+[[paygo_admin_actions]]
+== Admin Actions
+
+[[paygo_admin_actions_expire]]
+=== Expire Payment Request
+
+`/api/v1/paygo/payment/expire/(deviceReference)` endpoint listens for `GET` requests to get transaction expiry by (deviceReference), it contains the following fields:
+
+include::{snippets}/paygo/get-expiration/response-fields.adoc[]
+==== Curl example
+include::{snippets}/paygo/get-expiration/curl-request.adoc[]
+==== HTTP Request example
+include::{snippets}/paygo/get-expiration/http-request.adoc[]
+==== HTTP Response example
+include::{snippets}/paygo/get-expiration/http-response.adoc[]
+
+[[paygo_admin_actions_status]]
+=== Query Payment Status
+
+`/api/v1/paygo/payment/status/(deviceReference)` endpoint listens for `GET` requests to get payment status by its (deviceReference), it contains the following fields:
+
+include::{snippets}/paygo/get-status/response-fields.adoc[]
+==== Curl example
+include::{snippets}/paygo/get-status/curl-request.adoc[]
+==== HTTP Request example
+include::{snippets}/paygo/get-status/http-request.adoc[]
+==== HTTP Response example
+include::{snippets}/paygo/get-status/http-response.adoc[]

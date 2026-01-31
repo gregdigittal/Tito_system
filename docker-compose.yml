@@ -1,0 +1,173 @@
+version: '3.8'
+services:
+
+  mykafkaui:
+    image: provectuslabs/kafka-ui:latest
+    hostname: mykafkaui
+    container_name: mykafkaui
+    ports:
+      - "8280:8080"
+    depends_on:
+      - mykafka
+      - myzookeeper
+    environment:
+      KAFKA_CLUSTERS_0_NAME: local
+      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: mykafka:9092
+      KAFKA_CLUSTERS_0_ZOOKEEPER: myzookeeper:2181
+      KAFKA_CLUSTERS_0_JMXPORT: 9997
+      LOGGING_LEVEL_ROOT: info
+      LOGGING_LEVEL_COM_PROVECTUS: info
+    networks:
+      - kafka_network
+  mykafka:
+    image: confluentinc/cp-kafka:latest
+    hostname: mykafka
+    container_name: mykafka
+    ports:
+      - 29092:29092
+      - 9997:9997
+    depends_on:
+      - myzookeeper
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: "myzookeeper:2181"
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://mykafka:9092,PLAINTEXT_HOST://localhost:29092
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      JMX_PORT: 9997
+      KAFKA_JMX_OPTS: -Dcom.sun.management.jmxremote -Dcom.sun.management.jmxremote.authenticate=false -Dcom.sun.management.jmxremote.ssl=false -Djava.rmi.server.hostname=mykafka -Dcom.sun.management.jmxremote.rmi.port=9997
+    networks:
+      - kafka_network
+  myzookeeper:
+    image: confluentinc/cp-zookeeper:latest
+    hostname: myzookeeper
+    container_name: myzookeeper
+    ports:
+      - "2181:2181"
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+    networks:
+      - kafka_network
+
+  mysql:
+    image: mysql:latest
+    container_name: mysql
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: 123456
+      MYSQL_DATABASE: icecash
+    volumes:
+      - mysql_db:/var/lib/mysql
+    ports:
+      - "3306:3306"
+
+  mongodb-primary:
+    image: 'bitnami/mongodb:latest'
+    environment:
+      - MONGODB_ADVERTISED_HOSTNAME=mongodb-primary
+      - MONGODB_REPLICA_SET_MODE=primary
+      - MONGODB_ROOT_PASSWORD=password123
+      - MONGODB_REPLICA_SET_KEY=replicasetkey123
+    volumes:
+      - 'mongodb_master_data:/bitnami'
+    ports:
+      - "27017:27017"
+  mongodb-secondary:
+    image: 'bitnami/mongodb:latest'
+    depends_on:
+      - mongodb-primary
+    environment:
+      - MONGODB_ADVERTISED_HOSTNAME=mongodb-secondary
+      - MONGODB_REPLICA_SET_MODE=secondary
+      - MONGODB_INITIAL_PRIMARY_HOST=mongodb-primary
+      - MONGODB_INITIAL_PRIMARY_PORT_NUMBER=27017
+      - MONGODB_INITIAL_PRIMARY_ROOT_PASSWORD=password123
+      - MONGODB_REPLICA_SET_KEY=replicasetkey123
+    ports:
+      - "27016:27016"
+  mongodb-arbiter:
+    image: 'bitnami/mongodb:latest'
+    depends_on:
+      - mongodb-primary
+    environment:
+      - MONGODB_ADVERTISED_HOSTNAME=mongodb-arbiter
+      - MONGODB_REPLICA_SET_MODE=arbiter
+      - MONGODB_INITIAL_PRIMARY_HOST=mongodb-primary
+      - MONGODB_INITIAL_PRIMARY_PORT_NUMBER=27017
+      - MONGODB_INITIAL_PRIMARY_ROOT_PASSWORD=password123
+      - MONGODB_REPLICA_SET_KEY=replicasetkey123
+    ports:
+      - "27015:27015"
+
+  cache:
+    image: bitnami/redis:latest
+    hostname: redis
+    container_name: redis
+    ports:
+      - '6379:6379'
+    environment:
+      REDIS_PASSWORD: redis
+    volumes:
+      - redis_db:/data
+
+  postgres:
+    image: postgres
+    container_name: postgres
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    environment:
+      POSTGRES_DB: keycloak
+      POSTGRES_USER: keycloak
+      POSTGRES_PASSWORD: password
+    ports:
+      - "15432:5432"
+    restart: unless-stopped
+  keycloak:
+    image: jboss/keycloak
+    container_name: keycloak
+    environment:
+      DB_VENDOR: POSTGRES
+      DB_ADDR: postgres
+      DB_DATABASE: keycloak
+      DB_USER: keycloak
+      DB_PASSWORD: password
+      KEYCLOAK_USER: admin
+      KEYCLOAK_PASSWORD: admin
+      JDBC_PARAM: "ssl=true"
+    ports:
+      - "8180:8080"
+    volumes:
+      - ./deployments:/opt/jboss/keycloak/standalone/deployments
+    depends_on:
+      - postgres
+  keycloak24:
+    image: bitnami/keycloak:24
+    restart: always
+    ports:
+      - 8181:8080
+    volumes:
+      - ./infrastructure/keycloak/realms:/opt/bitnami/keycloak/data/import
+    environment:
+      KEYCLOAK_ADMIN_USER: admin
+      KEYCLOAK_ADMIN_PASSWORD: admin
+      KEYCLOAK_DATABASE_HOST: postgres
+      KEYCLOAK_DATABASE_NAME: keycloak24
+      KEYCLOAK_DATABASE_USER: keycloak
+      KEYCLOAK_DATABASE_PASSWORD: password
+
+volumes:
+  mysql_db:
+    driver: local
+  mongodb_master_data:
+    driver: local
+  redis_db:
+    driver: local
+  postgres_data:
+    driver: local
+networks:
+  kafka_network:
+    driver: bridge

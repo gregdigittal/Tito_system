@@ -1,0 +1,17 @@
+{
+  "vendorRef": "vendorRefTest1",
+  "status": "SUCCESS",
+  "externalTransactionId": "xutfccnbhh9c",
+  "date": "2024-04-30T11:41:09.375",
+  "spResult": {
+    "spName": "p_Create_Transaction_Card",
+    "transactionId": 29646950,
+    "drAccountId": 20528257,
+    "crAccountId": 20528391,
+    "balance": 6810.0000,
+    "drFees": 0.0000,
+    "result": 1,
+    "message": "Funds successfully loaded. ",
+    "error": null
+  }
+}

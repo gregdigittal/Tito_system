@@ -1,0 +1,19 @@
+= ICE Cash Payments API Guide
+Pavlo Slyvka<pavlo@ice.cash>
+1.0.0, 06/6/2022
+
+link:payment.html[Payment API]
+
+link:user.html[User API]
+
+link:document.html[Document API]
+
+link:moz.html[Mozambique Transport Payment Solution API Guide]
+
+link:ken.html[FNDS project API Guide]
+
+link:backoffice.html[Backoffice API Guide]
+
+https://test-zw-paygo.digittal.mobi/payments/paygo-service/docs/index.html[PayGO Admin API]
+
+https://test-mz-gateway.digittal.mobi/payments/sync-service/docs/index.html[Sync API]

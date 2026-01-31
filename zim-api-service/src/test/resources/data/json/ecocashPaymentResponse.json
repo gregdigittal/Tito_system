@@ -1,0 +1,13 @@
+{
+  "vendorRef": "vendorRefTest1",
+  "status": "SUCCESS",
+  "externalTransactionId": "xutfccnbhh9c",
+  "date": "2024-04-30T11:41:09.375",
+  "spResult": {
+    "spName": "p_Payment_Approval",
+    "result": 1,
+    "message": "Approved",
+    "transactionId": 29646950,
+    "error": null
+  }
+}

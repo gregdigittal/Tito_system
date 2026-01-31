@@ -1,0 +1,37 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: web-backoffice
+  name: web-backoffice
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: web-backoffice
+  strategy: {}
+  template:
+    metadata:
+      labels:
+        app: web-backoffice
+    spec:
+      containers:
+        - envFrom:
+            - configMapRef:
+                name: payments-config-map
+            - secretRef:
+                name: payments-secret
+          image: dockerrepo.icecash.mobi:5000/web/backoffice:0.1.0.0
+          name: web-backoffice
+          ports:
+            - containerPort: 80
+          resources:
+            limits:
+              cpu: '1'
+              memory: 1G
+            requests:
+              cpu: 100m
+              memory: 512Mi
+      restartPolicy: Always
+      imagePullSecrets:
+        - name: dockerreg

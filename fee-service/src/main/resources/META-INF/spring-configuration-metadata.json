@@ -1,0 +1,24 @@
+{
+  "properties": [
+    {
+      "name": "ice.cash.group-api",
+      "type": "java.lang.String",
+      "description": "Group API URL"
+    },
+    {
+      "name": "ice.cash.group-api-date-format",
+      "type": "java.lang.String",
+      "description": "Group API request datetime format"
+    },
+    {
+      "name": "ice.cash.fee.group",
+      "type": "java.lang.String",
+      "description": "Fee service listener Group ID."
+    },
+    {
+      "name": "ice.cash.zim-switch.group",
+      "type": "java.lang.String",
+      "description": "ZimSwitch service listener Group ID."
+    }
+  ]
+}

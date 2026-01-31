@@ -1,0 +1,37 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: web-moz-customer
+  name: web-moz-customer
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: web-moz-customer
+  strategy: {}
+  template:
+    metadata:
+      labels:
+        app: web-moz-customer
+    spec:
+      containers:
+        - envFrom:
+            - configMapRef:
+                name: payments-config-map
+            - secretRef:
+                name: payments-secret
+          image: dockerrepo.icecash.mobi:5000/web/mozambique/customer:0.1.0.3
+          name: web-moz-customer
+          ports:
+            - containerPort: 80
+          resources:
+            limits:
+              cpu: '1'
+              memory: 1G
+            requests:
+              cpu: 100m
+              memory: 512Mi
+      restartPolicy: Always
+      imagePullSecrets:
+        - name: dockerreg

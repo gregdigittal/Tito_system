@@ -1,0 +1,354 @@
+= ICE Cash database update API Guide
+:doctype: book
+:toc: left
+:toclevels: 4
+:sectlinks:
+
+The API provides a convenient way to update a new database. All requests are moved to the respective kafka topics and will be processed sequentially when the respective application listeners are ready. Each query can update or delete only one element in the table. The body of all requests is a JSON object with a required field `action` which represents the type of operation, can be either `UPDATE` or `DELETE`, which means the following action:
+
+- `UPDATE` is a create or update operation. The matching database element will be searched in the database, if found it will be updated, otherwise a new one will be created.
+- `DELETE` is a delete operation. The element is searched and removed from the database if it exists.
+
+All necessary database updates are wrapped in the `data` field, which can be omitted if the action is DELETE. If some fields do not need to be changed, they can be skipped. If the value of any field needs to be removed, that field must be explicitly specified with a value of null. Each database table has its own REST endpoint for updates.
+
+
+[[entity]]
+== Entity
+Contains changes to the `dbo.Accounts` table used to update the `entity`, `address`, `entity_msisdn` tables of the new database.
+
+`/api/v1/db/update/entity` endpoint listens for `PUT` requests with a JSON object.
+
+=== Request body example
+[source,json]
+include::{snippets}/data-update/entity-request-example/request-body.adoc[]
+where
+include::{snippets}/data-update/entity-request-example/request-fields.adoc[]
+
+=== HTTP Request example
+include::{snippets}/data-update/entity-request-example/http-request.adoc[]
+
+HTTP Response example:
+include::{snippets}/data-update/entity-request-example/http-response.adoc[]
+
+
+[[account]]
+== Account
+Contains changes to the `dbo.Accounts_Profile_Transactions` table used to update the `account` table of the new database.
+
+`/api/v1/db/update/account` endpoint listens for `PUT` requests with a JSON object.
+
+=== Request body example
+[source,json]
+include::{snippets}/data-update/account-request-example/request-body.adoc[]
+where
+include::{snippets}/data-update/account-request-example/request-fields.adoc[]
+
+=== HTTP Request example
+include::{snippets}/data-update/account-request-example/http-request.adoc[]
+
+HTTP Response example:
+include::{snippets}/data-update/account-request-example/http-response.adoc[]
+
+
+[[account_relationship]]
+== Account Relationship
+Contains changes to the `dbo.Accounts_Organisation` table used to update the `account_relationship` table of the new database.
+
+`/api/v1/db/update/account-relationship` endpoint listens for `PUT` requests with a JSON object.
+
+=== Request body example
+[source,json]
+include::{snippets}/data-update/account-relationship-request-example/request-body.adoc[]
+where
+include::{snippets}/data-update/account-relationship-request-example/request-fields.adoc[]
+
+=== HTTP Request example
+include::{snippets}/data-update/account-relationship-request-example/http-request.adoc[]
+
+HTTP Response example:
+include::{snippets}/data-update/account-relationship-request-example/http-response.adoc[]
+
+
+[[security_right]]
+== Security Right
+Contains changes to the `dbo.Online_Rights` and `dbo.Mobi_Security_Rights` tables used to update the `security_right` table of the new database.
+
+`/api/v1/db/update/security-right` endpoint listens for `PUT` requests with a JSON object.
+
+=== Request body example
+[source,json]
+include::{snippets}/data-update/security-right-request-example/request-body.adoc[]
+where
+include::{snippets}/data-update/security-right-request-example/request-fields.adoc[]
+
+=== HTTP Request example
+include::{snippets}/data-update/security-right-request-example/http-request.adoc[]
+
+HTTP Response example:
+include::{snippets}/data-update/security-right-request-example/http-response.adoc[]
+
+
+[[security_group]]
+== Security Group
+Contains changes to the `dbo.Online_Groups`, `dbo.Online_Group_Rights`, `dbo.Mobi_Security_Groups` and `dbo.Mobi_Security_Group_Rights` tables used to update `security_group` and `security_group_right` tables of the new database.
+
+`/api/v1/db/update/security-group` endpoint listens for `PUT` requests with a JSON object.
+
+=== Request body example
+[source,json]
+include::{snippets}/data-update/security-group-request-example/request-body.adoc[]
+where
+include::{snippets}/data-update/security-group-request-example/request-fields.adoc[]
+
+=== HTTP Request example
+include::{snippets}/data-update/security-group-request-example/http-request.adoc[]
+
+HTTP Response example:
+include::{snippets}/data-update/security-group-request-example/http-response.adoc[]
+
+
+[[initiator]]
+== Initiator
+Contains changes to the `dbo.Cards` table used to update the `initiator` table of the new database.
+
+`/api/v1/db/update/initiator` endpoint listens for `PUT` requests with a JSON object.
+
+=== Request body example
+[source,json]
+include::{snippets}/data-update/initiator-request-example/request-body.adoc[]
+where
+include::{snippets}/data-update/initiator-request-example/request-fields.adoc[]
+
+=== HTTP Request example
+include::{snippets}/data-update/initiator-request-example/http-request.adoc[]
+
+HTTP Response example:
+include::{snippets}/data-update/initiator-request-example/http-response.adoc[]
+
+
+[[channel]]
+== Channel
+Contains changes to the `dbo.Channels` table used to update the `channel` table of the new database.
+
+`/api/v1/db/update/channel` endpoint listens for `PUT` requests with a JSON object.
+
+=== Request body example
+[source,json]
+include::{snippets}/data-update/channel-request-example/request-body.adoc[]
+where
+include::{snippets}/data-update/channel-request-example/request-fields.adoc[]
+
+=== HTTP Request example
+include::{snippets}/data-update/channel-request-example/http-request.adoc[]
+
+HTTP Response example:
+include::{snippets}/data-update/channel-request-example/http-response.adoc[]
+
+
+[[tax_declaration]]
+== Tax Declaration
+Contains changes to the `dbo.TAX_Declaration` table used to update the `tax_declaration` table of the new database.
+
+`/api/v1/db/update/tax-declaration` endpoint listens for `PUT` requests with a JSON object.
+
+=== Request body example
+[source,json]
+include::{snippets}/data-update/tax-declaration-request-example/request-body.adoc[]
+where
+include::{snippets}/data-update/tax-declaration-request-example/request-fields.adoc[]
+
+=== HTTP Request example
+include::{snippets}/data-update/tax-declaration-request-example/http-request.adoc[]
+
+HTTP Response example:
+include::{snippets}/data-update/tax-declaration-request-example/http-response.adoc[]
+
+
+[[tax_reason]]
+== Tax Reason
+Contains changes to the `dbo.TAX_Reason` table used to update the `tax_reason` table of the new database.
+
+`/api/v1/db/update/tax-reason` endpoint listens for `PUT` requests with a JSON object.
+
+=== Request body example
+[source,json]
+include::{snippets}/data-update/tax-reason-request-example/request-body.adoc[]
+where
+include::{snippets}/data-update/tax-reason-request-example/request-fields.adoc[]
+
+=== HTTP Request example
+include::{snippets}/data-update/tax-reason-request-example/http-request.adoc[]
+
+HTTP Response example:
+include::{snippets}/data-update/tax-reason-request-example/http-response.adoc[]
+
+
+[[payment_method]]
+== Payment Method
+Contains changes to the `dbo.Payment_Method` table used to update the `payment_method` table of the new database.
+
+`/api/v1/db/update/payment-method` endpoint listens for `PUT` requests with a JSON object.
+
+=== Request body example
+[source,json]
+include::{snippets}/data-update/payment-method-request-example/request-body.adoc[]
+where
+include::{snippets}/data-update/payment-method-request-example/request-fields.adoc[]
+
+=== HTTP Request example
+include::{snippets}/data-update/payment-method-request-example/http-request.adoc[]
+
+HTTP Response example:
+include::{snippets}/data-update/payment-method-request-example/http-response.adoc[]
+
+
+[[bank]]
+== Bank
+Contains changes to the `dbo.Banks`, `dbo.Banks_Bin_Banks`, `dbo.Banks_BIN` and `dbo.Banks_Flexcube` tables used to update the `bank` and `bank_branch` tables of the new database.
+
+`/api/v1/db/update/bank` endpoint listens for `PUT` requests with a JSON object.
+
+=== Request body example
+[source,json]
+include::{snippets}/data-update/bank-request-example/request-body.adoc[]
+where
+include::{snippets}/data-update/bank-request-example/request-fields.adoc[]
+
+=== HTTP Request example
+include::{snippets}/data-update/bank-request-example/http-request.adoc[]
+
+HTTP Response example:
+include::{snippets}/data-update/bank-request-example/http-response.adoc[]
+
+
+[[currency]]
+== Currency
+Contains changes to the `dbo.Currency` table used to update the `currency` table of the new database.
+
+`/api/v1/db/update/currency` endpoint listens for `PUT` requests with a JSON object.
+
+=== Request body example
+[source,json]
+include::{snippets}/data-update/currency-request-example/request-body.adoc[]
+where
+include::{snippets}/data-update/currency-request-example/request-fields.adoc[]
+
+=== HTTP Request example
+include::{snippets}/data-update/currency-request-example/http-request.adoc[]
+
+HTTP Response example:
+include::{snippets}/data-update/currency-request-example/http-response.adoc[]
+
+
+[[wallet]]
+== Wallet
+Contains changes to the `dbo.Wallets` table used to update the `account_type` table of the new database.
+
+`/api/v1/db/update/wallet` endpoint listens for `PUT` requests with a JSON object.
+
+=== Request body example
+[source,json]
+include::{snippets}/data-update/wallet-request-example/request-body.adoc[]
+where
+include::{snippets}/data-update/wallet-request-example/request-fields.adoc[]
+
+=== HTTP Request example
+include::{snippets}/data-update/wallet-request-example/http-request.adoc[]
+
+HTTP Response example:
+include::{snippets}/data-update/wallet-request-example/http-response.adoc[]
+
+
+[[entity-type-group]]
+== Entity Type Group
+Contains changes to the `dbo.Accounts_Types_Groups` table used to update the `entity_type_group` table of the new database.
+
+`/api/v1/db/update/entity-type-group` endpoint listens for `PUT` requests with a JSON object.
+
+=== Request body example
+[source,json]
+include::{snippets}/data-update/entity-type-group-request-example/request-body.adoc[]
+where
+include::{snippets}/data-update/entity-type-group-request-example/request-fields.adoc[]
+
+=== HTTP Request example
+include::{snippets}/data-update/entity-type-group-request-example/http-request.adoc[]
+
+HTTP Response example:
+include::{snippets}/data-update/entity-type-group-request-example/http-response.adoc[]
+
+
+[[entity-type]]
+== Entity Type
+Contains changes to the `dbo.Accounts_Types` table used to update the `entity_type` table of the new database.
+
+`/api/v1/db/update/entity-type` endpoint listens for `PUT` requests with a JSON object.
+
+=== Request body example
+[source,json]
+include::{snippets}/data-update/entity-type-request-example/request-body.adoc[]
+where
+include::{snippets}/data-update/entity-type-request-example/request-fields.adoc[]
+
+=== HTTP Request example
+include::{snippets}/data-update/entity-type-request-example/http-request.adoc[]
+
+HTTP Response example:
+include::{snippets}/data-update/entity-type-request-example/http-response.adoc[]
+
+
+[[initiator-category]]
+== Initiator Category
+Contains changes to the `dbo.Card_Category` table used to update the `initiator_category` table of the new database.
+
+`/api/v1/db/update/initiator-category` endpoint listens for `PUT` requests with a JSON object.
+
+=== Request body example
+[source,json]
+include::{snippets}/data-update/initiator-category-request-example/request-body.adoc[]
+where
+include::{snippets}/data-update/initiator-category-request-example/request-fields.adoc[]
+
+=== HTTP Request example
+include::{snippets}/data-update/initiator-category-request-example/http-request.adoc[]
+
+HTTP Response example:
+include::{snippets}/data-update/initiator-category-request-example/http-response.adoc[]
+
+
+[[initiator-status]]
+== Initiator Status
+Contains changes to the `dbo.Cards_Status` table used to update the `initiator_status` table of the new database.
+
+`/api/v1/db/update/initiator-status` endpoint listens for `PUT` requests with a JSON object.
+
+=== Request body example
+[source,json]
+include::{snippets}/data-update/initiator-status-request-example/request-body.adoc[]
+where
+include::{snippets}/data-update/initiator-status-request-example/request-fields.adoc[]
+
+=== HTTP Request example
+include::{snippets}/data-update/initiator-status-request-example/http-request.adoc[]
+
+HTTP Response example:
+include::{snippets}/data-update/initiator-status-request-example/http-response.adoc[]
+
+
+[[document_type]]
+== Document Type
+Contains changes to the `dbo.Documents_Types` table used to update the `document_type` table of the new database.
+
+`/api/v1/db/update/document-type` endpoint listens for `PUT` requests with a JSON object.
+
+=== Request body example
+[source,json]
+include::{snippets}/data-update/document-type-request-example/request-body.adoc[]
+where
+include::{snippets}/data-update/document-type-request-example/request-fields.adoc[]
+
+=== HTTP Request example
+include::{snippets}/data-update/document-type-request-example/http-request.adoc[]
+
+HTTP Response example:
+include::{snippets}/data-update/document-type-request-example/http-response.adoc[]

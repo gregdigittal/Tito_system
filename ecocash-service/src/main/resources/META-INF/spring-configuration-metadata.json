@@ -1,0 +1,29 @@
+{
+  "properties": [
+    {
+      "name": "ice.cash.ecocash.group",
+      "type": "java.lang.String",
+      "description": "Kafka group for ecocash listeners"
+    },
+    {
+      "name": "mongodb.host",
+      "type": "java.lang.String",
+      "description": "MongoDB host:post"
+    },
+    {
+      "name": "mongodb.database",
+      "type": "java.lang.String",
+      "description": "MongoDB database name with additional parameters"
+    },
+    {
+      "name": "mongodb.username",
+      "type": "java.lang.String",
+      "description": "MongoDB username"
+    },
+    {
+      "name": "mongodb.password",
+      "type": "java.lang.String",
+      "description": "MongoDB password"
+    }
+  ]
+}

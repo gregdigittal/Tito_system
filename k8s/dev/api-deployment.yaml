@@ -1,0 +1,45 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: payments-api-service
+  name: payments-api-service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: payments-api-service
+  strategy: {}
+  template:
+    metadata:
+      labels:
+        app: payments-api-service
+    spec:
+      containers:
+        - env:
+            - name: SPRING_PROFILES_ACTIVE
+              value: dev-k8s
+          envFrom:
+            - configMapRef:
+                name: payments-config-map
+            - secretRef:
+                name: payments-secret
+          image: dockerrepo.icecash.mobi:5000/payments/api-service:0.1.0.70
+          name: payments-api-service
+          ports:
+            - containerPort: 8281
+          resources:
+            limits:
+              cpu: '1'
+              memory: 1G
+            requests:
+              cpu: 100m
+              memory: 512Mi
+      restartPolicy: Always
+      imagePullSecrets:
+        - name: dockerreg
+      hostAliases:
+        - ip: "136.243.89.211"
+          hostnames:
+            - "infra-keycloak.microk8s.icecash.local"
+            - "infra-minio.microk8s.icecash.local"

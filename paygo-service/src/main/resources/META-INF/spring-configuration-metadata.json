@@ -1,0 +1,84 @@
+{
+  "properties": [
+    {
+      "name": "ice.cash.paygo.url",
+      "type": "java.lang.String",
+      "description": "PayGo URL either production or sandbox"
+    },
+    {
+      "name": "ice.cash.paygo.qr64-url",
+      "type": "java.lang.String",
+      "description": "PayGo URL part to get QR code image as a base64 encoded string"
+    },
+    {
+      "name": "ice.cash.paygo.prefix",
+      "type": "java.lang.String",
+      "description": "ICEcash unique index at PayGo, also used to generate PayGo ID"
+    },
+    {
+      "name": "ice.cash.paygo.id-total-digits",
+      "type": "java.lang.Integer",
+      "description": "PayGo ID total digits amount"
+    },
+    {
+      "name": "ice.cash.paygo.request-expiry-seconds",
+      "type": "java.lang.Integer",
+      "description": "The length of time (seconds) from PayGo request creation that a payment will be valid"
+    },
+    {
+      "name": "ice.cash.paygo.group",
+      "type": "java.lang.String",
+      "description": "Paygo service kafka listener Group ID"
+    },
+    {
+      "name": "ice.cash.paygo.admin.header-name",
+      "type": "java.lang.String",
+      "description": "HTTP request header name that must be provided for PayGo admin API calls"
+    },
+    {
+      "name": "ice.cash.paygo.admin.header-value",
+      "type": "java.lang.String",
+      "description": "HTTP request header value that must be provided for PayGo admin API calls"
+    },
+    {
+      "name": "ice.cash.paygo.admin.financial-institution-url",
+      "type": "java.lang.String",
+      "description": "PayGo URL part to get financial institutions available for use"
+    },
+    {
+      "name": "ice.cash.paygo.admin.merchant-url",
+      "type": "java.lang.String",
+      "description": "PayGo URL part for merchants CRUD operations"
+    },
+    {
+      "name": "ice.cash.paygo.admin.authorized-credential-url",
+      "type": "java.lang.String",
+      "description": "PayGo URL part for authorized credential CRUD operations"
+    },
+    {
+      "name": "ice.cash.paygo.admin.merchant-credentials-url",
+      "type": "java.lang.String",
+      "description": "PayGo URL part for merchant credentials CRUD operations"
+    },
+    {
+      "name": "mongodb.host",
+      "type": "java.lang.String",
+      "description": "MongoDB host:post"
+    },
+    {
+      "name": "mongodb.database",
+      "type": "java.lang.String",
+      "description": "MongoDB database name with additional parameters"
+    },
+    {
+      "name": "mongodb.username",
+      "type": "java.lang.String",
+      "description": "MongoDB username"
+    },
+    {
+      "name": "mongodb.password",
+      "type": "java.lang.String",
+      "description": "MongoDB password"
+    }
+  ]
+}

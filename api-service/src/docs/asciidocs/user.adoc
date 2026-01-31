@@ -1,0 +1,52 @@
+= User API Guide
+Pavlo Slyvka<pavlo@ice.cash>
+1.0.0, 12/1/2022
+:toc: left
+:sectnums:
+:toclevels: 4
+
+[[user_register_request]]
+== Register user request
+
+include::{snippets}/user/register/endpoint.adoc[]
+to register a new user, it uses the following fields:
+
+include::{snippets}/user/register/request-fields.adoc[]
+=== Request body example:
+[source,json]
+include::{snippets}/user/register/request-body.adoc[]
+=== Curl example
+include::{snippets}/user/register/curl-request.adoc[]
+=== HTTP Request example
+include::{snippets}/user/register/http-request.adoc[]
+=== HTTP IE Request example
+include::{snippets}/user/register/httpie-request.adoc[]
+=== Response fields
+include::{snippets}/user/register/response-fields.adoc[]
+=== HTTP Response example
+include::{snippets}/user/register/http-response.adoc[]
+==== Response body
+include::{snippets}/user/register/response-body.adoc[]
+
+[[user_login_request]]
+== Login user request
+
+include::{snippets}/user/login/endpoint.adoc[]
+to authenticate the user, it uses the following fields:
+
+include::{snippets}/user/login/request-fields.adoc[]
+=== Request body example:
+[source,json]
+include::{snippets}/user/login/request-body.adoc[]
+=== Curl example
+include::{snippets}/user/login/curl-request.adoc[]
+=== HTTP Request example
+include::{snippets}/user/login/http-request.adoc[]
+=== HTTP IE Request example
+include::{snippets}/user/login/httpie-request.adoc[]
+=== Response fields
+include::{snippets}/user/login/response-fields.adoc[]
+=== HTTP Response example
+include::{snippets}/user/login/http-response.adoc[]
+==== Response body
+include::{snippets}/user/login/response-body.adoc[]

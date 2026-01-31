@@ -1,0 +1,39 @@
+micronaut:
+  server:
+    port: 8293
+  application:
+    name: posb-service
+
+mongodb:
+  uri: mongodb://root:password123@localhost:27017/ice-cash-local?authSource=admin
+  options:
+    maxConnectionIdleTime: 10000
+    readConcern: majority
+
+kafka:
+  bootstrap:
+    servers: 127.0.0.1:29092
+
+jackson:
+  serialization-inclusion: ALWAYS
+
+kafka.prefix: local
+ice:
+  cash:
+    kafka:
+      group: ${kafka.prefix}.posb-service
+      client: posb-kafka-client
+      retry-delay: 50ms
+      retry-count: 2
+      request-topic: ${kafka.prefix}.payment.zim.PosbServiceTopic
+      response-topic: ${kafka.prefix}.payment.zim.ResultTopic
+      error-topic: ${kafka.prefix}.payment.zim.ErrorTopic
+    posb:
+      api-key: PWSBMy9qFPl1ZkNxiTitwRY7ul0tH8hYBbb7s2lG1XbSknHvVxYudb6aX7h57TlAEPyPl46HrUR8mOV3cBHDYoptESbyneCXQtSaJZieEbero27lRrLKWYPFUOXlZHrdy0cvQRZwB4UghzYhSKH0TIls2d8B6NBkcE1hv31liBaezBHYZyCDBOxS8zRyYwn1d0RchD2fUhAq5C4Bo8Hl71uCM9N6DeOwIzmfZdvrYZ5UlhwxDcnib3qOEXjMA1j7tmQmeYGCfm5xGpDvmGlsryIkUIcIrEmuDufLAd898583pWx9zz2XgAphfVtNRZg0XQhOtUwUn0Eh4SBppBnseAgwFQ6npKnPBj4iqNk28aSvYLNa3kBYHlClr0JTdEXPN2Nmq2oOfNw6SD7EqdeLmUXByKzjlaLUab9guxk1Nt7ZTCB04eQplPKrK0EGtw955th80B6ADmbbUPGBQEbFw1cqafIqXx1XTd0P88wp7QmHV2ibOqSq9Anl6dtYIXm2
+#      host: http://10.50.30.248:6001
+#      host: http://172.16.53.130:6500
+      host: http://localhost:8293/posb
+      instruction-url: /api/v1/payment/instruction
+      confirmation-url: /api/v1/payment/confirmition
+      status-url: /api/v1/payment/status/{paymentReference}
+      reversal-url: /api/v1/payment/reversal

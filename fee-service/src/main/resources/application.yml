@@ -1,0 +1,65 @@
+server:
+  port: 8283
+  shutdown: graceful
+management:
+  endpoint:
+    health:
+      show-details: always
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+spring:
+  lifecycle:
+    timeout-per-shutdown-phase: 1m
+  devtools:
+    livereload:
+      enabled: false
+ice:
+  cash:
+    group-api: https://group-api-test.icecash.mobi/
+    group-api-date-format: yyyyMMddHHmmss
+    fee:
+      group: ${kafka.prefix}.fee-service
+      limits:
+        enabled: true
+        overrides-enabled: true
+    zim-switch:
+      group: ${kafka.prefix}.zim-switch-service
+
+
+# Config
+#cash.ice.date-format=yyyy-MM-dd'T'HH:mmXX
+#cash.ice.group-api-date-format=yyyyMMddHHmmss
+#cash.ice.group-api=https://group-api-test.icecash.mobi/
+
+# MySQL cluster (HAProxy)
+#emali11 -- not sure when the password changed
+
+# MSSQL db
+#app.mssql.datasource.url=jdbc:sqlserver://10.1.1.122:1433;databaseName=TEST_Concerto_Zim
+#app.mssql.datasource.username=Concerto
+#app.mssql.datasource.password=c0nc3rt0
+#app.mssql.datasource.driver-class-name=com.microsoft.sqlserver.jdbc.SQLServerDriver
+
+# Query debugging
+#spring.jpa.properties.hibernate.format_sql=true
+#logging.level.org.hibernate.SQL=DEBUG
+#logging.level.org.hibernate.type.descriptor.sql.BasicBinder=TRACE
+
+## Kafka Consumer
+#spring.kafka.consumer.bootstrap-servers=10.1.1.225:9092
+#spring.kafka.consumer.group-id=icecash_payments
+#spring.kafka.consumer.auto-offset-reset=earliest
+#spring.kafka.consumer.key-deserializer=org.apache.kafka.common.serialization.StringDeserializer
+#spring.kafka.consumer.value-deserializer=org.springframework.kafka.support.serializer.JsonDeserializer
+#spring.kafka.consumer.properties.spring.json.trusted.packages=*
+
+## Kafka Producer
+#spring.kafka.producer.bootstrap-servers=10.1.1.225:9092
+#spring.kafka.producer.key-serializer=org.apache.kafka.common.serialization.StringSerializer
+#spring.kafka.producer.value-serializer=org.springframework.kafka.support.serializer.JsonSerializer
+
+# Mongo db
+#spring.data.mongodb.request-collection=apiPaymentRequest
+#spring.data.mongodb.response-collection=apiPaymentResponse

@@ -1,0 +1,39 @@
+ice:
+  cash:
+    security:
+      trusted-issuers: http://localhost:8181/realms/payments-local, http://localhost:8181/realms/backoffice-local
+    keycloak:
+      entities:
+        auth-server-url: http://localhost:8181/
+        realm: payments-local
+        default-client-id: icecash
+        admin-client-id: admin-cli
+        admin-client-secret: fthNjF3dkIhEWO7qmtUSioWc2zduapeo
+      backoffice:
+        auth-server-url: http://localhost:8181/
+        realm: backoffice-local
+        default-client-id: icecash
+        admin-client-id: admin-cli
+        admin-client-secret: cgmskX1Ef65SCsaJjqPawFZ6OkraPOni
+    registration:
+      sms-pin: false
+      sms-pin-message: "PIN: %s"
+    pvv:
+      hex-cipher-key: 19680607195506111957020119810623
+---
+spring.config.activate.on-profile: dev-k8s, dev-mysql-k8s, uat-k8s, prod-k8s, icetech-k8s, dev-k8s-perf, dev-mysql-k8s-perf, uat-k8s-perf
+ice:
+  cash:
+    security:
+      trusted-issuers: ${auth.trusted-issuers}
+    keycloak:
+      entities:
+        auth-server-url: ${auth.keycloak.url}
+        realm: ${auth.keycloak.realm}
+        admin-client-id: ${auth.keycloak.admin.client-id}
+        admin-client-secret: ${auth.keycloak.admin.client-secret}
+      backoffice:
+        auth-server-url: ${auth.keycloak.url}
+        realm: ${auth.keycloak.backoffice.realm}
+        admin-client-id: ${auth.keycloak.backoffice.admin.client-id}
+        admin-client-secret: ${auth.keycloak.backoffice.admin.client-secret}

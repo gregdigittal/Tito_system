@@ -1,0 +1,41 @@
+server:
+  port: 8285
+  shutdown: graceful
+management:
+  endpoint:
+    health:
+      show-details: always
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+spring:
+  lifecycle:
+    timeout-per-shutdown-phase: 1m
+  devtools:
+    livereload:
+      enabled: false
+ice:
+  cash:
+    paygo:
+      url: https://api.paygo.co.zw/sandbox
+      qr64-url: /admin/public/qr64
+      prefix: 423
+      id-total-digits: 7
+      request-expiry-seconds: 240
+      group: ${kafka.prefix}.paygo-service
+      simulate-response:
+        "770000000": SUCCESS
+        "770000001": FAILED
+      admin:
+        header-name: X-Api-Key
+        header-value: aa567ce5-8220-42ae-bce1-cde0ed4f8f93
+        financial-institution-url: /admin/financial-institution
+        merchant-url: /admin/merchant
+        authorized-credential-url: /admin/authorised-credential
+        merchant-credentials-url: /admin/merchant-credentials
+        expiration-url:  /admin/action/expire
+        payment-status-url: /admin/query
+---
+spring.config.activate.on-profile: prod-k8s
+ice.cash.paygo.url: https://api.paygo.co.zw

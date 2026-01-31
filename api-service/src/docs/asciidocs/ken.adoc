@@ -1,0 +1,1382 @@
+= FNDS project API Guide
+Pavlo Slyvka<pavlo@ice.cash>
+v1.0, 2024-03-07
+:toc: right
+:toclevels: 4
+:sectnums:
+
+Api for Kenya FNDS project.
+
+[[user_api]]
+== User API
+
+[[user_registration]]
+=== User registration
+
+[[reg_flow]]
+==== Flow
+
+.+User registration flow:+
+[cols="1,4,5,4"]
+|===
+    ^.^|Step ^.^|User ^.^|Client ^.^|Server
+
+    |`+1+` |User requests reg form | |
+    |`+2+` | |Client shows reg form to user |
+    |`+3+` |User fills the form fields and clicks "Next" button | |
+    |`+4+` | |Client sends <<otp_msisdn, sendOtp>> request to server (providing mobile from reg form) and switches to "check OTP" page |
+    |`+5+` | | |Server sends OTP to users mobile
+    |`+6+` |User receives an OTP on their mobile phone, enters it and clicks the “Register” button | |
+    |`+7+` | |Client sends <<reg_documents, Upload document>> request for ID and Biometric files (separate calls, if provided by user, otherwise just skip this step) |
+    |`+8+` | | |Server saves the ID/Biometric documents and returns `"documenId"` for the uploaded document
+    |`+9+` | |Client sends <<reg_user, registerUserFNDS>> request with previously filled reg form data along with OTP (also set received "documentId" on previous step to `user.idUploadDocumentId` for uploaded ID file, and `user.biometricUploadDocumentId` for uploaded Biometric file) |
+    |`+10+` | | |Server checks OTP, validates the request and registers user in the system
+
+|===
+
+Sequence of calling GraphQL endpoints for registering a new user::
+    . <<otp_msisdn, sendOtp>> (otpType: FNDS_REG_USER)
+    . <<reg_documents, POST /ken/user/documents/upload>> (REST endpoint)
+    . <<reg_user, registerUserFNDS>>
+
+[[reg_documents]]
+==== Upload Registration Documents
+
+`POST` `/api/v1/ken/user/documents/upload` REST endpoint is used to upload registration documents. All documents required to register a new user such as National ID / Passport and Biometric must be uploaded before calling the actual registration endpoint. One call is required for each document. Endpoint returns `documentId` that is required for the user registration.
+
+NOTE: postman example:   "ICE Cash Payments > Mozambique > Kenya > Upload document"
+
+.+Request parameters:+
+|===
+    |Name|Type|Values|Required|Description
+
+    |`+file+` |`+File+` |file of any type |yes |Document file of any type
+    |`+documentType+` |`+String+` |ID +
+                                Biometric |yes |Document type <<document_types,see details>>
+
+|===
+
+.Request example:
+[source,http,options="nowrap"]
+----
+POST /api/v1/ken/user/documents/upload HTTP/1.1
+Content-Type: multipart/form-data; boundary=--------------------------310770539861385987558169
+
+----------------------------310770539861385987558169
+Content-Disposition: form-data; name="file"; filename="document1.txt"
+Content-Type: application/octet-stream
+
+content
+----------------------------310770539861385987558169
+Content-Disposition: form-data; name="documentType"
+ID
+----------------------------310770539861385987558169--
+
+----
+.Response example:
+[source,http,options="nowrap"]
+----
+HTTP/1.1 201 Created
+{
+    "status": "SUCCESS",
+    "documentId": 32
+}
+----
+
+[[reg_user]]
+==== Register new user
+`"*registerUserFNDS*"` `Mutation` creates a new FNDS user. The new user entity type depends on the `accountType` parameter, which is an enumeration, and currently the following values are possible:
+
+- `Farmer`
+- `AgriDealer`
+- `Agent`
+
+Also, the endpoint creates 2 accounts related to the entity: `"Primary"` and `"FNDS"`, both accounts bound to `KES` currency. Upon successful user registration, an SMS message with the “FNDS” account number and PIN password is sent to the Primary MSISDN.
+
+Account type also represents the security group of permission roles granted to the user. It is possible to assign several security groups to the same user.
+
+NOTE: postman example:   "ICE Cash Payments > Mozambique > Kenya > Register FNDS account"
+
+.+Parameters:+
+|===
+    |Name|Type|Values|Required|Description
+
+    |`+otp+` |`+String+` |valid OTP, (string consisting of 4-14 digits) |yes |OTP sent on <<otp_msisdn, first step>> (with otpType: `FNDS_REG_USER`)
+    |`+user.accountType+` |`+Enum+` |Farmer +
+                                    AgriDealer +
+                                    Agent |yes |Account Type
+    |`+user.firstName+` |`+String+` |any string |yes |User First Name
+    |`+user.lastName+` |`+String+` |any string |yes |User Last Name
+    |`+user.idType+` |`+Enum+` |NationalID +
+                                Passport |yes |ID type
+    |`+user.idNumber+` |`+String+` |any unique string |yes |ID number (ID number + ID type must be unique)
+    |`+user.mobile+` |`+String+` |valid unique mobile |yes |Primary mobile number (MSISDN)
+    |`+user.idUploadDocumentId+` |`+Integer+` |valid Document ID | |Document ID of the NationalID or Passport document uploaded on <<reg_documents, previous step>>
+    |`+user.biometricUploadDocumentId+` |`+Integer+` |valid Document ID | |Document ID of the Biometric document uploaded on <<reg_documents, previous step>>
+    |`+user.email+` |`+String+` |valid unique email | |Optional E-mail
+    |`+user.pin+` |`+String+` |string consisting of 4 digits | |Optional PIN Password (if absent, will be generated by server)
+    |`+user.locale+` |`+String+` |en (default) +
+                                  pt | |Optional User Language
+    |`+removeDocumentsOnFail+` |`+Boolean+` |true +
+                                             false (default) |yes |Whether remove previously uploaded documents if user registration fails or not
+
+|===
+
+.Request example:
+[source,graphql,options="nowrap"]
+----
+mutation {
+    registerUserFNDS(
+        otp: "2060",
+        user: {
+            accountType: Farmer,
+            firstName: "fndsFirstName1",
+            lastName: "fndsLastName1",
+            idType: NationalID,
+            idNumber: "11234567890",
+            mobile: "000000000000",
+            idUploadDocumentId: 32,
+            biometricUploadDocumentId: 33,
+        }
+    ) {
+        id
+        entityType {
+            description
+        }
+        firstName
+        lastName
+        idType {
+            description
+        }
+        idNumber
+        msisdn {
+            msisdn
+        }
+        email
+        fndsKesAccountBalance
+        accounts {
+            id
+            accountNumber
+            accountType {
+                name
+                currencyId
+            }
+            balance
+            createdDate
+        }
+        relationships {
+            partnerAccountId
+            securityGroups
+            securityGroupMoz {
+                id
+                name
+                active
+                rightsList
+            }
+        }
+        status
+        loginStatus
+        locale
+        createdDate
+    }
+}
+
+----
+.Response example:
+[source,json,options="nowrap"]
+----
+{
+    "data": {
+        "registerUserFNDS": {
+            "id": "1030",
+            "entityType": {
+                "description": "FNDS Farmer"
+            },
+            "firstName": "fndsFirstName1",
+            "lastName": "fndsLastName1",
+            "idType": {
+                "description": "Kenya National ID"
+            },
+            "idNumber": "11234567890",
+            "msisdn": [
+                {
+                    "msisdn": "000000000000"
+                }
+            ],
+            "email": null,
+            "fndsKesAccountBalance": 0.0,
+            "accounts": [
+                {
+                    "id": "2654",
+                    "accountNumber": "38122974439",
+                    "accountType": {
+                        "name": "Primary",
+                        "currencyId": "5"
+                    },
+                    "balance": 0.0,
+                    "createdDate": "2024-03-12 03:28:39"
+                },
+                {
+                    "id": "2655",
+                    "accountNumber": "38849676804",
+                    "accountType": {
+                        "name": "FNDS",
+                        "currencyId": "5"
+                    },
+                    "balance": 0.0,
+                    "createdDate": "2024-03-12 03:28:39"
+                }
+            ],
+            "relationships": [
+                {
+                    "partnerAccountId": "2654",
+                    "securityGroups": {
+                        "FNDS": [
+                            2001
+                        ]
+                    },
+                    "securityGroupMoz": []
+                },
+                {
+                    "partnerAccountId": "2655",
+                    "securityGroups": {
+                        "FNDS": [
+                            2001
+                        ]
+                    },
+                    "securityGroupMoz": []
+                }
+            ],
+            "status": "ACTIVE",
+            "loginStatus": "ACTIVE",
+            "locale": "en",
+            "createdDate": "2024-03-12 03:28:38"
+        }
+    }
+}
+----
+
+[[reg_documents_download]]
+=== Download Registration Document
+
+`GET` `/api/v1/ken/user/{entityId}/documents/{documentType}/download` REST endpoint is used to download registration a document content for a specific user (identified by {entityId} path variable) and document type (identified by {documentType} path variable). One call is required for each document to download.
+
+Possible values for {documentType} path variable might be obtained by <<document_types, documentTypes>> Query, but currently the following values are available:
+
+- ID
+- Biometric
+
+NOTE: postman example:   "ICE Cash Payments > Mozambique > Kenya > Download document"
+
+.Request example:
+[source,http,options="nowrap"]
+----
+GET /api/v1/ken/user/1026/documents/ID/download HTTP/1.1
+
+----
+.Response example:
+[source,http,options="nowrap"]
+----
+HTTP/1.1 200 OK
+
+ID document content or biometric binary data
+----
+
+
+[[user_details]]
+=== Get User Details
+
+`"*userFNDS*"` `Query` returns details of current user.
+
+IMPORTANT: Endpoint requires access token of any account type.
+
+NOTE: postman example:   "ICE Cash Payments > Mozambique > Kenya > GET user details"
+
+.Request example:
+[source,graphql,options="nowrap"]
+----
+query {
+    userFNDS {
+        id
+        entityType {
+            description
+        }
+        firstName
+        lastName
+        idType {
+            description
+        }
+        idNumber
+        msisdn {
+            msisdn
+        }
+        email
+        fndsKesAccountBalance
+        accounts {
+            id
+            accountNumber
+            accountType {
+                name
+                currencyId
+            }
+            balance
+            createdDate
+        }
+        relationships {
+            partnerAccountId
+            securityGroups
+            securityGroupMoz {
+                id
+                name
+                active
+                rightsList
+            }
+        }
+        status
+        loginStatus
+        locale
+        createdDate
+    }
+}
+
+----
+.Response example:
+[source,json,options="nowrap"]
+----
+{
+    "data": {
+        "userFNDS": {
+            "id": "1030",
+            "entityType": {
+                "description": "FNDS Farmer"
+            },
+            "firstName": "fndsFirstName1",
+            "lastName": "fndsLastName1",
+            "idType": {
+                "description": "Kenya National ID"
+            },
+            "idNumber": "11234567890",
+            "msisdn": [
+                {
+                    "msisdn": "000000000000"
+                }
+            ],
+            "email": null,
+            "fndsKesAccountBalance": 0.0,
+            "accounts": [
+                {
+                    "id": "2654",
+                    "accountNumber": "38122974439",
+                    "accountType": {
+                        "name": "Primary",
+                        "currencyId": "5"
+                    },
+                    "balance": 0.0,
+                    "createdDate": "2024-03-12 03:28:39"
+                },
+                {
+                    "id": "2655",
+                    "accountNumber": "38849676804",
+                    "accountType": {
+                        "name": "FNDS",
+                        "currencyId": "5"
+                    },
+                    "balance": 0.0,
+                    "createdDate": "2024-03-12 03:28:39"
+                }
+            ],
+            "relationships": [
+                {
+                    "partnerAccountId": "2654",
+                    "securityGroups": {
+                        "FNDS": [
+                            2001
+                        ]
+                    },
+                    "securityGroupMoz": []
+                },
+                {
+                    "partnerAccountId": "2655",
+                    "securityGroups": {
+                        "FNDS": [
+                            2001
+                        ]
+                    },
+                    "securityGroupMoz": []
+                }
+            ],
+            "status": "ACTIVE",
+            "loginStatus": "ACTIVE",
+            "locale": "en",
+            "createdDate": "2024-03-12 03:28:39"
+        }
+    }
+}
+----
+
+
+=== Entities Search
+`"*entitiesSearchFNDS*"` `Query` searches for entities based on certain criteria.
+
+NOTE: postman example:   "ICE Cash Payments > Mozambique > Kenya > Entities search"
+
+.+Parameters:+
+|===
+    |Name|Type|Values|Required|Description
+
+    |`+accountType+` |`+Enum+` |Farmer +
+                                    AgriDealer +
+                                    Agent |yes |Account Type filter
+    |`+idType+` |`+Enum+` |NationalID +
+                                Passport | |ID type filter
+    |`+idNumber+` |`+String+` |any unique string | |ID number filter (uses 'idnum*' mask, so for example the value '123' will match both ID numbers '1234' and '1239').
+    |`+mobile+` |`+String+` |valid unique mobile | |Mobile number (MSISDN) filter
+
+    |`+page+` |`+Integer+` |Valid number, by defult = 0 | |Page number
+    |`+size+` |`+Integer+` |Valid number, by defult = 30 | |Page size
+    |`+sort+` |`+SortInput+` |One of: +
+                                "asc": array of fields +
+                                "desc": array of fields +
+                                "by": array of SortProperty | |If specified, performs results sorting by certain criteria
+
+|===
+
+.Request example:
+[source,graphql,options="nowrap"]
+----
+query {
+    entitiesSearchFNDS(
+        accountType: Farmer
+        idType: NationalID
+        idNumber: "11234"
+        mobile: "000000000000"
+    ) {
+        total
+        content {
+            id
+            fndsKesAccountBalance
+            entityType {
+                description
+            }
+            firstName
+            lastName
+            idType {
+                description
+            }
+            idNumber
+            msisdn {
+                msisdn
+            }
+            status
+        }
+    }
+}
+----
+.Request example (paging):
+[source,graphql,options="nowrap"]
+----
+query {
+    entitiesSearchFNDS(
+        accountType: Farmer
+        idType: NationalID
+        idNumber: "11234"
+        mobile: "000000000000"
+        page: 0
+        size: 30
+        sort: {asc: "firstName"}
+    ) {
+        total
+        content {
+            id
+            fndsKesAccountBalance
+            entityType {
+                description
+            }
+            firstName
+            lastName
+            idType {
+                description
+            }
+            idNumber
+            msisdn {
+                msisdn
+            }
+            status
+        }
+    }
+}
+----
+.Response example:
+[source,json,options="nowrap"]
+----
+{
+    "data": {
+        "entitiesSearchFNDS": {
+            "total": 2,
+            "content": [
+                {
+                    "id": "1030",
+                    "fndsKesAccountBalance": 0.0,
+                    "entityType": {
+                        "description": "FNDS Farmer"
+                    },
+                    "firstName": "fndsFirstName1",
+                    "lastName": "fndsLastName1",
+                    "idType": {
+                        "description": "Kenya National ID"
+                    },
+                    "idNumber": "11234567890",
+                    "msisdn": [
+                        {
+                            "msisdn": "000000000000"
+                        }
+                    ],
+                    "status": "ACTIVE"
+                },
+                {
+                    "id": "1031",
+                    "fndsKesAccountBalance": 0.0,
+                    "entityType": {
+                        "description": "FNDS Farmer"
+                    },
+                    "firstName": "fndsFirstName2",
+                    "lastName": "fndsLastName2",
+                    "idType": {
+                        "description": "Kenya National ID"
+                    },
+                    "idNumber": "11234444",
+                    "msisdn": [
+                        {
+                            "msisdn": "000000000000"
+                        }
+                    ],
+                    "status": "ACTIVE"
+                }
+            ]
+        }
+    }
+}
+----
+
+
+[[auth]]
+== Authentication API
+
+=== Login User
+`"*loginUserFNDS*"` `Mutation` logs user in and returns access token. Login status of entity must be in `"ACTIVE"` status
+
+NOTE: postman example:   "ICE Cash Payments > Mozambique > Kenya > Login"
+
+.+Parameters:+
+|===
+    |Name|Type|Values|Required|Description
+
+    |`+request.username+` |`+String+` |valid Account number, +
+                                       or valid ID number |yes |Username
+    |`+request.password+` |`+String+` |string consisting of 4 digits |yes |Password
+
+|===
+
+.Request example (login by account number):
+[source,graphql,options="nowrap"]
+----
+mutation {
+    loginUserFNDS(request: {
+        username: "35298550332"
+        password: "1234"
+    }) {
+        status
+        mfaType
+        locale
+        accessToken {
+            tokenType
+            token
+            expiresIn
+            refreshToken
+            refreshExpiresIn
+            error
+            errorDescription
+        }
+    }
+}
+
+----
+.Response example:
+[source,json,options="nowrap"]
+----
+{
+    "data": {
+        "loginUserFNDS": {
+            "status": "SUCCESS",
+            "mfaType": null,
+            "locale": "en",
+            "accessToken": {
+                "tokenType": "Bearer",
+                "token": "eyJhbGciOiJSUzI1NiIsInR5cCIgOiAiSldUIiwia2lkIiA6ICJPVGt3cnZHdkx2aF8ybVhXTW93MW94czctYVAtY2JOaXZoZElseWZ3aG5ZIn0.eyJleHAiOjE3MDE3NTI3MzgsImlhdCI6MTcwMTc0OTEzOCwianRpIjoiOGIwMjkxN2QtY2UyOC00MWZiLTgxMWUtNDllNjk1MTVhMDQwIiwiaXNzIjoiaHR0cDovL2xvY2FsaG9zdDo4MTgwL2F1dGgvcmVhbG1zL3BheW1lbnRzLWxvY2FsIiwiYXVkIjoiYWNjb3VudCIsInN1YiI6IjBiOWMzYjc1LWI5MmQtNDg0Ny05Y2VhLWZkZTU0ZTIwMDRlOCIsInR5cCI6IkJlYXJlciIsImF6cCI6ImljZWNhc2giLCJzZXNzaW9uX3N0YXRlIjoiMDI2ZmIxNDEtM2UxZS00NGYxLTlkN2EtMjczZDY0OTA3ZGViIiwiYWNyIjoiMSIsImFsbG93ZWQtb3JpZ2lucyI6WyJodHRwOi8vbG9jYWxob3N0OjgyODEiXSwicmVhbG1fYWNjZXNzIjp7InJvbGVzIjpbIlBBWU1FTlQiLCJvZmZsaW5lX2FjY2VzcyIsInVtYV9hdXRob3JpemF0aW9uIiwiZGVmYXVsdC1yb2xlcy1wYXltZW50cy1sb2NhbCJdfSwicmVzb3VyY2VfYWNjZXNzIjp7ImFjY291bnQiOnsicm9sZXMiOlsibWFuYWdlLWFjY291bnQiLCJtYW5hZ2UtYWNjb3VudC1saW5rcyIsInZpZXctcHJvZmlsZSJdfX0sInNjb3BlIjoiZW1haWwgcHJvZmlsZSIsInNpZCI6IjAyNmZiMTQxLTNlMWUtNDRmMS05ZDdhLTI3M2Q2NDkwN2RlYiIsImVtYWlsX3ZlcmlmaWVkIjpmYWxzZSwibmFtZSI6IlBhdmxvIFNseXZrYSIsInByZWZlcnJlZF91c2VybmFtZSI6ImVudGl0eV8zMDAwMDA1MyIsImdpdmVuX25hbWUiOiJQYXZsbyIsImZhbWlseV9uYW1lIjoiU2x5dmthIiwiZW1haWwiOiJwYXZsb0BpY2UuY2FzaCJ9.DCuFE3jalhNITePVmJYSO8RPac0aReM_UxyBw5gNSQv4lMDaq9EU1J5MZM4F8B7cCbzepRxCmfeJN1i4s8x_wLEDWFL14fdEua1kiSo9GuFKiTThccrFhFGp6tHRs9Lb4Doj6Jre5m7pyfZeQyi_6SQ0Rd4dcOy5CRWaO1qTAMoW3yqDzaqy1v2tiPO8IRNe99FJSphsg3YVKmIw0svnXv5b-zVSLiMS5Ie58ACEAd6QmRf_M8HMpqqMk07SYeRc6OX_KAVt4MlKSwCdvw0Qhk4SnqYE3vk_A_SsK3NEEoj0vmekwvFpjYZIXNTdfOxHGPcZrDjy8oERLHd1ryI3Pw",
+                "expiresIn": 3600,
+                "refreshToken": "eyJhbGciOiJIUzI1NiIsInR5cCIgOiAiSldUIiwia2lkIiA6ICIxOTlhNWE0Yi1kMzdjLTQ5ZTMtOWJkZS03MDExMDQxNWE4MTAifQ.eyJleHAiOjE3MDE3NTA5MzgsImlhdCI6MTcwMTc0OTEzOCwianRpIjoiYjEwYTRiZjItYzU1Mi00MGNmLWFhYjgtMmFmZmYyM2M2YzcxIiwiaXNzIjoiaHR0cDovL2xvY2FsaG9zdDo4MTgwL2F1dGgvcmVhbG1zL3BheW1lbnRzLWxvY2FsIiwiYXVkIjoiaHR0cDovL2xvY2FsaG9zdDo4MTgwL2F1dGgvcmVhbG1zL3BheW1lbnRzLWxvY2FsIiwic3ViIjoiMGI5YzNiNzUtYjkyZC00ODQ3LTljZWEtZmRlNTRlMjAwNGU4IiwidHlwIjoiUmVmcmVzaCIsImF6cCI6ImljZWNhc2giLCJzZXNzaW9uX3N0YXRlIjoiMDI2ZmIxNDEtM2UxZS00NGYxLTlkN2EtMjczZDY0OTA3ZGViIiwic2NvcGUiOiJlbWFpbCBwcm9maWxlIiwic2lkIjoiMDI2ZmIxNDEtM2UxZS00NGYxLTlkN2EtMjczZDY0OTA3ZGViIn0.lI8jwGHosuuy-RvQjZFZZGnC8gsYKgreNYCoEZBfc5g",
+                "refreshExpiresIn": 1800,
+                "error": null,
+                "errorDescription": null
+            }
+        }
+    }
+}
+----
+
+=== Refresh Access Token
+`"*refreshAccessToken*"` `Mutation` refreshes expired access token. It is preferred way of updating stale access token. The refresh token is usually supplied along with the access token as the `"refreshToken"` parameter and has longer time to live.
+
+NOTE: postman example:   "ICE Cash Payments > Mozambique > Refresh access token"
+
+.+Parameters:+
+|===
+    |Name|Type|Values|Required|Description
+
+    |`+refreshToken+` |`+String+` |valid refresh token |yes |Refresh token
+
+|===
+
+.Request example (login by account number):
+[source,graphql,options="nowrap"]
+----
+mutation {
+    refreshAccessToken(refreshToken: "eyJhbGciOiJIUzI1NiIsInR5cCIgOiAiSldUIiwia2lkIiA6ICJiNDdmZjZhMy1kNWYwLTRiNmQtYTlkMS0wNTIzMDg1OTAwZTUifQ.eyJleHAiOjE2NzUyNzczMDEsImlhdCI6MTY3NTI3MzcwMSwianRpIjoiNzY0OTkwODgtOTNkMC00MzQ0LWFjMzQtMDFjNjkxYjQ2ZDM1IiwiaXNzIjoiaHR0cDovL2xvY2FsaG9zdDo4MTgwL2F1dGgvcmVhbG1zL3BheW1lbnRzLWxvY2FsIiwiYXVkIjoiaHR0cDovL2xvY2FsaG9zdDo4MTgwL2F1dGgvcmVhbG1zL3BheW1lbnRzLWxvY2FsIiwic3ViIjoiZmJhNzg0ODctN2MwMy00ZWM4LTkwOGEtN2Y3NmFkMzE2NjU2IiwidHlwIjoiUmVmcmVzaCIsImF6cCI6ImljZWNhc2giLCJzZXNzaW9uX3N0YXRlIjoiMDFiNWJiZjgtNjFiYS00ZGNhLThjZTUtZjkyMGE5ZGE0YTQyIiwic2NvcGUiOiJlbWFpbCBwcm9maWxlIiwic2lkIjoiMDFiNWJiZjgtNjFiYS00ZGNhLThjZTUtZjkyMGE5ZGE0YTQyIn0.t5r41BPtO0tbHAq8cwh8zCO--ZsJ4nz3iSvqmiimxXU") {
+        status
+        mfaType
+        accessToken {
+            tokenType
+            token
+            expiresIn
+            refreshToken
+            refreshExpiresIn
+            error
+            errorDescription
+        }
+    }
+}
+
+----
+.Response example:
+[source,json,options="nowrap"]
+----
+{
+    "data": {
+        "refreshAccessToken": {
+            "status": "SUCCESS",
+            "mfaType": null,
+            "accessToken": {
+                "tokenType": "Bearer",
+                "token": "eyJhbGciOiJSUzI1NiIsInR5cCIgOiAiSldUIiwia2lkIiA6ICJPVGt3cnZHdkx2aF8ybVhXTW93MW94czctYVAtY2JOaXZoZElseWZ3aG5ZIn0.eyJleHAiOjE3MDE3NTMxODksImlhdCI6MTcwMTc0OTU4OSwianRpIjoiYzhlZjgxY2EtOTJkZS00NmZmLTk1N2YtMzk5ZDU1NjEyYjg3IiwiaXNzIjoiaHR0cDovL2xvY2FsaG9zdDo4MTgwL2F1dGgvcmVhbG1zL3BheW1lbnRzLWxvY2FsIiwiYXVkIjoiYWNjb3VudCIsInN1YiI6IjBiOWMzYjc1LWI5MmQtNDg0Ny05Y2VhLWZkZTU0ZTIwMDRlOCIsInR5cCI6IkJlYXJlciIsImF6cCI6ImljZWNhc2giLCJzZXNzaW9uX3N0YXRlIjoiMDI2ZmIxNDEtM2UxZS00NGYxLTlkN2EtMjczZDY0OTA3ZGViIiwiYWNyIjoiMSIsImFsbG93ZWQtb3JpZ2lucyI6WyJodHRwOi8vbG9jYWxob3N0OjgyODEiXSwicmVhbG1fYWNjZXNzIjp7InJvbGVzIjpbIlBBWU1FTlQiLCJvZmZsaW5lX2FjY2VzcyIsInVtYV9hdXRob3JpemF0aW9uIiwiZGVmYXVsdC1yb2xlcy1wYXltZW50cy1sb2NhbCJdfSwicmVzb3VyY2VfYWNjZXNzIjp7ImFjY291bnQiOnsicm9sZXMiOlsibWFuYWdlLWFjY291bnQiLCJtYW5hZ2UtYWNjb3VudC1saW5rcyIsInZpZXctcHJvZmlsZSJdfX0sInNjb3BlIjoiZW1haWwgcHJvZmlsZSIsInNpZCI6IjAyNmZiMTQxLTNlMWUtNDRmMS05ZDdhLTI3M2Q2NDkwN2RlYiIsImVtYWlsX3ZlcmlmaWVkIjpmYWxzZSwibmFtZSI6IlBhdmxvIFNseXZrYSIsInByZWZlcnJlZF91c2VybmFtZSI6ImVudGl0eV8zMDAwMDA1MyIsImdpdmVuX25hbWUiOiJQYXZsbyIsImZhbWlseV9uYW1lIjoiU2x5dmthIiwiZW1haWwiOiJwYXZsb0BpY2UuY2FzaCJ9.KhqFGI-CwK8wbjMrLTwLo7-dEMLdngRNDwLlAZwZC1hKifSFw0vw3-j_L6q63m8r07vlIVFbgCMPk9flf77ILSy8RnWHHHq5lfAkyOeyOblb7NtVz9AUuzbHl9NGTq4N3oXIwslUM4eOXj-5xf5d1pomJxqZFdxnMDKLMzAu6Y6UylBNd81EVH4g_HR2ySlPVGKFBjes64_Cgq9f4q4bjEE2uRsfb0Kh9rSHlZyPWMfS3ldFQ7KOKpWyyn-NEDjhWIYjkLEXGx2zhazpSdhPd6quxWPEOQ2pIlEWoiqBgolH7EGYzLumwZVFP5dDX9YtjlSTHkmlIf97a537a3A-zA",
+                "expiresIn": 3600,
+                "refreshToken": "eyJhbGciOiJIUzI1NiIsInR5cCIgOiAiSldUIiwia2lkIiA6ICIxOTlhNWE0Yi1kMzdjLTQ5ZTMtOWJkZS03MDExMDQxNWE4MTAifQ.eyJleHAiOjE3MDE3NTEzODksImlhdCI6MTcwMTc0OTU4OSwianRpIjoiOTI2NzYwOWMtYWY2NS00NzI3LWI1NmMtNTU4NjIwNjc5MjE5IiwiaXNzIjoiaHR0cDovL2xvY2FsaG9zdDo4MTgwL2F1dGgvcmVhbG1zL3BheW1lbnRzLWxvY2FsIiwiYXVkIjoiaHR0cDovL2xvY2FsaG9zdDo4MTgwL2F1dGgvcmVhbG1zL3BheW1lbnRzLWxvY2FsIiwic3ViIjoiMGI5YzNiNzUtYjkyZC00ODQ3LTljZWEtZmRlNTRlMjAwNGU4IiwidHlwIjoiUmVmcmVzaCIsImF6cCI6ImljZWNhc2giLCJzZXNzaW9uX3N0YXRlIjoiMDI2ZmIxNDEtM2UxZS00NGYxLTlkN2EtMjczZDY0OTA3ZGViIiwic2NvcGUiOiJlbWFpbCBwcm9maWxlIiwic2lkIjoiMDI2ZmIxNDEtM2UxZS00NGYxLTlkN2EtMjczZDY0OTA3ZGViIn0.QfsCzXXL3brY1Vu1oq3N8IYL1hYpWWCRvPDwXCXMPAk",
+                "refreshExpiresIn": 1800,
+                "error": null,
+                "errorDescription": null
+            }
+        }
+    }
+}
+----
+
+=== Invalidate Refresh Token
+`"*invalidateRefreshToken*"` `Mutation` invalidates refresh token. Since access token is impossible to invalidate, invalidating refresh token is preferred way to log user out.
+
+NOTE: postman example:   "ICE Cash Payments > Mozambique > Invalidate refresh token"
+
+.+Parameters:+
+|===
+    |Name|Type|Values|Required|Description
+
+    |`+refreshToken+` |`+String+` |valid refresh token |yes |Refresh token
+
+|===
+
+.Request example (login by account number):
+[source,graphql,options="nowrap"]
+----
+mutation {
+    invalidateRefreshToken(refreshToken: "eyJhbGciOiJIUzI1NiIsInR5cCIgOiAiSldUIiwia2lkIiA6ICJiNDdmZjZhMy1kNWYwLTRiNmQtYTlkMS0wNTIzMDg1OTAwZTUifQ.eyJleHAiOjE2NzUyNzczMjksImlhdCI6MTY3NTI3MzcyOSwianRpIjoiZWEyZDQ0NWUtZTQ3NC00ZGE4LWE1YmMtNTM1NTFiNjdjMDYxIiwiaXNzIjoiaHR0cDovL2xvY2FsaG9zdDo4MTgwL2F1dGgvcmVhbG1zL3BheW1lbnRzLWxvY2FsIiwiYXVkIjoiaHR0cDovL2xvY2FsaG9zdDo4MTgwL2F1dGgvcmVhbG1zL3BheW1lbnRzLWxvY2FsIiwic3ViIjoiZmJhNzg0ODctN2MwMy00ZWM4LTkwOGEtN2Y3NmFkMzE2NjU2IiwidHlwIjoiUmVmcmVzaCIsImF6cCI6ImljZWNhc2giLCJzZXNzaW9uX3N0YXRlIjoiMDFiNWJiZjgtNjFiYS00ZGNhLThjZTUtZjkyMGE5ZGE0YTQyIiwic2NvcGUiOiJlbWFpbCBwcm9maWxlIiwic2lkIjoiMDFiNWJiZjgtNjFiYS00ZGNhLThjZTUtZjkyMGE5ZGE0YTQyIn0.8YYuL_Hjv9KnDOPlrgq45Ps_Bn5WxypBgVGRBsxgHLM") {
+        status
+        mfaType
+        accessToken {
+            tokenType
+            token
+            expiresIn
+            refreshToken
+            refreshExpiresIn
+            error
+            errorDescription
+        }
+    }
+}
+
+----
+.Response example:
+[source,json,options="nowrap"]
+----
+{
+    "data": {
+        "invalidateRefreshToken": {
+            "status": "SUCCESS",
+            "mfaType": null,
+            "accessToken": null
+        }
+    }
+}
+----
+
+
+== Device API
+
+Sequence of calling GraphQL endpoints for device registering and activating::
+. <<pos_register, registerDeviceMoz>>
+. <<pos_activate, POST /moz/me60/device/activate>> (REST endpoint)
+
+[[pos_register]]
+=== Register Device
+`"*registerDeviceMoz*"` `Mutation` registers POS device by serial number. If device with provided serial number already exists, ignores the call. Also, it generates and returns device code. New device is created with `INACTIVE` status, and is not linked to any account.
+
+NOTE: postman example:   "ICE Cash Payments > Mozambique > Kenya > Device Register"
+
+.+Parameters:+
+|===
+    |Name|Type|Values|Required|Description
+
+    |`+serialNumber+` |`+String+` |any string |yes |POS device serial number
+    |`+productNumber+` |`+String+` |any string | |Product number
+    |`+model+` |`+String+` |any string | |Model
+    |`+bootVersion+` |`+String+` |any string | |Boot Version
+    |`+cpuType+` |`+String+` |any string | |CPU Type
+    |`+rfidVersion+` |`+String+` |any string | |RFID Version
+    |`+osVersion+` |`+String+` |any string | |OS Version
+    |`+imei+` |`+String+` |any string | |IMEI
+    |`+imsi+` |`+String+` |any string | |IMSI
+
+|===
+
+.Request example:
+[source,graphql,options="nowrap"]
+----
+mutation {
+    registerDeviceMoz(request: {
+        serialNumber: "Q29900067375",
+        metaData: {
+            productNumber: "Q2G-CB7FBE5128",
+            model: "ME60",
+            bootVersion: "01.00_00_000020",
+            cpuType: "mdm9x07",
+            rfidVersion: "V1.1.0",
+            osVersion: "1.1.1.0_20220524",
+			imei: "test-imei",
+			imsi: "test-imsi"
+        },
+    })
+}
+
+----
+.Response example:
+[source,json,options="nowrap"]
+----
+{
+    "data": {
+        "registerDeviceMoz": "SGIG"
+    }
+}
+----
+
+[[pos_activate]]
+=== Activate Device
+`POST` `/moz/me60/device/activate` REST endpoint is used to activate device and link it to the AgriDealer FNDS account. Activating device must exist.
+
+NOTE: postman example:   "ICE Cash Payments > Mozambique > Kenya > Device activate (uat)"
+
+WARNING: This is UAT endpoint and must not be used in production code!
+
+.+Request parameters:+
+|===
+    |Name|Type|Values|Required|Description
+
+    |`+serialOrCode+` |`+String+` |any string |yes |Valid device serial number or code
+    |`+accountNumber+` |`+String+` |any string |yes |Valid FNDS account number of AgriDealer
+
+|===
+
+.Request example:
+[source,http,options="nowrap"]
+----
+POST /moz/me60/device/activate HTTP/1.1
+Content-Type: multipart/form-data; boundary=--------------------------310770539861385987558169
+
+----------------------------310770539861385987558169
+Content-Disposition: form-data; name="serialOrCode"
+MOKB
+----------------------------310770539861385987558169
+Content-Disposition: form-data; name="accountNumber"
+37304829155
+----------------------------310770539861385987558169--
+
+----
+.Response example:
+[source,http,options="nowrap"]
+----
+HTTP/1.1 200 OK
+{
+    "id": 232,
+    "code": "MOKB",
+    "serial": "test-serial7",
+    "status": "ACTIVE",
+    "accountId": 2663,
+    "vehicleId": null,
+    "meta": {
+        "imei": "test-imei",
+        "imsi": "test-imsi",
+        "model": "test-model",
+        "cpuType": "test-cpu",
+        "osVersion": "test-os",
+        "bootVersion": "test-boot",
+        "rfidVersion": "test-rfid",
+        "productNumber": "test-prod"
+    },
+    "createdDate": "2024-01-30T00:59:01",
+    "modifiedDate": "2024-01-30T00:59:01"
+}
+----
+
+
+== Products API
+
+[[device_products]]
+=== GET Device Products
+`"*deviceProductsFNDS*"` `Query` returns all products associated with a user to which a specific device is bound.
+
+NOTE: postman example:   "ICE Cash Payments > Mozambique > Kenya > GET Device Products"
+
+.+Parameters:+
+|===
+    |Name|Type|Values|Required|Description
+
+    |`+deviceSerialOrCode+` |`+String+` |any string |yes |Device serial number or code
+
+|===
+
+.Request example:
+[source,graphql,options="nowrap"]
+----
+query {
+    deviceProductsFNDS(deviceSerialOrCode: "FX2R") {
+        entityId
+        entity {
+            firstName
+        }
+        productId
+        product {
+            name
+        }
+        relationship
+        active
+        createdDate
+        modifiedDate
+    }
+}
+----
+.Response example:
+[source,json,options="nowrap"]
+----
+{
+    "data": {
+        "deviceProductsFNDS": [
+            {
+                "entityId": "1036",
+                "entity": {
+                    "firstName": "dealer1"
+                },
+                "productId": "1",
+                "product": {
+                    "name": "Demo Kit"
+                },
+                "relationship": "DealerStock",
+                "active": true,
+                "createdDate": "2024-03-20 14:25:02",
+                "modifiedDate": "2024-03-20 14:25:07"
+            }
+        ]
+    }
+}
+----
+
+[[add_product_entity]]
+=== Add Entity-Product Relationship
+`POST` `/ken/entity/product` REST endpoint is used to make relationship between entity and product.
+
+NOTE: postman example:   "ICE Cash Payments > Mozambique > Kenya > entity-product bind (uat)"
+
+WARNING: This is UAT endpoint and must not be used in production code!
+
+.+Request parameters:+
+|===
+    |Name|Type|Values|Required|Description
+
+    |`+entityId+` |`+Integer+` |valid entity ID |yes |Entity ID of Farmer or Agri Dealer Entity
+    |`+productId+` |`+Integer+` |valid product ID |yes |Product ID
+    |`+relationshipType+` |`+Enum+` |DealerStock +
+                                    AssignedProducts |yes |Relationship type
+    |`+active+` |`+Boolean+` |true +
+                            false |yes |Is relationship active or not
+
+|===
+
+.Request example:
+[source,http,options="nowrap"]
+----
+POST /ken/entity/product HTTP/1.1
+Content-Type: multipart/form-data; boundary=--------------------------310770539861385987558169
+
+----------------------------310770539861385987558169
+Content-Disposition: form-data; name="entityId"
+1036
+----------------------------310770539861385987558169
+Content-Disposition: form-data; name="productId"
+1
+----------------------------310770539861385987558169
+Content-Disposition: form-data; name="relationshipType"
+DealerStock
+----------------------------310770539861385987558169
+Content-Disposition: form-data; name="active"
+true
+----------------------------310770539861385987558169--
+
+----
+.Response example:
+[source,http,options="nowrap"]
+----
+HTTP/1.1 200 OK
+{
+    "id":6,
+    "entityId":1036,
+    "productId":1,
+    "relationshipType":"DealerStock",
+    "active":true,
+    "createdDate":"2024-03-20T18:18:57.4609933",
+    "modifiedDate":"2024-03-20T18:18:57.4609933"
+}
+----
+
+[[delete_product_entity]]
+=== Delete Entity-Product Relationship
+`DELETE` `/ken/entity/product` REST endpoint is used to delete relationship between entity and product.
+
+NOTE: postman example:   "ICE Cash Payments > Mozambique > Kenya > entity-product bind (uat)"
+
+WARNING: This is UAT endpoint and must not be used in production code!
+
+.+Request parameters:+
+|===
+    |Name|Type|Values|Required|Description
+
+    |`+entityId+` |`+Integer+` |valid entity ID |yes |Entity ID of Farmer or Agri Dealer Entity
+    |`+productId+` |`+Integer+` |valid product ID |yes |Product ID
+    |`+relationshipType+` |`+Enum+` |DealerStock +
+                                    AssignedProducts |yes |Relationship type
+
+|===
+
+.Request example:
+[source,http,options="nowrap"]
+----
+DELETE /ken/entity/product HTTP/1.1
+Content-Type: multipart/form-data; boundary=--------------------------310770539861385987558169
+
+----------------------------310770539861385987558169
+Content-Disposition: form-data; name="entityId"
+1036
+----------------------------310770539861385987558169
+Content-Disposition: form-data; name="productId"
+1
+----------------------------310770539861385987558169
+Content-Disposition: form-data; name="relationshipType"
+DealerStock
+----------------------------310770539861385987558169--
+
+----
+.Response example:
+[source,http,options="nowrap"]
+----
+HTTP/1.1 200 OK
+
+removed 1 relationships
+----
+
+
+[[payment]]
+== Payment API
+
+[[payment_topup]]
+=== Top up Account
+`POST` `/moz/account/topup` REST endpoint is used to top up account. Account must exist.
+
+NOTE: postman example:   "ICE Cash Payments > Mozambique > Kenya > Top up account (uat)"
+
+WARNING: This is UAT endpoint and must not be used in production code!
+
+.+Request parameters:+
+|===
+    |Name|Type|Values|Required|Description
+
+    |`+account+` |`+String+` |any string |yes |Valid account number
+    |`+amount+` |`+Float+` |positive float number |yes |Amount of money
+    |`+reference+` |`+String+` |any string |yes |Transaction description of the top up operation
+
+|===
+
+.Request example:
+[source,http,options="nowrap"]
+----
+POST /api/v1/moz/account/topup HTTP/1.1
+Content-Type: multipart/form-data; boundary=--------------------------310770539861385987558169
+
+----------------------------310770539861385987558169
+Content-Disposition: form-data; name="account"
+32134800351
+----------------------------310770539861385987558169
+Content-Disposition: form-data; name="amount"
+100000
+----------------------------310770539861385987558169--
+Content-Disposition: form-data; name="reference"
+Test deposit
+----------------------------310770539861385987558169--
+
+----
+.Response example:
+[source,http,options="nowrap"]
+----
+HTTP/1.1 200 OK
+----
+
+[[payment_make]]
+=== Make Single Payment
+
+`"*makePaymentFNDS*"` `Mutation` makes FNDS payment transaction. Usually such payment uses `"KIT"` transaction code, `"accountNumber"` initiator type and works only with `KES` currency.
+
+NOTE: `"vendorRef"` of the transaction must be unique, otherwise the payment call will be ignored and the result of the previous call with the same "vendorRef" will be returned.
+
+NOTE: postman example:   "ICE Cash Payments > Mozambique > Kenya > Payment"
+
+[[payment_params]]
+.+Parameters:+
+|===
+    |Name|Type|Values|Required|Description
+
+    |`+vendorRef+` |`+String+` |any unique string |yes |Unique identifier of the transaction
+    |`+tx+` |`+String+` |KIT |yes |Transaction code
+    |`+initiatorType+` |`+String+` |accountNumber |yes |Initiator type
+    |`+initiator+` |`+String+` |valid farmer account number |yes |Farmer account number which is need to be charged
+    |`+currency+` |`+String+` |KES |yes |Currency of the transaction
+    |`+amount+` |`+Float+` |valid number |yes |Amount that need to be charged
+    |`+metaData.deviceCode+` |`+String+` |valid device code |yes |Device code of the device that is linked to the Agri Dealer account that receives the money
+    |`+date+` |`+String+` |valid date and time | |Date and Time of the transaction
+
+|===
+
+.Request example:
+[source,graphql,options="nowrap"]
+----
+mutation {
+    makePaymentFNDS(paymentRequest: {
+        vendorRef: "test1",
+        tx: "KIT",
+        initiatorType: "accountNumber",
+        initiator: "32134800351"
+        currency: "KES",
+        amount: 10,
+        date: "2021-09-08 12:30:00",
+        metaData: {
+            deviceCode: "FX2R",
+            productId: 1
+        }
+    }) {
+        vendorRef
+        status
+        message
+        errorCode
+        transactionId
+    }
+}
+
+----
+.Response example:
+[source,json,options="nowrap"]
+----
+{
+    "data": {
+        "makePaymentFNDS": {
+            "vendorRef": "test1",
+            "status": "SUCCESS",
+            "message": "Transaction processed successfully",
+            "errorCode": null,
+            "transactionId": "79"
+        }
+    }
+}
+----
+
+[[payment_bulk_make]]
+=== Make Bulk Payment
+
+`"*makeBulkPaymentFNDS*"` `Mutation` makes several payments in one call. This endpoint always returns `"SUCCESS"` payment status. For all failed payments a new ticket is created which is then handled by the backoffice user manually.
+
+NOTE: `"vendorRef"` of all transactions must be unique, otherwise the payment with non-unique "vendorRef" will be ignored.
+
+NOTE: postman example:   "ICE Cash Payments > Mozambique > Kenya > Payment (bulk)"
+
+.+Parameters:+
+<<payment_params, see details>>
+
+.Request example:
+[source,graphql,options="nowrap"]
+----
+mutation {
+    makeBulkPaymentFNDS(payments: [
+    {
+        vendorRef: "test1",
+        tx: "KIT",
+        initiatorType: "accountNumber",
+        initiator: "32134800351"
+        currency: "KES",
+        amount: 1000,
+        date: "2021-09-08 12:30:00",
+        metaData: {
+            deviceCode: "FX2R",
+            productId: 1
+        }
+    },
+    {
+        vendorRef: "test2",
+        tx: "KIT",
+        initiatorType: "accountNumber",
+        initiator: "32134800351"
+        currency: "KES",
+        amount: 1000,
+        date: "2021-09-08 12:30:00",
+        metaData: {
+            deviceCode: "FX2R",
+            productId: 2
+        }
+    }
+    ]) {
+        vendorRef
+        status
+        message
+        errorCode
+        transactionId
+        balance
+    }
+}
+
+----
+.Response example:
+[source,json,options="nowrap"]
+----
+{
+    "data": {
+        "makeBulkPaymentFNDS": {
+            "vendorRef": null,
+            "status": "SUCCESS",
+            "message": "Transaction offload completed",
+            "errorCode": null,
+            "transactionId": null,
+            "balance": 199960.4
+        }
+    }
+}
+----
+
+
+[[helper_functions]]
+== Helper functions
+
+[[otp]]
+=== Send OTP
+
+Some endpoints require OTP before calling. OTP is generated and sent to real phone number (MSISDN), that is expected as a parameter to sending function, and is always assigned to otpType/MSISDN pair.
+
+[[otp_types]]
+.+Available OTP types:+
+|===
+    |OTP type |Preferable endpoint to send OTP |Required for endpoint
+
+    |`+FNDS_REG_USER+`          |sendOtp             |registerUserFNDS
+
+|===
+
+[discrete]
+=== OTP endpoints:
+
+[[otp_msisdn]]
+`"*sendOtp*"` `Mutation` sends OTP to MSISDN.
+
+NOTE: postman example:   "ICE Cash Payments > Mozambique > Send OTP (mobile)"
+
+.+Parameters:+
+|===
+    |Name|Type|Values|Required|Description
+
+    |`+otpType+`
+    |`+Enum+`
+    |<<otp_types,see details>>
+    |yes
+    |OTP type
+
+    |`+msisdn+`
+    |`+String+`
+    |valid mobile number
+    |yes
+    |Mobile phone (MSISDN) to send OTP by SMS to
+
+    |`+resend+`
+    |`+Boolean+`
+    |false (default) +
+     true
+    |
+    |false - generate and send new OTP +
+     true - resend existing OTP
+
+|===
+
+.Request example:
+[source,graphql,options="nowrap"]
+----
+mutation {
+    sendOtp(
+        otpType: FNDS_REG_USER,
+        msisdn: "000000000000"
+    )
+}
+----
+.Response example:
+[source,json,options="nowrap"]
+----
+{
+    "data": {
+        "sendOtp": "SUCCESS"
+    }
+}
+----
+
+NOTE: On testing environment you can use `"000000000000"` mobile number to skip sending OTP
+
+All OTPs have a lifetime, by default they are expired in 5 minutes after creation.
+
+Everytime when sending OTP function is called again for the same otpType/MSISDN pair, a new OTP is generated replacing the old one. In case if resending already generated OTP is required, you need to set `"resend"` parameter of any OTP sending function to `true`.
+
+.Request example:
+[source,graphql,options="nowrap"]
+----
+mutation {
+    sendOtp(
+        otpType: MOZ_MSISDN_UPDATE,
+        msisdn: "000000000000"
+        resend: true
+    )
+}
+----
+.Response example:
+[source,json,options="nowrap"]
+----
+{
+    "data": {
+        "sendOtp": "SUCCESS"
+    }
+}
+----
+
+NOTE: If no OTP is saved for otpType/MSISDN pair, calling a function with the __resend: true__ param produces an error.
+
+'''
+
+[[countries]]
+=== Get Countries
+
+`"*allCountries*"` `Query` returns all countries available to the project.
+
+NOTE: postman example:   "ICE Cash Payments > Mozambique > GET Countries"
+
+.Request example:
+[source,graphql,options="nowrap"]
+----
+query {
+    allCountries {
+        id
+        isoCode
+        name
+    }
+}
+----
+.Response example:
+[source,json,options="nowrap"]
+----
+{
+    "data": {
+        "allCountries": [
+            {
+                "id": "205",
+                "isoCode": "MOZ",
+                "name": "Mozambique"
+            },
+            {
+                "id": "206",
+                "isoCode": "KEN",
+                "name": "Kenya"
+            }
+        ]
+    }
+}
+----
+
+[[document_types]]
+=== Get Document Types
+
+`"*documentTypes*"` `Query` returns all document types for a specific country identified by `countryId`.
+
+NOTE: postman example:   "ICE Cash Payments > Mozambique > GET Document Types"
+
+.+Parameters:+
+|===
+    |Name|Type|Values|Required|Description
+
+    |`+countryId+`
+    |`+Integer+`
+    |Valid country ID value
+    |
+    |Country ID <<countries, see details>>
+
+|===
+
+.Request example:
+[source,graphql,options="nowrap"]
+----
+query {
+    documentTypes(countryId: 206) {
+        id
+        name
+    }
+}
+----
+.Response example:
+[source,json,options="nowrap"]
+----
+{
+    "data": {
+        "documentTypes": [
+            {
+                "id": "8",
+                "name": "ID"
+            },
+            {
+                "id": "9",
+                "name": "Biometric"
+            }
+        ]
+    }
+}
+----

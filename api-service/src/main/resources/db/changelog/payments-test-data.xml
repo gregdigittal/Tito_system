@@ -1,0 +1,897 @@
+<?xml version="1.1" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.1.xsd">
+
+    <changeSet author="Pavlo.Slyvka" id="currency-insert-test">
+        <sql>
+            INSERT INTO currency (id, ISO_Code) VALUES (1, 'ZWL');
+            INSERT INTO currency (id, ISO_Code) VALUES (2, 'USD');
+            INSERT INTO currency (id, ISO_Code) VALUES (3, 'ZAR');
+            INSERT INTO currency (id, ISO_Code) VALUES (4, 'MZN');
+            INSERT INTO currency (id, ISO_Code) VALUES (5, 'KES');
+        </sql>
+    </changeSet>
+    <changeSet author="Pavlo.Slyvka" id="channel-insert-test">
+        <sql>
+            INSERT INTO channel (id, code, language_key, description) VALUES (1, 'ADM', 'app.name.admin', 'Admin');
+            INSERT INTO channel (id, code, description) VALUES (2, 'API', 'API');
+            INSERT INTO channel (id, code, description) VALUES (3, 'APP', 'APP');
+            INSERT INTO channel (id, code, description) VALUES (4, 'CMA', 'Client Mobile App');
+            INSERT INTO channel (id, code, description) VALUES (5, 'EXT', 'External');
+            INSERT INTO channel (id, code, description) VALUES (6, 'GTW', 'Gateway');
+            INSERT INTO channel (id, code, description) VALUES (7, 'MNL', 'Manual');
+            INSERT INTO channel (id, code, description) VALUES (8, 'MOB', 'Mobile');
+            INSERT INTO channel (id, code, description) VALUES (9, 'OFF', 'Offline');
+            INSERT INTO channel (id, code, language_key, description) VALUES (10, 'ONL', 'app.name.online', 'Online');
+            INSERT INTO channel (id, code, description) VALUES (11, 'POS', 'POS');
+            INSERT INTO channel (id, code, description) VALUES (12, 'SMS', 'SMS');
+            INSERT INTO channel (id, code, description) VALUES (13, 'SRV', 'Server');
+            INSERT INTO channel (id, code, description) VALUES (14, 'SYS', 'System');
+            INSERT INTO channel (id, code, description) VALUES (15, 'USD', 'USSD');
+            INSERT INTO channel (id, code, description) VALUES (16, 'WAT', 'WhatsApp');
+            INSERT INTO channel (id, code, description) VALUES (17, 'WEB', 'Branch Site');
+        </sql>
+    </changeSet>
+    <changeSet author="Pavlo.Slyvka" id="entity_type_group-insert-test">
+        <sql>
+            INSERT INTO entity_type_group (id, description) VALUES (1, 'ICEcash');
+            INSERT INTO entity_type_group (id, description) VALUES (2, 'Individual');
+            INSERT INTO entity_type_group (id, description) VALUES (3, 'Business');
+        </sql>
+    </changeSet>
+    <changeSet author="Pavlo.Slyvka" id="entity_type-insert-test">
+        <sql>
+            INSERT INTO entity_type (id, description, entity_type_group_id) VALUES (1, 'Bank', 1);
+            INSERT INTO entity_type (id, description, entity_type_group_id) VALUES (2, 'Business', 3);
+            INSERT INTO entity_type (id, description, entity_type_group_id) VALUES (3, 'Card', 2);
+            INSERT INTO entity_type (id, description, entity_type_group_id) VALUES (4, 'Control', 1);
+            INSERT INTO entity_type (id, description, entity_type_group_id) VALUES (5, 'Farmer', 2);
+            INSERT INTO entity_type (id, description, entity_type_group_id) VALUES (6, 'ICEcash', 1);
+            INSERT INTO entity_type (id, description, entity_type_group_id) VALUES (7, 'Office', 1);
+            INSERT INTO entity_type (id, description, entity_type_group_id) VALUES (8, 'Personal', 2);
+            INSERT INTO entity_type (id, description, entity_type_group_id) VALUES (9, 'Prepaid', 2);
+            INSERT INTO entity_type (id, description, entity_type_group_id) VALUES (10, 'Private', 2);
+            INSERT INTO entity_type (id, description, entity_type_group_id) VALUES (11, 'Public Institution Accounts', 3);
+            INSERT INTO entity_type (id, description, entity_type_group_id) VALUES (12, 'Savings', 2);
+            INSERT INTO entity_type (id, description, entity_type_group_id) VALUES (13, 'Special Business Accounts', 3);
+            INSERT INTO entity_type (id, description, entity_type_group_id) VALUES (14, 'Vehicle', 2);
+            INSERT INTO entity_type (id, description, entity_type_group_id) VALUES (15, 'Vendor', 3);
+        </sql>
+    </changeSet>
+    <changeSet author="Pavlo.Slyvka" id="meta_data-insert-test">
+        <sql>
+            INSERT INTO meta_data (id, table_name, name, description) VALUES (1, 'entity', 'Company', 'Entity company');
+        </sql>
+    </changeSet>
+    <changeSet author="Pavlo.Slyvka" id="initiator_status-insert-test">
+        <sql>
+            INSERT INTO initiator_status (id, name, permit_transaction, active) VALUES (1, 'Active', true, true);
+            INSERT INTO initiator_status (id, name, permit_transaction, active) VALUES (2, 'Lost', false, true);
+            INSERT INTO initiator_status (id, name, permit_transaction, active) VALUES (3, 'Expired', false, true);
+            INSERT INTO initiator_status (id, name, permit_transaction, active) VALUES (4, 'Redeemed', false, true);
+            INSERT INTO initiator_status (id, name, permit_transaction, active) VALUES (5, 'Limited', true, false);
+        </sql>
+    </changeSet>
+    <changeSet author="Pavlo.Slyvka" id="initiator_category-insert-test">
+        <sql>
+            INSERT INTO initiator_category (id, category) VALUES (1, 'Zinara Card');
+            INSERT INTO initiator_category (id, category) VALUES (2, 'NRG Card');
+            INSERT INTO initiator_category (id, category) VALUES (3, 'Cross Border Voucher');
+            INSERT INTO initiator_category (id, category) VALUES (4, 'ICEcash Card');
+        </sql>
+    </changeSet>
+    <changeSet author="Pavlo.Slyvka" id="entity-insert-test">
+        <sql>
+            INSERT INTO entity (id, first_name, last_name, created_date, legacy_account_id, entity_type_id, pin_key, pvv, kyc_status_id, status) VALUES (1, 'ZimPark', null, '2020-10-22 12:20:33', 0, 15, '1', '1', 1, 'ACTIVE');
+            INSERT INTO entity (id, first_name, last_name, created_date, legacy_account_id, entity_type_id, pin_key, pvv, kyc_status_id, status) VALUES (4, 'FBC', null, '2020-10-22 12:20:33', 20000096, 1, '2', '2', 1, 'ACTIVE');
+            INSERT INTO entity (id, first_name, last_name, created_date, legacy_account_id, entity_type_id, pin_key, pvv, kyc_status_id, status) VALUES (7, 'Fee Income', null, '2020-10-30 08:47:00', 20000012, 6, '3', '3', 1, 'ACTIVE');
+            INSERT INTO entity (id, first_name, last_name, created_date, legacy_account_id, entity_type_id, pin_key, pvv, kyc_status_id, status) VALUES (10, 'IMT Control', null, '2020-10-30 08:47:00', 20001012, 4, '4', '4', 1, 'ACTIVE');
+            INSERT INTO entity (id, first_name, last_name, created_date, legacy_account_id, entity_type_id, pin_key, pvv, kyc_status_id, status) VALUES (13, 'VAT Control', null, '2020-10-30 08:47:00', 20001001, 4, '5', '5', 1, 'ACTIVE');
+            INSERT INTO entity (id, first_name, last_name, created_date, legacy_account_id, entity_type_id, pin_key, pvv, kyc_status_id, status) VALUES (16, 'Ecocash', null, '2020-12-07 13:49:00', 20000052, 15, '6', '6', 1, 'ACTIVE');
+            INSERT INTO entity (id, first_name, last_name, created_date, legacy_account_id, entity_type_id, pin_key, pvv, kyc_status_id, status) VALUES (19, 'Zimparks Control Account', null, '2020-12-07 13:49:00', 20424929, 15, '7', '7', 1, 'ACTIVE');
+            INSERT INTO entity (id, first_name, last_name, created_date, legacy_account_id, entity_type_id, pin_key, pvv, kyc_status_id, status) VALUES (22, 'Zimparks Revenue Account', null, '2020-12-07 13:49:00', 20424928, 15, '8', '8', 1, 'ACTIVE');
+            INSERT INTO entity (id, first_name, last_name, created_date, legacy_account_id, entity_type_id, pin_key, pvv, kyc_status_id, status) VALUES (25, 'SRTC Zimparks Revenue Account', null, '2020-12-07 13:49:00', 20424926, 15, '9', '9', 1, 'ACTIVE');
+            INSERT INTO entity (id, first_name, last_name, created_date, legacy_account_id, entity_type_id, pin_key, pvv, kyc_status_id, status) VALUES (28, 'Icecash  Pds Merchant Fee', null, '2020-12-07 13:49:00', 20423700, 15, '10', '10', 1, 'ACTIVE');
+            INSERT INTO entity (id, first_name, last_name, created_date, legacy_account_id, entity_type_id, pin_key, pvv, kyc_status_id, status) VALUES (31, 'SMS Sales (Gross) ', null, '2020-12-07 13:49:00', 20000016, 6, '11', '11', 1, 'ACTIVE');
+            INSERT INTO entity (id, first_name, last_name, created_date, legacy_account_id, entity_type_id, pin_key, pvv, kyc_status_id, status) VALUES (34, 'Card Processing Fee', null, '2020-12-07 13:49:00', 20000037, 6, '12', '12', 1, 'ACTIVE');
+            INSERT INTO entity (id, first_name, last_name, created_date, legacy_account_id, entity_type_id, pin_key, pvv, kyc_status_id, status) VALUES (37, 'CBZ Issuing Clearing Account ', null, '2020-12-07 13:49:00', 20000076, 1, '13', '13', 1, 'ACTIVE');
+            INSERT INTO entity (id, first_name, last_name, created_date, legacy_account_id, entity_type_id, pin_key, pvv, kyc_status_id, status) VALUES (40, 'OneMoney', null, '2020-12-07 13:49:00', 20000079, 1, '14', '14', 1, 'ACTIVE');
+            INSERT INTO entity (id, first_name, last_name, created_date, legacy_account_id, entity_type_id, pin_key, pvv, kyc_status_id, status) VALUES (43, 'EcoBank', null, '2020-12-07 13:49:00', 0, 1, '15', '15', 1, 'ACTIVE');
+        </sql>
+    </changeSet>
+    <changeSet author="Pavlo.Slyvka" id="initiator_type-insert-test">
+        <sql>
+            INSERT INTO initiator_type (id, description, active, entity_id) VALUES (1, 'cash', 1, null);
+            INSERT INTO initiator_type (id, description, active, entity_id) VALUES (2, 'icecash', 1, null);
+            INSERT INTO initiator_type (id, description, active, entity_id) VALUES (3, 'card', 1, 37);
+            INSERT INTO initiator_type (id, description, active, entity_id) VALUES (4, 'cardInternational', 1, 43);
+            INSERT INTO initiator_type (id, description, active, entity_id) VALUES (5, 'ecocash', 1, 16);
+            INSERT INTO initiator_type (id, description, active, entity_id) VALUES (6, 'netone', 1, 40);
+            INSERT INTO initiator_type (description, active) VALUES ('journal', true);
+        </sql>
+    </changeSet>
+    <changeSet author="Pavlo.Slyvka" id="account_type-insert-test">
+        <sql>
+            INSERT INTO account_type (id, currency_id, name, description, legacy_wallet_id, active) VALUES (1, 1, N'Primary', N'Primary Wallet', '1', true);
+            INSERT INTO account_type (id, currency_id, name, description, legacy_wallet_id, active) values (2, 1, N'Offline', N'US Dollars - Offline', '2', true);
+            INSERT INTO account_type (id, currency_id, name, description, legacy_wallet_id, active) values (3, 1, N'Primary Account - Frozen', N'Primary Wallet - Frozen', '3', true);
+            INSERT INTO account_type (id, currency_id, name, description, legacy_wallet_id, active) values (4, 3, N'Offline', N'SA Rands - Offline', '4', true);
+            INSERT INTO account_type (id, currency_id, name, description, legacy_wallet_id, active) VALUES (5, 1, N'Online Suspense', N'RTGS Dollars Suspense - Online', '5', true);
+            INSERT INTO account_type (id, currency_id, name, description, legacy_wallet_id, active) values (6, 1, N'Offline Suspense', N'US Dollars Suspense - Offline', '6', true);
+            INSERT INTO account_type (id, currency_id, name, description, legacy_wallet_id, active) values (7, 3, N'Online Suspense', N'SA Rands Suspense - Online', '7', true);
+            INSERT INTO account_type (id, currency_id, name, description, legacy_wallet_id, active) values (8, 3, N'Offline Suspense', N'SA Rands Suspense - Offline', '8', true);
+            INSERT INTO account_type (id, currency_id, name, description, legacy_wallet_id, active) values (9, 1, N'FAO 2012', N'US Dollars - FAO Farmer 2012', '9', true);
+            INSERT INTO account_type (id, currency_id, name, description, legacy_wallet_id, active) values (10, 1, N'FAO 2013', N'US Dollars - FAO Farmer 2013', '10', true);
+            INSERT INTO account_type (id, currency_id, name, description, legacy_wallet_id, active) values (11, 1, N'ZCC Reg Wallet', N'ZCC Reg Wallet', '11', true);
+            INSERT INTO account_type (id, currency_id, name, description, legacy_wallet_id, active) values (12, 1, N'ZCC Offline Reg Wallet', N'ZCC Offline Reg Wallet', '12', true);
+            INSERT INTO account_type (id, currency_id, name, description, legacy_wallet_id, active) values (13, 1, N'ZCBTA Reg Wallet', N'ZCBTA Reg Wallet', '13', true);
+            INSERT INTO account_type (id, currency_id, name, description, legacy_wallet_id, active) values (14, 1, N'BigGrape Loan', N'US Dollars BigGrape Loan Wallet', '14', true);
+            INSERT INTO account_type (id, currency_id, name, description, legacy_wallet_id, active) values (15, 1, N'BigGrape Loan OverDue', N'US Dollars BigGrape Loan OverDue Wallet', '15', true);
+            INSERT INTO account_type (id, currency_id, name, description, legacy_wallet_id, active) VALUES (58, 1, N'Commission Accrued Wallet', N'RTGS Dollars Commission Accrued Wallet', '58', true);
+            INSERT INTO account_type (currency_id, name, description, active) VALUES (2, 'Primary', 'Primary USD', true);
+        </sql>
+    </changeSet>
+    <changeSet author="Pavlo.Slyvka" id="account-insert-test">
+        <sql>
+            INSERT INTO account (id, entity_id, account_type_id, created_date, account_number, account_status) VALUES (1, 1, 1, '2020-10-30 08:53:00', '30000000010', 'ACTIVE');
+            INSERT INTO account (id, entity_id, account_type_id, created_date, account_number, account_status) VALUES (4, 4, 1, '2020-10-30 08:53:00', '30000000020', 'ACTIVE');
+            INSERT INTO account (id, entity_id, account_type_id, created_date, account_number, account_status) VALUES (7, 7, 1, '2020-10-30 08:53:00', '30000000030', 'ACTIVE');
+            INSERT INTO account (id, entity_id, account_type_id, created_date, account_number, account_status) VALUES (10, 10, 1, '2020-10-30 08:53:00', '30000000040', 'ACTIVE');
+            INSERT INTO account (id, entity_id, account_type_id, created_date, account_number, account_status) VALUES (13, 13, 1, '2020-10-30 08:53:00', '30000000050', 'ACTIVE');
+            INSERT INTO account (id, entity_id, account_type_id, created_date, account_number, account_status) VALUES (16, 16, 1, '2020-12-07 13:58:00', '30000000060', 'ACTIVE');
+            INSERT INTO account (id, entity_id, account_type_id, created_date, account_number, account_status) VALUES (17, 16, 58, '2020-12-07 13:58:00', '30000000061', 'ACTIVE');
+            INSERT INTO account (id, entity_id, account_type_id, created_date, account_number, account_status) VALUES (19, 19, 1, '2020-12-07 13:58:00', '30000000070', 'ACTIVE');
+            INSERT INTO account (id, entity_id, account_type_id, created_date, account_number, account_status) VALUES (22, 22, 1, '2020-12-07 13:58:00', '30000000080', 'ACTIVE');
+            INSERT INTO account (id, entity_id, account_type_id, created_date, account_number, account_status) VALUES (25, 25, 1, '2020-12-07 13:58:00', '30000000090', 'ACTIVE');
+            INSERT INTO account (id, entity_id, account_type_id, created_date, account_number, account_status) VALUES (28, 28, 1, '2020-12-07 13:58:00', '30000000100', 'ACTIVE');
+            INSERT INTO account (id, entity_id, account_type_id, created_date, account_number, account_status) VALUES (31, 31, 1, '2020-12-07 13:58:00', '30000000110', 'ACTIVE');
+            INSERT INTO account (id, entity_id, account_type_id, created_date, account_number, account_status) VALUES (34, 34, 1, '2020-12-07 13:58:00', '30000000120', 'ACTIVE');
+            INSERT INTO account (id, entity_id, account_type_id, created_date, account_number, account_status) VALUES (37, 37, 1, '2020-12-07 13:58:00', '30000000130', 'ACTIVE');
+            INSERT INTO account (id, entity_id, account_type_id, created_date, account_number, account_status) VALUES (40, 40, 1, '2020-12-07 13:58:00', '30000000140', 'ACTIVE');
+            INSERT INTO account (id, entity_id, account_type_id, created_date, account_number, account_status) VALUES (41, 40, 58, '2020-12-07 13:58:00', '30000000141', 'ACTIVE');
+        </sql>
+    </changeSet>
+    <changeSet author="Pavlo.Slyvka" id="fee-insert-test">
+        <sql>
+            INSERT INTO fee (id, transaction_code_id, currency_id, dr_entity_account_id, cr_entity_account_id, process_order, src_amount_fee_id, charge_type, amount, min_charge, max_charge, affordability_check, active) VALUES (10, 1, 1, 4, 1, 1, null, 'ORIGINAL', 0.00, null, null, true, 1);
+            INSERT INTO fee (id, transaction_code_id, currency_id, dr_entity_account_id, cr_entity_account_id, process_order, src_amount_fee_id, charge_type, amount, min_charge, max_charge, affordability_check, active) VALUES (1, 1, 1, 4, 1, 2, 10, 'FIXED', 1.00, null, null, true, 1);
+            INSERT INTO fee (id, transaction_code_id, currency_id, dr_entity_account_id, cr_entity_account_id, process_order, src_amount_fee_id, charge_type, amount, min_charge, max_charge, affordability_check, active) VALUES (2, 1, 1, 4, 10, 3, 1, 'PERCENT', 0.02, null, null, true, 1);
+            INSERT INTO fee (id, transaction_code_id, currency_id, dr_entity_account_id, cr_entity_account_id, process_order, src_amount_fee_id, charge_type, amount, min_charge, max_charge, affordability_check, active) VALUES (3, 1, 1, 4, 13, 4, 10, 'PERCENT', 0.15, null, null, true, 1);
+            INSERT INTO fee (id, transaction_code_id, currency_id, dr_entity_account_id, cr_entity_account_id, process_order, src_amount_fee_id, charge_type, amount, min_charge, max_charge, active) VALUES (4, 1, 2, 4, 7, 3, null, 'FIXED', 0.10, null, null, 1);
+            INSERT INTO fee (id, transaction_code_id, currency_id, dr_entity_account_id, cr_entity_account_id, process_order, src_amount_fee_id, charge_type, amount, min_charge, max_charge, active) VALUES (5, 1, 2, 4, 10, 2, 4, 'PERCENT', 0.02, null, null, 1);
+            INSERT INTO fee (id, transaction_code_id, currency_id, dr_entity_account_id, cr_entity_account_id, process_order, src_amount_fee_id, charge_type, amount, min_charge, max_charge, active) VALUES (6, 1, 2, 4, 7, 4, 4, 'PERCENT', 0.15, null, null, 1);
+            INSERT INTO fee (id, transaction_code_id, currency_id, dr_entity_account_id, cr_entity_account_id, process_order, src_amount_fee_id, charge_type, amount, min_charge, max_charge, active) VALUES (7, 5, 1, null, null, 1, null, 'FIXED', .00, null, null, 1);
+            INSERT INTO fee (id, transaction_code_id, currency_id, dr_entity_account_id, cr_entity_account_id, process_order, src_amount_fee_id, charge_type, amount, min_charge, max_charge, active) VALUES (8, 5, 2, null, null, 1, null, 'FIXED', 5.00, null, null, 1);
+            INSERT INTO fee (id, transaction_code_id, currency_id, dr_entity_account_id, cr_entity_account_id, process_order, src_amount_fee_id, charge_type, amount, min_charge, max_charge, active) VALUES (13, 1, 2, 4, 1, 1, null, 'ORIGINAL', 0.00, null, null, 1);
+            INSERT INTO fee (id, transaction_code_id, currency_id, dr_entity_account_id, cr_entity_account_id, process_order, src_amount_fee_id, charge_type, amount, min_charge, max_charge, active) VALUES (16, 6, 1, 1, 19, 1, null, 'FIXED', 0.00, null, null, 1);
+            INSERT INTO fee (id, transaction_code_id, currency_id, dr_entity_account_id, cr_entity_account_id, process_order, src_amount_fee_id, charge_type, amount, min_charge, max_charge, active) VALUES (19, 6, 2, 1, 19, 1, null, 'FIXED', 0.00, null, null, 1);
+            INSERT INTO fee (id, transaction_code_id, currency_id, dr_entity_account_id, cr_entity_account_id, process_order, src_amount_fee_id, charge_type, amount, min_charge, max_charge, active) VALUES (22, 6, 1, 1, 19, 0, null, 'FIXED', 0.00, null, null, 1);
+        </sql>
+    </changeSet>
+    <changeSet author="Pavlo.Slyvka" id="payment_method-insert-test">
+        <sql>
+            INSERT INTO payment_method (id, description, friendly_name) VALUES (1, N'Cash', N'Cash');
+            INSERT INTO payment_method (id, description, friendly_name) VALUES (2, N'ICEcash', N'ICEcash');
+            INSERT INTO payment_method (id, description, friendly_name) VALUES (3, N'EcoCash', N'EcoCash');
+            INSERT INTO payment_method (id, description, friendly_name) VALUES (4, N'Airtime', N'Airtime');
+            INSERT INTO payment_method (id, description, friendly_name) VALUES (5, N'Netone', N'OneMoney');
+            INSERT INTO payment_method (id, description, friendly_name) VALUES (6, N'Telecel', N'Telecel');
+            INSERT INTO payment_method (id, description, friendly_name) VALUES (7, N'Master or Visa Card', N'Card');
+            INSERT INTO payment_method (id, description, friendly_name) VALUES (8, N'Zimswitch', N'Zimswitch');
+            INSERT INTO payment_method (id, description, friendly_name) VALUES (9, N'iVeri', N'iVeri');
+            INSERT INTO payment_method (id, description, friendly_name) VALUES (10, N'FBC', N'FBC');
+            INSERT INTO payment_method (id, description, friendly_name) VALUES (11, N'Prepaid', N'Prepaid');
+            INSERT INTO payment_method (id, description, friendly_name) VALUES (12, N'PDS', N'PDS');
+        </sql>
+    </changeSet>
+    <changeSet author="Pavlo.Slyvka" id="document_type-insert-test">
+        <sql>
+            INSERT INTO document_type (id, name, active, country_id) VALUES (1, N'ID', 1, 205);
+            INSERT INTO document_type (id, name, active, country_id) VALUES (2, N'Passport', 1, 205);
+            INSERT INTO document_type (id, name, active, country_id) VALUES (3, N'DIRE', 1, 205);
+            INSERT INTO document_type (id, name, active, country_id) VALUES (4, N'Driver License', 1, 205);
+            INSERT INTO document_type (id, name, active, country_id) VALUES (5, N'NUEL', 1, 205);
+            INSERT INTO document_type (id, name, active, country_id) VALUES (6, N'NUIT', 1, 205);
+            INSERT INTO document_type (id, name, active, country_id) VALUES (7, N'Journal', 1, null);
+        </sql>
+    </changeSet>
+    <changeSet author="Pavlo.Slyvka" id="ip_whitelist-insert-test">
+        <sql>
+            INSERT INTO ip_whitelist (ip_range, active, description) VALUES ('127.0.0.1/32', true, 'localhost');
+        </sql>
+    </changeSet>
+    <changeSet author="Pavlo.Slyvka" id="tax_declaration-insert-test">
+        <sql>
+            INSERT INTO tax_declaration (description) VALUES (N'Please Choose');
+            INSERT INTO tax_declaration (description) VALUES (N'Subject to 2% IMT Tax');
+            INSERT INTO tax_declaration (description) VALUES (N'Exempt from 2% IMT Tax');
+        </sql>
+    </changeSet>
+    <changeSet author="Pavlo.Slyvka" id="tax_reason-insert-test">
+        <sql>
+            INSERT INTO tax_reason (description, display) VALUES (N'Please Choose', 1);
+            INSERT INTO tax_reason (description, display) VALUES (N'Payment of Remuneration', 1);
+            INSERT INTO tax_reason (description, display) VALUES (N'Intra-company transfer of funds', 1);
+            INSERT INTO tax_reason (description, display) VALUES (N'Payment to another bank account which is in the same name as this bank account', 1);
+            INSERT INTO tax_reason (description, display) VALUES (N'Transfer of money to or from Nostro foreign currency accounts', 1);
+            INSERT INTO tax_reason (description, display) VALUES (N'Payment for the purchase or sale of marketable securities', 1);
+            INSERT INTO tax_reason (description, display) VALUES (N'Transfer of money for the purchase or redemption of money market instruments', 1);
+            INSERT INTO tax_reason (description, display) VALUES (N'Transfer of money to or from ZIMRA', 1);
+            INSERT INTO tax_reason (description, display) VALUES (N'Transfer of money from specified trust accounts', 1);
+            INSERT INTO tax_reason (description, display) VALUES (N'Transfer of money to any pension fund or to beneficiaries of such fund', 1);
+            INSERT INTO tax_reason (description, display) VALUES (N'Transfer of money for the procurement , production or sale (wholesale or retail) of a petroleum product by a licensed petroleum company', 1);
+            INSERT INTO tax_reason (description, display) VALUES (N'Transfer of money by Government from the Consolidated Revenue Fund or from funds established in terms of section 18 of the Public Finance Management Act', 1);
+            INSERT INTO tax_reason (description, display) VALUES (N'This Transaction Type is exempt from Tax', 0);
+            INSERT INTO tax_reason (description, display) VALUES (N'Amount is below RTGS $10.00', 0);
+            INSERT INTO tax_reason (description, display) VALUES (N'Transfer of funds for the purchase of tabacco by tabacco byuing comnpanies to auction floors', 1);
+            INSERT INTO tax_reason (description, display) VALUES (N'Transfer of funds by contracting companies and auction floors to farmers for deliveries of tabacco', 1);
+            INSERT INTO tax_reason (description, display) VALUES (N'Transfer of funds for the purchase of cotton by financiers to merchants', 1);
+            INSERT INTO tax_reason (description, display) VALUES (N'Transfer of funds by merchants to farmers for deliveries of cotton', 1);
+            INSERT INTO tax_reason (description, display) VALUES (N'Payment of remittance funds to beneficiary', 1);
+            INSERT INTO tax_reason (description, display) VALUES (N'Payment of Aid disbursement to beneficiary', 1);
+        </sql>
+    </changeSet>
+    <changeSet author="Pavlo.Slyvka" id="security-insert-test">
+        <sql>
+            INSERT INTO security_right (id, name, description, right_type) VALUES (9, 'BULKPAY', 'Access to Bulk Payments', null);
+            INSERT INTO security_right (id, name, description, right_type) VALUES (15, 'RELEASE_A', 'Group A Release', null);
+            INSERT INTO security_right (id, name, description, right_type) VALUES (54, 'RELEASE_B', 'Group B Release', null);
+            INSERT INTO security_right (id, name, description, right_type) VALUES (60, 'BULKPAY_LOAD', 'Load a new Bulk Payment', null);
+            INSERT INTO security_group (id, name, description, active, meta_data, legacy_id) VALUES (6, 'Admin', 'Administrative Online Banking Users', true, '{"OnlineProfileAccess":true}', 'online:1');
+            INSERT INTO security_group (id, name, description, active, meta_data, legacy_id) VALUES (12, 'Business - Admin (A)', 'Super User Rights', true, '{"OnlineProfileAccess":true}', 'online:3');
+            INSERT INTO security_group (id, name, description, active, meta_data, legacy_id) VALUES (18, 'Business - Loader', 'Can load transactions', true, '{"OnlineProfileAccess":true}', 'online:5');
+            INSERT INTO security_group (id, name, description, active, meta_data, legacy_id) VALUES (21, 'Business - Release (B)', 'Can release transactions', true, '{"OnlineProfileAccess":true}', 'online:6');
+            INSERT INTO security_group (id, name, description, active, meta_data, legacy_id) VALUES (69, 'Loan - Loader', 'Can load Loans', true, '{"OnlineProfileAccess":true}', 'online:23');
+            INSERT INTO security_group_right (security_group_id, security_right_id) VALUES (6, 9);
+            INSERT INTO security_group_right (security_group_id, security_right_id) VALUES (6, 15);
+            INSERT INTO security_group_right (security_group_id, security_right_id) VALUES (6, 54);
+            INSERT INTO security_group_right (security_group_id, security_right_id) VALUES (6, 60);
+            INSERT INTO security_group_right (security_group_id, security_right_id) VALUES (12, 9);
+            INSERT INTO security_group_right (security_group_id, security_right_id) VALUES (12, 15);
+            INSERT INTO security_group_right (security_group_id, security_right_id) VALUES (12, 60);
+            INSERT INTO security_group_right (security_group_id, security_right_id) VALUES (18, 9);
+            INSERT INTO security_group_right (security_group_id, security_right_id) VALUES (18, 60);
+            INSERT INTO security_group_right (security_group_id, security_right_id) VALUES (21, 9);
+            INSERT INTO security_group_right (security_group_id, security_right_id) VALUES (21, 54);
+            INSERT INTO security_group_right (security_group_id, security_right_id) VALUES (21, 60);
+            INSERT INTO security_group_right (security_group_id, security_right_id) VALUES (69, 9);
+        </sql>
+    </changeSet>
+    <changeSet author="Pavlo.Slyvka" id="bank-insert-test">
+        <sql>
+            INSERT INTO bank (id, name, default_bin) VALUES (3, 'FBC BANK', '601704');
+            INSERT INTO bank_branch (id, bank_id, name, branch_no, branch_no_fixed, flexcube_code, swift_code, icecash_account_number, account_id, legacy_bank_id, visible) VALUES (1794, 3, 'Bulawayo', 8102, null, '002', 'FBCPZWH0', null, null, 1281, true);
+        </sql>
+    </changeSet>
+    <changeSet author="Pavlo.Slyvka" id="paygo_data-insert-test">
+        <sql>
+            INSERT INTO entity (first_name, last_name, legacy_account_id, entity_type_id, pin_key, pvv, kyc_status_id, status) VALUES ('ICEcash Legacy System', null, null, 6, null, null, 1, 'ACTIVE');
+            INSERT INTO account (entity_id, account_type_id, account_number, account_status) VALUES ((select id from entity where first_name = 'ICEcash Legacy System'), 1, '33333333319', 'ACTIVE');
+            INSERT INTO account (entity_id, account_type_id, account_number, account_status) VALUES ((select id from entity where first_name = 'ICEcash Legacy System'), 5, '33333333327', 'ACTIVE');
+            INSERT INTO account (entity_id, account_type_id, account_number, account_status) VALUES ((select id from entity where first_name = 'ICEcash Legacy System'), 58, '33333333368', 'ACTIVE');
+            INSERT INTO initiator_type (description, active, entity_id) VALUES ('paygo', 1, null);
+            INSERT INTO transaction_code (code, kyc_required, description, active, charge_account_type) VALUES ('PGCBZ', 1, 'PayGo CBZ Merchant Account', true, 'PARTNER');
+            INSERT INTO fee (id, transaction_code_id, currency_id, dr_entity_account_id, cr_entity_account_id, process_order, charge_type, amount, min_charge, max_charge, affordability_check, active, src_amount_fee_id) VALUES (23, (select id from transaction_code where code = 'PGCBZ'), 1, (select id from account where account_number = '33333333327'), null, 1, 'ORIGINAL', 0.00, null, null, true, 1, null);
+            INSERT INTO fee (id, transaction_code_id, currency_id, dr_entity_account_id, cr_entity_account_id, process_order, charge_type, amount, min_charge, max_charge, affordability_check, active, src_amount_fee_id) VALUES (24, (select id from transaction_code where code = 'PGCBZ'), 1, null, (select id from account where account_number = '33333333368'), 2, 'FIXED', 0.00, null, null, true, 1, 23);
+        </sql>
+    </changeSet>
+    <changeSet author="Pavlo.Slyvka" id="ecocash_data-insert-test">
+        <sql>
+            INSERT INTO entity (first_name, last_name, legacy_account_id, entity_type_id, pin_key, pvv, kyc_status_id, status) VALUES ('EcoCash Pool Account General', null, null, 6, null, null, 1, 'ACTIVE');
+            INSERT INTO entity (first_name, last_name, legacy_account_id, entity_type_id, pin_key, pvv, kyc_status_id, status) VALUES ('EcoCash Pool Account Zinara', null, null, 6, null, null, 1, 'ACTIVE');
+            INSERT INTO entity (first_name, last_name, legacy_account_id, entity_type_id, pin_key, pvv, kyc_status_id, status) VALUES ('EcoCash Pool Account USD', null, null, 6, null, null, 1, 'ACTIVE');
+            INSERT INTO account_type(currency_id, name, description, active) VALUES (2, 'USD FCA', 'USD foreign currency account', true);
+            INSERT INTO account (entity_id, account_type_id, account_number, account_status) VALUES ((select id from entity where first_name = 'EcoCash Pool Account General'), 1, '33333333419', 'ACTIVE');
+            INSERT INTO account (entity_id, account_type_id, account_number, account_status) VALUES ((select id from entity where first_name = 'EcoCash Pool Account General'), 5, '33333333427', 'ACTIVE');
+            INSERT INTO account (entity_id, account_type_id, account_number, account_status) VALUES ((select id from entity where first_name = 'EcoCash Pool Account Zinara'), 1, '33333333519', 'ACTIVE');
+            INSERT INTO account (entity_id, account_type_id, account_number, account_status) VALUES ((select id from entity where first_name = 'EcoCash Pool Account Zinara'), 5, '33333333527', 'ACTIVE');
+            INSERT INTO account (entity_id, account_type_id, account_number, account_status) VALUES ((select id from entity where first_name = 'EcoCash Pool Account USD'), (select id from account_type where name = 'USD FCA'), '33333333420', 'ACTIVE');
+            INSERT INTO transaction_code (code, kyc_required, description, active) VALUES ('EPAYG', 1, 'Ecocash payment general', true);
+            INSERT INTO transaction_code (code, kyc_required, description, active) VALUES ('ZTP', 1, 'Zinara Toll Payments', true);
+            INSERT INTO transaction_code (code, kyc_required, description, active) VALUES ('LPP', 1, 'Zinara Licence Payments', true);
+            INSERT INTO transaction_code (code, kyc_required, description, active) VALUES ('EUSD', 1, 'EUSD', true);
+            INSERT INTO fee (id, transaction_code_id, currency_id, dr_entity_account_id, cr_entity_account_id, process_order, charge_type, amount, min_charge, max_charge, affordability_check, active, src_amount_fee_id) VALUES (25, (select id from transaction_code where code = 'EPAYG'), 1, (select id from account where account_number = '33333333427'), null, 1, 'ORIGINAL', 0.00, null, null, false, 1, null);
+            INSERT INTO fee (id, transaction_code_id, currency_id, dr_entity_account_id, cr_entity_account_id, process_order, charge_type, amount, min_charge, max_charge, affordability_check, active, src_amount_fee_id) VALUES (26, (select id from transaction_code where code = 'ZTP'), 1, (select id from account where account_number = '33333333527'), null, 1, 'ORIGINAL', 0.00, null, null, false, 1, null);
+            INSERT INTO fee (id, transaction_code_id, currency_id, dr_entity_account_id, cr_entity_account_id, process_order, charge_type, amount, min_charge, max_charge, affordability_check, active, src_amount_fee_id) VALUES (27, (select id from transaction_code where code = 'LPP'), 1, (select id from account where account_number = '33333333527'), null, 1, 'ORIGINAL', 0.00, null, null, false, 1, null);
+            INSERT INTO fee (id, transaction_code_id, currency_id, dr_entity_account_id, cr_entity_account_id, process_order, charge_type, amount, min_charge, max_charge, affordability_check, active, src_amount_fee_id) VALUES (28, (select id from transaction_code where code = 'EPAYG'), 2, (select id from account where account_number = '33333333427'), null, 1, 'ORIGINAL', 0.00, null, null, false, 1, null);
+            INSERT INTO fee (id, transaction_code_id, currency_id, dr_entity_account_id, cr_entity_account_id, process_order, charge_type, amount, min_charge, max_charge, affordability_check, active, src_amount_fee_id) VALUES (29, (select id from transaction_code where code = 'ZTP'), 2, (select id from account where account_number = '33333333527'), null, 1, 'ORIGINAL', 0.00, null, null, false, 1, null);
+            INSERT INTO fee (id, transaction_code_id, currency_id, dr_entity_account_id, cr_entity_account_id, process_order, charge_type, amount, min_charge, max_charge, affordability_check, active, src_amount_fee_id) VALUES (30, (select id from transaction_code where code = 'LPP'), 2, (select id from account where account_number = '33333333527'), null, 1, 'ORIGINAL', 0.00, null, null, false, 1, null);
+            INSERT INTO fee (id, transaction_code_id, currency_id, dr_entity_account_id, cr_entity_account_id, process_order, charge_type, amount, min_charge, max_charge, affordability_check, active, src_amount_fee_id) VALUES (32, (select id from transaction_code where code = 'EUSD'), 2, (select id from account where account_number = '33333333420'), null, 1, 'ORIGINAL', 0.00, null, null, false, 1, null);
+        </sql>
+    </changeSet>
+    <changeSet author="Pavlo.Slyvka" id="onemoney_data-insert-test">
+        <sql>
+            INSERT INTO entity (first_name, last_name, legacy_account_id, entity_type_id, pin_key, pvv, kyc_status_id, status) VALUES ('OneMoney Pool Account', null, null, 6, null, null, 1, 'ACTIVE');
+            INSERT INTO account (entity_id, account_type_id, account_number, account_status) VALUES ((select id from entity where first_name = 'OneMoney Pool Account'), 1, '33333333619', 'ACTIVE');
+            INSERT INTO account (entity_id, account_type_id, account_number, account_status) VALUES ((select id from entity where first_name = 'OneMoney Pool Account'), 5, '33333333627', 'ACTIVE');
+            INSERT INTO transaction_code (code, kyc_required, description, active) VALUES ('OPAYG', 1, 'OneMoney payment general', true);
+            INSERT INTO fee (id, transaction_code_id, currency_id, dr_entity_account_id, cr_entity_account_id, process_order, charge_type, amount, min_charge, max_charge, affordability_check, active, src_amount_fee_id) VALUES (31, (select id from transaction_code where code = 'OPAYG'), 1, (select id from account where account_number = '33333333627'), null, 1, 'ORIGINAL', 0.00, null, null, false, 1, null);
+        </sql>
+    </changeSet>
+    <changeSet author="Pavlo.Slyvka" id="flexcube_data-insert-test">
+        <sql>
+            INSERT INTO entity (first_name, last_name, legacy_account_id, entity_type_id, pin_key, pvv, kyc_status_id, status) VALUES ('RTGS Control Account', 'ICEcash', '20000001', 4, null, null, 1, 'ACTIVE');
+            INSERT INTO account (entity_id, account_type_id, account_number, account_status) VALUES ((select id from entity where first_name = 'RTGS Control Account'), 1, '33333333709', 'ACTIVE');
+            INSERT INTO transaction_code (code, kyc_required, description, active, charge_account_type) VALUES ('TRN', 1, 'Flexcube payment', true, 'INITIATOR');
+            INSERT INTO fee (id, transaction_code_id, currency_id, dr_entity_account_id, cr_entity_account_id, process_order, charge_type, amount, min_charge, max_charge, affordability_check, active, src_amount_fee_id) VALUES (33, (select id from transaction_code where code = 'TRN'), 1, null, (select id from account where account_number = '33333333709'), 1, 'ORIGINAL', 0.00, null, null, false, 1, null);
+        </sql>
+    </changeSet>
+    <changeSet author="Pavlo.Slyvka" id="paygo-db-insert-test" runAlways="false" failOnError="true">
+        <customChange class="cash.ice.api.task.PaygoDbMigrationTask"/>
+    </changeSet>
+    <changeSet author="Pavlo.Slyvka" id="ecocash-db-insert-test" runAlways="false" failOnError="true">
+        <customChange class="cash.ice.api.task.EcocashDbMigrationTask"/>
+    </changeSet>
+    <changeSet author="Pavlo.Slyvka" id="flexcube-db-insert-test" runAlways="false" failOnError="true">
+        <customChange class="cash.ice.api.task.FlexcubeDbMigrationTask"/>
+    </changeSet>
+    <changeSet author="Pavlo.Slyvka" id="transaction-insert-test">
+        <sql>
+            INSERT INTO transaction (id, transaction_code_id, created_date, session_id, channel_id, statement_date, currency_id, initiator_type_id) VALUES (1, 5, '2020-10-27 16:34:00', '1', 1, '2020-10-27 00:00:00', 1, 1);
+        </sql>
+    </changeSet>
+    <changeSet author="Pavlo.Slyvka" id="transaction_lines-insert-test">
+        <sql>
+            INSERT INTO transaction_lines (transaction_id, transaction_code_id, entity_account_id, description, amount) VALUES (1, 1, (select id from account where account_number = '33333333319'), 'Test Deposit', 100000.00);
+            INSERT INTO transaction_lines (transaction_id, transaction_code_id, entity_account_id, description, amount) VALUES (1, 1, (select id from account where account_number = '33333333327'), 'Test Deposit', 100000.00);
+            INSERT INTO transaction_lines (transaction_id, transaction_code_id, entity_account_id, description, amount) VALUES (1, 1, (select id from account where account_number = '33333333368'), 'Test Deposit', 100000.00);
+            INSERT INTO transaction_lines (transaction_id, transaction_code_id, entity_account_id, description, amount) VALUES (1, 1, (select id from account where account_number = '33333333419'), 'Test Deposit', 100000.00);
+            INSERT INTO transaction_lines (transaction_id, transaction_code_id, entity_account_id, description, amount) VALUES (1, 1, (select id from account where account_number = '33333333427'), 'Test Deposit', 100000.00);
+            INSERT INTO transaction_lines (transaction_id, transaction_code_id, entity_account_id, description, amount) VALUES (1, 1, (select id from account where account_number = '33333333519'), 'Test Deposit', 100000.00);
+            INSERT INTO transaction_lines (transaction_id, transaction_code_id, entity_account_id, description, amount) VALUES (1, 1, (select id from account where account_number = '33333333527'), 'Test Deposit', 100000.00);
+            INSERT INTO transaction_lines (transaction_id, transaction_code_id, entity_account_id, description, amount) VALUES (1, 1, (select id from account where account_number = '33333333619'), 'Test Deposit', 100000.00);
+            INSERT INTO transaction_lines (transaction_id, transaction_code_id, entity_account_id, description, amount) VALUES (1, 1, (select id from account where account_number = '33333333627'), 'Test Deposit', 100000.00);
+            INSERT INTO transaction_lines (transaction_id, transaction_code_id, entity_account_id, description, amount) VALUES (1, 1, 1, 'Test Deposit', -100000.00);
+            INSERT INTO transaction_lines (transaction_id, transaction_code_id, entity_account_id, description, amount) VALUES (1, 1, 4, 'Test Deposit', 100000.00);
+        </sql>
+    </changeSet>
+    <changeSet author="Pavlo.Slyvka" id="fake-user-insert-sync" runAlways="false" failOnError="false">
+        <sql>
+                INSERT INTO initiator (initiator_type_id, identifier, account_id, initiator_category_id, initiator_status_id, pvv, notes, start_date, expiry_date, meta_data, configuration) VALUES (3, '3333333333333331', null, 4, 1, 'C62AF7F864F9470C', 'Fake user card', '2022-09-01', '2032-09-01', null, null);
+        </sql>
+        <customChange class="cash.ice.api.task.RegisterUserDbMigrationTask">
+            <param name="userJson" value='{
+                "firstName": "John",
+                "lastName": "Doe",
+                "idTypeId": 1,
+                "entityType": "Personal",
+                "email": "john.doe@ice.cash",
+                "idNumber": "3333333333333333",
+                "accountNumber": "33333333335",
+                "pin": "3333",
+                "key": "3333333333333331",
+                "pvv": "C62AF7F864F9470C",
+                "card": "3333333333333331",
+                "company": "ICEcash",
+                "mobile": "263123456789"
+            }' />
+        </customChange>
+        <sql>
+            INSERT INTO account_relationship (entity_id, partner_account_id, security_groups) values ((select id from entity where id_number = '3333333333333333'), (select id from account where account_number = '33333333335'), '{"ONLINE": 6}');
+            INSERT INTO transaction_lines (transaction_id, transaction_code_id, entity_account_id, description, amount) VALUES (1, 1, (select id from account where account_number = '33333333335'), 'Test Deposit', 100000.00);
+        </sql>
+    </changeSet>
+    <changeSet author="Pavlo.Slyvka" id="language-insert-test">
+        <sql>
+            INSERT INTO language (id, name, language_key) VALUES (1, "English", "en");
+            INSERT INTO language (id, name, language_key) VALUES (2, "Portuguese", "pt");
+        </sql>
+    </changeSet>
+    <changeSet author="Pavlo.Slyvka" id="dictionary-insert-test">
+        <sql>
+            INSERT INTO dictionary (id, lookup_key, environment, language_id, section, value) VALUES (1, "login.username", "BACKOFFICE", 1, "LOGIN", "Username");
+            INSERT INTO dictionary (id, lookup_key, environment, language_id, section, value) VALUES (2, "login.password", "BACKOFFICE", 1, "LOGIN", "Password");
+            INSERT INTO dictionary (id, lookup_key, environment, language_id, section, value) VALUES (3, "app.name.admin", "BACKOFFICE", 1, "LOGIN", "ICEcash Back Office");
+            INSERT INTO dictionary (id, lookup_key, environment, language_id, section, value) VALUES (4, "app.name.online", "BACKOFFICE", 1, "LOGIN", "ICEcash Online");
+            INSERT INTO dictionary (id, lookup_key, environment, language_id, section, value) VALUES (5, "moz.user.register.agreement.Commuter", "MOZ", 1, "REGISTRATION", "Commuter agreement");
+            INSERT INTO dictionary (id, lookup_key, environment, language_id, section, value) VALUES (6, "moz.user.register.agreement.TransportOwner", "MOZ", 1, "REGISTRATION", "Transport Owner agreement");
+            INSERT INTO dictionary (id, lookup_key, environment, language_id, section, value) VALUES (7, "moz.user.register.agreement.Agent", "MOZ", 1, "REGISTRATION", "Agent agreement");
+            INSERT INTO dictionary (id, lookup_key, environment, language_id, section, value) VALUES (8, "moz.user.register.agreement.TaxiDriver", "MOZ", 1, "REGISTRATION", "Taxi Driver agreement");
+            INSERT INTO dictionary (id, lookup_key, environment, language_id, section, value) VALUES (9, "moz.user.register.agreement.FareCollector", "MOZ", 1, "REGISTRATION", "Fare Collector agreement");
+        </sql>
+    </changeSet>
+    <changeSet author="Pavlo.Slyvka" id="email_template-insert-test">
+        <sql>
+            INSERT INTO email_template (type, language_id, subject, body) VALUES ('staff_forgot_password', 1, 'ICEcash Administration password reset', 'Good day $firstname $surname. Please click on the following link to reset your password and follow the on-screen instructions: $url$key');
+            INSERT INTO email_template (type, language_id, subject, body) VALUES ('entity_forgot_password', 1, 'ICEcash Administration password reset', 'Good day $firstname $surname. Please click on the following link to reset your password and follow the on-screen instructions: $url$key');
+            INSERT INTO email_template (type, language_id, subject, body) VALUES ('staff_create_user', 1, 'ICEcash Administration password create', 'Good day $firstname $surname. Please click on the following link to create your password and follow the on-screen instructions: $url$key');
+            INSERT INTO email_template (type, language_id, subject, body) VALUES ('staff_update_user', 1, 'ICEcash Administration profile updated', 'Good day $firstname $surname. Your Administration Application account profile was updated at $dateTime by $firstname $surname. The following updates were performed: $updateDescription. Did not expect this? Please contact your line manager and keep this email as reference for investigation or forward this email to support@icecash.co.zw');
+            INSERT INTO email_template (type, language_id, subject, body) VALUES ('journal_create', 1, 'Notice of new journal created', 'Hi, The following journal was created and is pending review: Amount: $currency &amp; $amount. Transaction code: $transactionCode. Account to DR. Entity: $drEntityName &amp; $drEntityId. Account: $drAccountId. Account to CR. Entity: $crEntityName &amp; $crEntityId. Account: $crAccountId. Click here to review the journal: $url. Regards. ICEcash. Report a problem: support@icecash.co.zw');
+        </sql>
+    </changeSet>
+    <changeSet author="Pavlo.Slyvka" id="moz-data-db-insert-test">
+        <sql>
+            INSERT INTO initiator_type (active, description, entity_id) VALUES (true, 'tag', null);
+            INSERT INTO initiator_category (category, entity_id) VALUES ('MZ Transport', null);
+            INSERT INTO transaction_code (code, kyc_required, description, active, charge_account_type) VALUES ('TSF', 0, 'MZ NFC payment', false, 'POS_DEVICE');
+            INSERT INTO fee (transaction_code_id, currency_id, dr_entity_account_id, cr_entity_account_id, process_order, charge_type, amount, min_charge, max_charge, affordability_check, active, src_amount_fee_id) VALUES ((select id from transaction_code where code = 'TSF'), (select id from currency where iso_code = 'MZN'), null, null, 1, 'ORIGINAL', 0.00, null, null, false, 1, null);
+            INSERT INTO fee (transaction_code_id, currency_id, dr_entity_account_id, cr_entity_account_id, process_order, charge_type, amount, min_charge, max_charge, affordability_check, active, src_amount_fee_id) VALUES ((select id from transaction_code where code = 'TSF'), (select id from currency where iso_code = 'MZN'), null, null, 2, 'PERCENT', 0.20, null, null, false, 1, null);
+            INSERT INTO account_type (currency_id, name, description, active) VALUES ((select id from currency where iso_code = 'MZN'), N'Primary', N'MZN Primary Wallet', true);
+            INSERT INTO account_type (currency_id, name, description, active) VALUES ((select id from currency where iso_code = 'MZN'), N'Subsidy', N'MZN Subsidy Wallet', true);
+            INSERT INTO account_type (currency_id, name, description, active) VALUES ((select id from currency where iso_code = 'MZN'), N'MT Suspense Account', N'MT Suspense Account', true);
+            INSERT INTO account_type (currency_id, name, description, active) VALUES ((select id from currency where iso_code = 'MZN'), N'MT Pool Account', N'MT Pool Account', true);
+            INSERT INTO entity (first_name, last_name, legacy_account_id, entity_type_id, pin_key, pvv, kyc_status_id, status) VALUES ('Transport suspense account', null, null, 6, null, null, 1, 'ACTIVE');
+            INSERT INTO account (entity_id, account_type_id, account_number, account_status) VALUES ((select id from entity where first_name = 'Transport suspense account'), 1, '33333333817', 'ACTIVE');
+            INSERT INTO account (entity_id, account_type_id, account_number, account_status) VALUES ((select id from entity where first_name = 'Transport suspense account'), (select id from account_type where name = 'MT Suspense Account'), '33333333820', 'ACTIVE');
+            INSERT INTO entity (first_name, last_name, legacy_account_id, entity_type_id, pin_key, pvv, kyc_status_id, status) VALUES ('Transport subsidy pool', null, null, 6, null, null, 1, 'ACTIVE');
+            INSERT INTO account (entity_id, account_type_id, account_number, account_status) VALUES ((select id from entity where first_name = 'Transport subsidy pool'), 1, '33333333835', 'ACTIVE');
+            INSERT INTO account (entity_id, account_type_id, account_number, account_status) VALUES ((select id from entity where first_name = 'Transport subsidy pool'), (select id from account_type where name = 'MT Pool Account'), '33333333840', 'ACTIVE');
+            INSERT INTO security_right (id, name, description) VALUES (1001, 'ACC_STATEMENT_L1', 'View and export account statements (Moz)');
+            INSERT INTO security_right (id, name, description) VALUES (1002, 'ACC_STATEMENT_L2', 'Ability to view transaction lines for a specific transaction (Moz)');
+            INSERT INTO security_right (id, name, description) VALUES (1003, 'INITIATOR_VIEW', 'View list of initiators associated with account (Moz)');
+            INSERT INTO security_right (id, name, description) VALUES (1004, 'INITIATOR_MG', 'Ability to change status of initiator (Moz)');
+            INSERT INTO security_right (id, name, description) VALUES (1005, 'POS_TAXI', 'Ability to perform TSF transactions via POS (Moz)');
+            INSERT INTO security_group (id, name, description, active) VALUES (1000, 'Moz default', 'Mozambique default group', true);
+            INSERT INTO security_group_right (security_group_id, security_right_id) VALUES (1000, 1001);
+            INSERT INTO security_group_right (security_group_id, security_right_id) VALUES (1000, 1002);
+            INSERT INTO security_group_right (security_group_id, security_right_id) VALUES (1000, 1003);
+            INSERT INTO security_group_right (security_group_id, security_right_id) VALUES (1000, 1004);
+            INSERT INTO security_group_right (security_group_id, security_right_id) VALUES (1000, 1005);
+        </sql>
+    </changeSet>
+    <changeSet author="Pavlo.Slyvka" id="fnds-data-db-insert-test">
+        <sql>
+            INSERT INTO entity_type (description, entity_type_group_id) VALUES ('FNDS Farmer', 2);
+            INSERT INTO entity_type (description, entity_type_group_id) VALUES ('FNDS Agri Dealer', 2);
+            INSERT INTO entity_type (description, entity_type_group_id) VALUES ('FNDS Agent', 2);
+            INSERT INTO account_type (currency_id, name, description, active) VALUES ((select id from currency where iso_code = 'KES'), N'Primary', N'KES Primary Wallet', true);
+            INSERT INTO account_type (currency_id, name, description, active) VALUES ((select id from currency where iso_code = 'KES'), N'FNDS', N'FNDS', true);
+            INSERT INTO entity_id_type (id, description, country_id) VALUES (101, "Kenya National ID", (select id from country where iso_code = 'KEN'));
+            INSERT INTO entity_id_type (id, description, country_id) VALUES (102, "Passport", (select id from country where iso_code = 'KEN'));
+            INSERT INTO document_type (id, name, active, country_id) VALUES (8, N'ID', 1, (select id from country where iso_code = 'KEN'));
+            INSERT INTO document_type (id, name, active, country_id) VALUES (9, N'Biometric', 1, (select id from country where iso_code = 'KEN'));
+            INSERT INTO security_group (id, name, description, active) VALUES (2001, 'FNDS Farmer', 'Kenya FNDS Farmer', true);
+            INSERT INTO security_group (id, name, description, active) VALUES (2002, 'FNDS Agri Dealer', 'Kenya FNDS Agri Dealer', true);
+            INSERT INTO security_group (id, name, description, active) VALUES (2003, 'FNDS Agent', 'Kenya FNDS Agent', true);
+        </sql>
+    </changeSet>
+    <changeSet author="Pavlo.Slyvka" id="fnds-payment-db-insert-test">
+        <sql>
+            INSERT INTO initiator_type (active, description, entity_id) VALUES (true, 'accountNumber', null);
+            INSERT INTO transaction_code (code, kyc_required, description, active, charge_account_type) VALUES ('KIT', 0, 'FNDS kit payment', true, 'POS_DEVICE');
+            INSERT INTO fee (transaction_code_id, currency_id, dr_entity_account_id, cr_entity_account_id, process_order, charge_type, amount, min_charge, max_charge, affordability_check, active, src_amount_fee_id) VALUES ((select id from transaction_code where code = 'KIT'), (select id from currency where iso_code = 'KES'), null, null, 1, 'ORIGINAL', 0.00, null, null, true, 1, null);
+            INSERT INTO account_type (currency_id, name, description, active) VALUES ((select id from currency where iso_code = 'KES'), N'KES Suspense Account', N'KES Suspense Account', true);
+            INSERT INTO entity (first_name, last_name, legacy_account_id, entity_type_id, pin_key, pvv, kyc_status_id, status) VALUES ('FNDS suspense account', null, null, 6, null, null, 1, 'ACTIVE');
+            INSERT INTO account (entity_id, account_type_id, account_number, account_status) VALUES ((select id from entity where first_name = 'FNDS suspense account'), 1, '33333333822', 'ACTIVE');
+            INSERT INTO account (entity_id, account_type_id, account_number, account_status) VALUES ((select id from entity where first_name = 'FNDS suspense account'), (select id from account_type where name = 'KES Suspense Account'), '33333333830', 'ACTIVE');
+        </sql>
+    </changeSet>
+    <changeSet author="Pavlo.Slyvka" id="initiator_status_frozen-insert-test">
+        <sql>
+            INSERT INTO initiator_status (name, permit_transaction, active) VALUES ('Frozen', false, true);
+        </sql>
+    </changeSet>
+    <changeSet author="Pavlo.Slyvka" id="initiator_status_unassigned-insert-test">
+        <sql>
+            INSERT INTO initiator_status (name, permit_transaction, active) VALUES ('Unassigned', false, false);
+        </sql>
+    </changeSet>
+    <changeSet author="Pavlo.Slyvka" id="account_type_prepaid-insert-test">
+        <sql>
+            INSERT INTO account_type (currency_id, name, description, active) VALUES ((select id from currency where iso_code = 'MZN'), N'Prepaid', N'Prepaid Transport', true);
+        </sql>
+    </changeSet>
+    <changeSet author="Pavlo.Slyvka" id="mpesa_data-insert-test">
+        <sql>
+            INSERT INTO entity (first_name, entity_type_id, kyc_status_id, status) VALUES ('ICEcash MPESA Pool account', 6, 1, 'ACTIVE');
+            INSERT INTO account (entity_id, account_type_id, account_number, account_status) VALUES ((select id from entity where first_name = 'ICEcash MPESA Pool account'), (select id from account_type where name = 'Primary' and currency_id = (select id from currency where iso_code = 'MZN')), '33333333913', 'ACTIVE');
+            INSERT INTO transaction_code (code, kyc_required, description, charge_account_type, active) VALUES ('MPI', 0, 'MPESA inbound payments', 'META_ACCOUNT', true);
+            INSERT INTO transaction_code (code, kyc_required, description, charge_account_type, active) VALUES ('MPO', 0, 'MPESA outbound payments', 'META_ACCOUNT', true);
+            INSERT INTO fee (transaction_code_id, currency_id, dr_entity_account_id, cr_entity_account_id, process_order, charge_type, amount, affordability_check, active, src_amount_fee_id) VALUES ((select id from transaction_code where code = 'MPI'), (select id from currency where iso_code = 'MZN'), (select id from account where account_number = '33333333913'), null, 1, 'ORIGINAL', 0.00, false, 1, null);
+            INSERT INTO fee (transaction_code_id, currency_id, dr_entity_account_id, cr_entity_account_id, process_order, charge_type, amount, affordability_check, active, src_amount_fee_id) VALUES ((select id from transaction_code where code = 'MPO'), (select id from currency where iso_code = 'MZN'), null, (select id from account where account_number = '33333333913'), 1, 'ORIGINAL', 0.00, false, 1, null);
+            INSERT INTO initiator_type (description, active) VALUES ('mpesa', true);
+        </sql>
+    </changeSet>
+    <changeSet author="Pavlo.Slyvka" id="emola_data-insert-test">
+        <sql>
+            INSERT INTO entity (first_name, entity_type_id, kyc_status_id, status) VALUES ('ICEcash E-Mola Pool account', 6, 1, 'ACTIVE');
+            INSERT INTO account (entity_id, account_type_id, account_number, account_status) VALUES ((select id from entity where first_name = 'ICEcash E-Mola Pool account'), (select id from account_type where name = 'Primary' and currency_id = (select id from currency where iso_code = 'MZN')), '33333333921', 'ACTIVE');
+            INSERT INTO transaction_code (code, kyc_required, description, charge_account_type, active) VALUES ('EMI', 0, 'E-Mola inbound payments', 'META_ACCOUNT', true);
+            INSERT INTO transaction_code (code, kyc_required, description, charge_account_type, active) VALUES ('EMO', 0, 'E-Mola outbound payments', 'META_ACCOUNT', true);
+            INSERT INTO fee (transaction_code_id, currency_id, dr_entity_account_id, cr_entity_account_id, process_order, charge_type, amount, affordability_check, active, src_amount_fee_id) VALUES ((select id from transaction_code where code = 'EMI'), (select id from currency where iso_code = 'MZN'), (select id from account where account_number = '33333333921'), null, 1, 'ORIGINAL', 0.00, false, 1, null);
+            INSERT INTO fee (transaction_code_id, currency_id, dr_entity_account_id, cr_entity_account_id, process_order, charge_type, amount, affordability_check, active, src_amount_fee_id) VALUES ((select id from transaction_code where code = 'EMO'), (select id from currency where iso_code = 'MZN'), null, (select id from account where account_number = '33333333921'), 1, 'ORIGINAL', 0.00, false, 1, null);
+            INSERT INTO initiator_type (description, active) VALUES ('emola', true);
+        </sql>
+    </changeSet>
+    <changeSet author="Pavlo.Slyvka" id="routes_data-insert-test">
+        <sql>
+            INSERT INTO route (id, name, country_id, active) VALUES (15, 'BAIXA-BOANE', 205, true);
+            INSERT INTO route (id, name, country_id, active) VALUES (16, 'BAIXA-MOZAL', 205, true);
+            INSERT INTO route (id, name, country_id, active) VALUES (17, 'BAIXA-TCHUMENE', 205, true);
+            INSERT INTO route (id, name, country_id, active) VALUES (18, 'BAIXA-RADIO MARCONI', 205, true);
+            INSERT INTO route (id, name, country_id, active) VALUES (19, 'MUSEU - C MATOLA', 205, true);
+            INSERT INTO route (id, name, country_id, active) VALUES (20, 'BAIXA- C MATOLA', 205, true);
+            INSERT INTO route (id, name, country_id, active) VALUES (21, 'BAIXA- C MATOLA/MONUMENTO', 205, true);
+            INSERT INTO route (id, name, country_id, active) VALUES (22, 'MUSEU-C700', 205, true);
+            INSERT INTO route (id, name, country_id, active) VALUES (23, 'BAIXA -TSALALA', 205, true);
+            INSERT INTO route (id, name, country_id, active) VALUES (24, 'BAIXA - NAMAACHA', 205, true);
+            INSERT INTO route (id, name, country_id, active) VALUES (25, 'BAIXA - GOBA ', 205, true);
+            INSERT INTO route (id, name, country_id, active) VALUES (26, 'BAIXA - MATOLA C', 205, true);
+            INSERT INTO route (id, name, country_id, active) VALUES (27, 'BAIXA - MASSACA', 205, true);
+            INSERT INTO route (id, name, country_id, active) VALUES (28, 'BAIXA - JONASSE', 205, true);
+            INSERT INTO route (id, name, country_id, active) VALUES (29, 'BAIXA - TENGA', 205, true);
+            INSERT INTO route (id, name, country_id, active) VALUES (30, 'BAIXA - MOAMBA', 205, true);
+            INSERT INTO route (id, name, country_id, active) VALUES (31, 'BAIXA - BOANE/MAHANHANE', 205, true);
+            INSERT INTO route (id, name, country_id, active) VALUES (32, 'BAIXA-T3/KONGOLOTE', 205, true);
+            INSERT INTO route (id, name, country_id, active) VALUES (33, 'MUSEU-T3/KONGOLOTE', 205, true);
+            INSERT INTO route (id, name, country_id, active) VALUES (34, 'BAIXA-NKHOBE', 205, true);
+            INSERT INTO route (id, name, country_id, active) VALUES (35, 'MUSEU-NKHOBE', 205, true);
+            INSERT INTO route (id, name, country_id, active) VALUES (36, 'BAIXA-MATOLA GARE', 205, true);
+            INSERT INTO route (id, name, country_id, active) VALUES (37, 'MUSEU-MATOLA GARE', 205, true);
+            INSERT INTO route (id, name, country_id, active) VALUES (38, 'BAIXA-1º DE MAIO', 205, true);
+            INSERT INTO route (id, name, country_id, active) VALUES (39, 'MUSEU-1º DE MAIO', 205, true);
+            INSERT INTO route (id, name, country_id, active) VALUES (40, 'BAIXA-SIKWAMA', 205, true);
+            INSERT INTO route (id, name, country_id, active) VALUES (41, 'MUSEU-SIKWAMA', 205, true);
+            INSERT INTO route (id, name, country_id, active) VALUES (42, 'BAIXA-MACHAVA BEDENE', 205, true);
+            INSERT INTO route (id, name, country_id, active) VALUES (43, 'TCHUMENE - MAGOANINE', 205, true);
+            INSERT INTO route (id, name, country_id, active) VALUES (44, 'PATRICE LUMUMBA-PÇA COMBATENTES', 205, true);
+            INSERT INTO route (id, name, country_id, active) VALUES (45, 'BAIXA-NDLAVELA ', 205, true);
+            INSERT INTO route (id, name, country_id, active) VALUES (46, 'MUSEU-NDLAVELA ', 205, true);
+            INSERT INTO route (id, name, country_id, active) VALUES (47, 'MUSEU-2ª ROTUNDA', 205, true);
+            INSERT INTO route (id, name, country_id, active) VALUES (48, 'BAIXA-2ª ROTUNDA', 205, true);
+            INSERT INTO route (id, name, country_id, active) VALUES (49, 'MUSEU - MACHAVA BEDENE', 205, true);
+            INSERT INTO route (id, name, country_id, active) VALUES (50, 'BAIXA - PATRICE LUMUMBA/ S. DAMASO', 205, true);
+            INSERT INTO route (id, name, country_id, active) VALUES (51, 'MUSEU - PATRICE LUMUMBA/ S. DAMASO', 205, true);
+            INSERT INTO route (id, name, country_id, active) VALUES (52, 'BAIXA - PATRICE LUMUMBA/ SINGATELA/FIOS', 205, true);
+            INSERT INTO route (id, name, country_id, active) VALUES (53, 'MUSEU-PATRICE LUMUMBA/ SINGATELA/FIOS', 205, true);
+            INSERT INTO route (id, name, country_id, active) VALUES (54, 'BAIXA-ZIMPETO', 205, true);
+            INSERT INTO route (id, name, country_id, active) VALUES (55, 'MUSEU-ZIMPETO', 205, true);
+            INSERT INTO route (id, name, country_id, active) VALUES (56, 'BAIXA-MATENDENE', 205, true);
+            INSERT INTO route (id, name, country_id, active) VALUES (57, 'MUSEU-MATENDENE', 205, true);
+            INSERT INTO route (id, name, country_id, active) VALUES (58, 'PÇA COMBATENTES-2ª ROTUNDA', 205, true);
+            INSERT INTO route (id, name, country_id, active) VALUES (59, 'PÇA COMBATENTES -ZIMPETO ', 205, true);
+            INSERT INTO route (id, name, country_id, active) VALUES (60, 'BAIXA-MAGOANINE ', 205, true);
+            INSERT INTO route (id, name, country_id, active) VALUES (61, 'BAIXA - MICHAFUTENE', 205, true);
+            INSERT INTO route (id, name, country_id, active) VALUES (62, 'BAIXA-ALBAZINE', 205, true);
+            INSERT INTO route (id, name, country_id, active) VALUES (63, 'BAIXA - ALBAZINE', 205, true);
+            INSERT INTO route (id, name, country_id, active) VALUES (64, 'MUSEU-ALBAZINE', 205, true);
+            INSERT INTO route (id, name, country_id, active) VALUES (65, 'BAIXA - MAGOANINE ', 205, true);
+            INSERT INTO route (id, name, country_id, active) VALUES (66, 'MUSEU-MAGOANINE ', 205, true);
+            INSERT INTO route (id, name, country_id, active) VALUES (67, 'BAIXA - MATEQUE', 205, true);
+            INSERT INTO route (id, name, country_id, active) VALUES (68, 'BAIXA-COSTA DO SOL ', 205, true);
+            INSERT INTO route (id, name, country_id, active) VALUES (69, 'MUSEU – PRAÇA DOS COMBATENTES', 205, true);
+            INSERT INTO route (id, name, country_id, active) VALUES (70, 'MUSEU-MATEQUE', 205, true);
+            INSERT INTO route (id, name, country_id, active) VALUES (71, 'BAIXA - MAGOANINE', 205, true);
+            INSERT INTO route (id, name, country_id, active) VALUES (72, 'BAIXA-LAULANE', 205, true);
+            INSERT INTO route (id, name, country_id, active) VALUES (73, 'MUSEU - LAULANE', 205, true);
+            INSERT INTO route (id, name, country_id, active) VALUES (74, 'MUSEU-MAGOANINE', 205, true);
+            INSERT INTO route (id, name, country_id, active) VALUES (75, 'BAIXA-ZINTAVA', 205, true);
+            INSERT INTO route (id, name, country_id, active) VALUES (76, 'MUSEU - ZINTAVA', 205, true);
+            INSERT INTO route (id, name, country_id, active) VALUES (77, 'MUSEU - MERCADO ROMÃO', 205, true);
+            INSERT INTO route (id, name, country_id, active) VALUES (78, 'BAIXA - MAHOTAS', 205, true);
+            INSERT INTO route (id, name, country_id, active) VALUES (79, 'MUSEU - MAHOTAS', 205, true);
+            INSERT INTO route (id, name, country_id, active) VALUES (80, 'BAIXA-MARRACUENE', 205, true);
+            INSERT INTO route (id, name, country_id, active) VALUES (81, 'PRAÇA DOS COMBATENTES - NOVO CEMITÉRIO', 205, true);
+            INSERT INTO route (id, name, country_id, active) VALUES (82, 'PRAÇA DOS COMBATENTES - BOBOLE', 205, true);
+            INSERT INTO route (id, name, country_id, active) VALUES (83, 'MARRACUENE-TXUMENE', 205, true);
+            INSERT INTO route (id, name, country_id, active) VALUES (84, 'BAIXA-MANHIÇA', 205, true);
+            INSERT INTO route (id, name, country_id, active) VALUES (85, 'MANHIÇA - MARAGRA', 205, true);
+            INSERT INTO route (id, name, country_id, active) VALUES (86, 'BAIXA - MANHIÇA', 205, true);
+            INSERT INTO route (id, name, country_id, active) VALUES (87, 'BAIXA - ZIMPETO', 205, true);
+            INSERT INTO route (id, name, country_id, active) VALUES (88, 'BAIXA - MAGUDE', 205, true);
+            INSERT INTO route (id, name, country_id, active) VALUES (89, 'BAIXA - COSTA DO SOL', 205, true);
+            INSERT INTO route (id, name, country_id, active) VALUES (90, 'BAIXA-KATEMBE/PONTE CAIS', 205, true);
+            INSERT INTO route (id, name, country_id, active) VALUES (91, 'BAIXA - KA ELISA', 205, true);
+            INSERT INTO route (id, name, country_id, active) VALUES (92, 'BAIXA-MARINHA/INCASSANE', 205, true);
+            INSERT INTO route (id, name, country_id, active) VALUES (93, 'BAIXA-CHAMISSAVA', 205, true);
+            INSERT INTO route (id, name, country_id, active) VALUES (94, 'BAIXA-INGUIDE/ ZONA 5', 205, true);
+            INSERT INTO route (id, name, country_id, active) VALUES (95, 'BAIXA - BELA VISTA', 205, true);
+            INSERT INTO route (id, name, country_id, active) VALUES (96, 'JUNTA - PONTA DOURO', 205, true);
+            INSERT INTO route (id, name, country_id, active) VALUES (97, "ZIMPETO-PONTA D'OURO", 205, true);
+            INSERT INTO route (id, name, country_id, active) VALUES (98, 'ZIMPETO  - MUKATINE', 205, true);
+            INSERT INTO route (id, name, country_id, active) VALUES (99, 'ZIMPETO - MUHALAZE', 205, true);
+            INSERT INTO route (id, name, country_id, active) VALUES (100, 'ZIMPETO - STA.ISABEL', 205, true);
+            INSERT INTO route (id, name, country_id, active) VALUES (101, 'BOANE -  SALDANHA', 205, true);
+            INSERT INTO route (id, name, country_id, active) VALUES (102, 'BOANE - MOZAL ', 205, true);
+            INSERT INTO route (id, name, country_id, active) VALUES (103, 'SALAMANGA  - SANTA MARIA ', 205, true);
+            INSERT INTO route (id, name, country_id, active) VALUES (104, 'NGUENHA - HINDANE', 205, true);
+            INSERT INTO route (id, name, country_id, active) VALUES (105, 'CATUANE - BOANE', 205, true);
+            INSERT INTO route (id, name, country_id, active) VALUES (106, 'CHAMISSAVA - MALANGA', 205, true);
+            INSERT INTO route (id, name, country_id, active) VALUES (107, 'P.COMBATENTES - ZIMPETO', 205, true);
+            INSERT INTO route (id, name, country_id, active) VALUES (108, '2M - ZIMPETO', 205, true);
+            INSERT INTO route_details (route_id, operator_type, min_distance, min_fare, fare_per_km, max_fare, max_distance) VALUES (15, 'PRIVATE', 15, 15.00, 0.65, 27.00, 33.4);
+            INSERT INTO route_details (route_id, operator_type, min_distance, min_fare, fare_per_km, max_fare, max_distance) VALUES (16, 'PRIVATE', 15, 15.00, 0.39, 21.00, 30.2);
+            INSERT INTO route_details (route_id, operator_type, min_distance, min_fare, fare_per_km, max_fare, max_distance) VALUES (17, 'PRIVATE', 15, 15.00, 0.78, 24.00, 26.6);
+            INSERT INTO route_details (route_id, operator_type, min_distance, min_fare, fare_per_km, max_fare, max_distance) VALUES (18, 'PRIVATE', 15, 15.00, 0.62, 31.00, 41);
+            INSERT INTO route_details (route_id, operator_type, min_distance, min_fare, fare_per_km, max_fare, max_distance) VALUES (19, 'PRIVATE', 15, 15.00, 0.98, 19.00, 19.1);
+            INSERT INTO route_details (route_id, operator_type, min_distance, min_fare, fare_per_km, max_fare, max_distance) VALUES (20, 'PRIVATE', 15, 15.00, 1.60, 19.00, 17.5);
+            INSERT INTO route_details (route_id, operator_type, min_distance, min_fare, fare_per_km, max_fare, max_distance) VALUES (21, 'PRIVATE', 15, 15.00, 4.44, 19.00, 15.9);
+            INSERT INTO route_details (route_id, operator_type, min_distance, min_fare, fare_per_km, max_fare, max_distance) VALUES (22, 'PRIVATE', 15, 15.00, 0.85, 19.00, 19.7);
+            INSERT INTO route_details (route_id, operator_type, min_distance, min_fare, fare_per_km, max_fare, max_distance) VALUES (23, 'PRIVATE', 15, 15.00, 0.50, 21.00, 27);
+            INSERT INTO route_details (route_id, operator_type, min_distance, min_fare, fare_per_km, max_fare, max_distance) VALUES (24, 'PRIVATE', 15, 15.00, 1.02, 83.00, 81.7);
+            INSERT INTO route_details (route_id, operator_type, min_distance, min_fare, fare_per_km, max_fare, max_distance) VALUES (25, 'PRIVATE', 15, 15.00, 0.81, 58.00, 68.3);
+            INSERT INTO route_details (route_id, operator_type, min_distance, min_fare, fare_per_km, max_fare, max_distance) VALUES (26, 'PRIVATE', 15, 15.00, 4.00, 19.00, 16);
+            INSERT INTO route_details (route_id, operator_type, min_distance, min_fare, fare_per_km, max_fare, max_distance) VALUES (27, 'PRIVATE', 15, 15.00, 0.70, 36.00, 45);
+            INSERT INTO route_details (route_id, operator_type, min_distance, min_fare, fare_per_km, max_fare, max_distance) VALUES (28, 'PRIVATE', 15, 15.00, 0.47, 21.00, 27.8);
+            INSERT INTO route_details (route_id, operator_type, min_distance, min_fare, fare_per_km, max_fare, max_distance) VALUES (29, 'PRIVATE', 15, 15.00, 0.93, 43.00, 45.1);
+            INSERT INTO route_details (route_id, operator_type, min_distance, min_fare, fare_per_km, max_fare, max_distance) VALUES (30, 'PRIVATE', 15, 15.00, 0.92, 58.00, 61.8);
+            INSERT INTO route_details (route_id, operator_type, min_distance, min_fare, fare_per_km, max_fare, max_distance) VALUES (31, 'PRIVATE', 15, 15.00, 0.84, 48.00, 54.1);
+            INSERT INTO route_details (route_id, operator_type, min_distance, min_fare, fare_per_km, max_fare, max_distance) VALUES (32, 'PRIVATE', 15, 18.00, 0.38, 21.00, 23);
+            INSERT INTO route_details (route_id, operator_type, min_distance, min_fare, fare_per_km, max_fare, max_distance) VALUES (33, 'PRIVATE', 15, 18.00, 0.31, 21.00, 24.7);
+            INSERT INTO route_details (route_id, operator_type, min_distance, min_fare, fare_per_km, max_fare, max_distance) VALUES (34, 'PRIVATE', 15, 18.00, 0.25, 21.00, 27);
+            INSERT INTO route_details (route_id, operator_type, min_distance, min_fare, fare_per_km, max_fare, max_distance) VALUES (35, 'PRIVATE', 15, 18.00, 0.21, 21.00, 29);
+            INSERT INTO route_details (route_id, operator_type, min_distance, min_fare, fare_per_km, max_fare, max_distance) VALUES (36, 'PRIVATE', 15, 18.00, 0.37, 21.00, 23.1);
+            INSERT INTO route_details (route_id, operator_type, min_distance, min_fare, fare_per_km, max_fare, max_distance) VALUES (37, 'PRIVATE', 15, 18.00, 0.32, 21.00, 24.4);
+            INSERT INTO route_details (route_id, operator_type, min_distance, min_fare, fare_per_km, max_fare, max_distance) VALUES (38, 'PRIVATE', 15, 18.00, 0.25, 21.00, 27);
+            INSERT INTO route_details (route_id, operator_type, min_distance, min_fare, fare_per_km, max_fare, max_distance) VALUES (39, 'PRIVATE', 15, 15.00, 0.31, 19.00, 27.8);
+            INSERT INTO route_details (route_id, operator_type, min_distance, min_fare, fare_per_km, max_fare, max_distance) VALUES (40, 'PRIVATE', 15, 15.00, 1.82, 19.00, 17.2);
+            INSERT INTO route_details (route_id, operator_type, min_distance, min_fare, fare_per_km, max_fare, max_distance) VALUES (41, 'PRIVATE', 15, 18.00, 0.86, 21.00, 18.5);
+            INSERT INTO route_details (route_id, operator_type, min_distance, min_fare, fare_per_km, max_fare, max_distance) VALUES (42, 'PRIVATE', 10, 15.00, 2.89, 28.00, 14.5);
+            INSERT INTO route_details (route_id, operator_type, min_distance, min_fare, fare_per_km, max_fare, max_distance) VALUES (43, 'PRIVATE', 15, 15.00, 0.37, 21.00, 31.3);
+            INSERT INTO route_details (route_id, operator_type, min_distance, min_fare, fare_per_km, max_fare, max_distance) VALUES (44, 'PRIVATE', 15, 15.00, 1.74, 19.00, 17.3);
+            INSERT INTO route_details (route_id, operator_type, min_distance, min_fare, fare_per_km, max_fare, max_distance) VALUES (45, 'PRIVATE', 15, 18.00, 6.00, 21.00, 15.5);
+            INSERT INTO route_details (route_id, operator_type, min_distance, min_fare, fare_per_km, max_fare, max_distance) VALUES (46, 'PRIVATE', 15, 18.00, 1.67, 21.00, 16.8);
+            INSERT INTO route_details (route_id, operator_type, min_distance, min_fare, fare_per_km, max_fare, max_distance) VALUES (47, 'PRIVATE', 15, 18.00, 0.25, 21.00, 27.1);
+            INSERT INTO route_details (route_id, operator_type, min_distance, min_fare, fare_per_km, max_fare, max_distance) VALUES (48, 'PRIVATE', 15, 18.00, 0.28, 21.00, 25.7);
+            INSERT INTO route_details (route_id, operator_type, min_distance, min_fare, fare_per_km, max_fare, max_distance) VALUES (49, 'PRIVATE', 15, 18.00, 1.15, 21.00, 17.6);
+            INSERT INTO route_details (route_id, operator_type, min_distance, min_fare, fare_per_km, max_fare, max_distance) VALUES (50, 'PRIVATE', 15, 18.00, 0.49, 21.00, 21.1);
+            INSERT INTO route_details (route_id, operator_type, min_distance, min_fare, fare_per_km, max_fare, max_distance) VALUES (51, 'PRIVATE', 15, 18.00, 0.55, 21.00, 20.5);
+            INSERT INTO route_details (route_id, operator_type, min_distance, min_fare, fare_per_km, max_fare, max_distance) VALUES (52, 'PRIVATE', 15, 18.00, 0.91, 21.00, 18.3);
+            INSERT INTO route_details (route_id, operator_type, min_distance, min_fare, fare_per_km, max_fare, max_distance) VALUES (53, 'PRIVATE', 15, 18.00, 0.59, 21.00, 20.1);
+            INSERT INTO route_details (route_id, operator_type, min_distance, min_fare, fare_per_km, max_fare, max_distance) VALUES (54, 'PRIVATE', 15, 15.00, 0.35, 18.00, 23.6);
+            INSERT INTO route_details (route_id, operator_type, min_distance, min_fare, fare_per_km, max_fare, max_distance) VALUES (55, 'PRIVATE', 15, 15.00, 0.31, 18.00, 24.7);
+            INSERT INTO route_details (route_id, operator_type, min_distance, min_fare, fare_per_km, max_fare, max_distance) VALUES (56, 'PRIVATE', 15, 15.00, 0.68, 18.00, 19.4);
+            INSERT INTO route_details (route_id, operator_type, min_distance, min_fare, fare_per_km, max_fare, max_distance) VALUES (57, 'PRIVATE', 15, 15.00, 0.46, 18.00, 21.5);
+            INSERT INTO route_details (route_id, operator_type, min_distance, min_fare, fare_per_km, max_fare, max_distance) VALUES (58, 'PRIVATE', 15, 18.00, 0.57, 21.00, 20.3);
+            INSERT INTO route_details (route_id, operator_type, min_distance, min_fare, fare_per_km, max_fare, max_distance) VALUES (59, 'PRIVATE', 15, 15.00, 0.57, 18.00, 20.3);
+            INSERT INTO route_details (route_id, operator_type, min_distance, min_fare, fare_per_km, max_fare, max_distance) VALUES (60, 'PRIVATE', 15, 15.00, 0.79, 18.00, 18.8);
+            INSERT INTO route_details (route_id, operator_type, min_distance, min_fare, fare_per_km, max_fare, max_distance) VALUES (61, 'PRIVATE', 15, 15.00, 0.46, 21.00, 28.1);
+            INSERT INTO route_details (route_id, operator_type, min_distance, min_fare, fare_per_km, max_fare, max_distance) VALUES (62, 'PRIVATE', 15, 15.00, 0.45, 18.00, 21.7);
+            INSERT INTO route_details (route_id, operator_type, min_distance, min_fare, fare_per_km, max_fare, max_distance) VALUES (63, 'PRIVATE', 15, 15.00, 0.48, 18.00, 21.2);
+            INSERT INTO route_details (route_id, operator_type, min_distance, min_fare, fare_per_km, max_fare, max_distance) VALUES (64, 'PRIVATE', 15, 15.00, 0.70, 18.00, 19.3);
+            INSERT INTO route_details (route_id, operator_type, min_distance, min_fare, fare_per_km, max_fare, max_distance) VALUES (65, 'PRIVATE', 15, 15.00, -3.33, 18.00, 14.1);
+            INSERT INTO route_details (route_id, operator_type, min_distance, min_fare, fare_per_km, max_fare, max_distance) VALUES (66, 'PRIVATE', 15, 15.00, -1.20, 18.00, 12.5);
+            INSERT INTO route_details (route_id, operator_type, min_distance, min_fare, fare_per_km, max_fare, max_distance) VALUES (67, 'PRIVATE', 15, 15.00, 1.15, 26.00, 24.6);
+            INSERT INTO route_details (route_id, operator_type, min_distance, min_fare, fare_per_km, max_fare, max_distance) VALUES (68, 'PRIVATE', 15, 15.00, 0.88, 18.00, 18.4);
+            INSERT INTO route_details (route_id, operator_type, min_distance, min_fare, fare_per_km, max_fare, max_distance) VALUES (69, 'PRIVATE', 8, 15.00, 0.00, 15.00, 8);
+            INSERT INTO route_details (route_id, operator_type, min_distance, min_fare, fare_per_km, max_fare, max_distance) VALUES (70, 'PRIVATE', 15, 15.00, 1.15, 26.00, 24.6);
+            INSERT INTO route_details (route_id, operator_type, min_distance, min_fare, fare_per_km, max_fare, max_distance) VALUES (71, 'PRIVATE', 15, 15.00, -3.00, 18.00, 14);
+            INSERT INTO route_details (route_id, operator_type, min_distance, min_fare, fare_per_km, max_fare, max_distance) VALUES (72, 'PRIVATE', 15, 15.00, 1.50, 18.00, 17);
+            INSERT INTO route_details (route_id, operator_type, min_distance, min_fare, fare_per_km, max_fare, max_distance) VALUES (73, 'PRIVATE', 10, 15.00, 0.75, 18.00, 14);
+            INSERT INTO route_details (route_id, operator_type, min_distance, min_fare, fare_per_km, max_fare, max_distance) VALUES (74, 'PRIVATE', 10, 15.00, 0.60, 18.00, 15);
+            INSERT INTO route_details (route_id, operator_type, min_distance, min_fare, fare_per_km, max_fare, max_distance) VALUES (75, 'PRIVATE', 15, 15.00, 0.85, 26.00, 28);
+            INSERT INTO route_details (route_id, operator_type, min_distance, min_fare, fare_per_km, max_fare, max_distance) VALUES (76, 'PRIVATE', 15, 15.00, 1.00, 26.00, 26);
+            INSERT INTO route_details (route_id, operator_type, min_distance, min_fare, fare_per_km, max_fare, max_distance) VALUES (77, 'PRIVATE', 15, 15.00, 1.50, 18.00, 17);
+            INSERT INTO route_details (route_id, operator_type, min_distance, min_fare, fare_per_km, max_fare, max_distance) VALUES (78, 'PRIVATE', 15, 15.00, 3.00, 18.00, 16);
+            INSERT INTO route_details (route_id, operator_type, min_distance, min_fare, fare_per_km, max_fare, max_distance) VALUES (79, 'PRIVATE', 15, 15.00, 7.50, 18.00, 15.4);
+            INSERT INTO route_details (route_id, operator_type, min_distance, min_fare, fare_per_km, max_fare, max_distance) VALUES (80, 'PRIVATE', 15, 15.00, 0.76, 42.00, 50.5);
+            INSERT INTO route_details (route_id, operator_type, min_distance, min_fare, fare_per_km, max_fare, max_distance) VALUES (81, 'PRIVATE', 15, 15.00, 0.80, 26.00, 28.7);
+            INSERT INTO route_details (route_id, operator_type, min_distance, min_fare, fare_per_km, max_fare, max_distance) VALUES (82, 'PRIVATE', 15, 15.00, 0.95, 46.00, 47.6);
+            INSERT INTO route_details (route_id, operator_type, min_distance, min_fare, fare_per_km, max_fare, max_distance) VALUES (83, 'PRIVATE', 15, 15.00, 1.17, 26.00, 24.4);
+            INSERT INTO route_details (route_id, operator_type, min_distance, min_fare, fare_per_km, max_fare, max_distance) VALUES (84, 'PRIVATE', 15, 15.00, 0.83, 73.00, 85);
+            INSERT INTO route_details (route_id, operator_type, min_distance, min_fare, fare_per_km, max_fare, max_distance) VALUES (85, 'PRIVATE', 10, 15.00, 0.75, 18.00, 14);
+            INSERT INTO route_details (route_id, operator_type, min_distance, min_fare, fare_per_km, max_fare, max_distance) VALUES (86, 'PRIVATE', 15, 15.00, 0.78, 73.00, 89.3);
+            INSERT INTO route_details (route_id, operator_type, min_distance, min_fare, fare_per_km, max_fare, max_distance) VALUES (87, 'PRIVATE', 15, 15.00, 0.38, 21.00, 31);
+            INSERT INTO route_details (route_id, operator_type, min_distance, min_fare, fare_per_km, max_fare, max_distance) VALUES (88, 'PRIVATE', 15, 15.00, 0.91, 143.00, 155);
+            INSERT INTO route_details (route_id, operator_type, min_distance, min_fare, fare_per_km, max_fare, max_distance) VALUES (89, 'PRIVATE', 10, 15.00, 0.75, 18.00, 14);
+            INSERT INTO route_details (route_id, operator_type, min_distance, min_fare, fare_per_km, max_fare, max_distance) VALUES (90, 'PRIVATE', 10, 15.00, 0.91, 18.00, 13.3);
+            INSERT INTO route_details (route_id, operator_type, min_distance, min_fare, fare_per_km, max_fare, max_distance) VALUES (91, 'PRIVATE', 15, 15.00, 1.25, 26.00, 21.7);
+            INSERT INTO route_details (route_id, operator_type, min_distance, min_fare, fare_per_km, max_fare, max_distance) VALUES (92, 'PRIVATE', 10, 15.00, 0.60, 18.00, 15);
+            INSERT INTO route_details (route_id, operator_type, min_distance, min_fare, fare_per_km, max_fare, max_distance) VALUES (93, 'PRIVATE', 10, 15.00, 0.57, 18.00, 15.3);
+            INSERT INTO route_details (route_id, operator_type, min_distance, min_fare, fare_per_km, max_fare, max_distance) VALUES (94, 'PRIVATE', 15, 15.00, 1.64, 18.00, 17.4);
+            INSERT INTO route_details (route_id, operator_type, min_distance, min_fare, fare_per_km, max_fare, max_distance) VALUES (95, 'PRIVATE', 15, 15.00, 1.10, 58.00, 54);
+            INSERT INTO route_details (route_id, operator_type, min_distance, min_fare, fare_per_km, max_fare, max_distance) VALUES (96, 'PRIVATE', 15, 15.00, 1.12, 153.00, 137.7);
+            INSERT INTO route_details (route_id, operator_type, min_distance, min_fare, fare_per_km, max_fare, max_distance) VALUES (97, 'PRIVATE', 15, 15.00, 0.99, 153.00, 154.1);
+            INSERT INTO route_details (route_id, operator_type, min_distance, min_fare, fare_per_km, max_fare, max_distance) VALUES (98, 'PRIVATE', 10, 15.00, 0.75, 18.00, 14);
+            INSERT INTO route_details (route_id, operator_type, min_distance, min_fare, fare_per_km, max_fare, max_distance) VALUES (99, 'PRIVATE', 10, 15.00, 0.60, 18.00, 15);
+            INSERT INTO route_details (route_id, operator_type, min_distance, min_fare, fare_per_km, max_fare, max_distance) VALUES (100, 'PRIVATE', 10, 15.00, 3.00, 18.00, 11);
+            INSERT INTO route_details (route_id, operator_type, min_distance, min_fare, fare_per_km, max_fare, max_distance) VALUES (101, 'PRIVATE', 15, 15.00, 3.60, 33.00, 20);
+            INSERT INTO route_details (route_id, operator_type, min_distance, min_fare, fare_per_km, max_fare, max_distance) VALUES (102, 'PRIVATE', 15, 15.00, 0.60, 21.00, 25);
+            INSERT INTO route_details (route_id, operator_type, min_distance, min_fare, fare_per_km, max_fare, max_distance) VALUES (103, 'PRIVATE', 15, 18.00, 2.05, 153.00, 81);
+            INSERT INTO route_details (route_id, operator_type, min_distance, min_fare, fare_per_km, max_fare, max_distance) VALUES (104, 'PRIVATE', 15, 15.00, 1.23, 123.00, 102.9);
+            INSERT INTO route_details (route_id, operator_type, min_distance, min_fare, fare_per_km, max_fare, max_distance) VALUES (105, 'PRIVATE', 15, 15.00, 1.75, 203.00, 122.2);
+            INSERT INTO route_details (route_id, operator_type, min_distance, min_fare, fare_per_km, max_fare, max_distance) VALUES (106, 'PRIVATE', 15, 15.00, -1.00, 18.00, 12);
+            INSERT INTO route_details (route_id, operator_type, min_distance, min_fare, fare_per_km, max_fare, max_distance) VALUES (107, 'PRIVATE', 15, 15.00, 0.75, 18.00, 19);
+            INSERT INTO route_details (route_id, operator_type, min_distance, min_fare, fare_per_km, max_fare, max_distance) VALUES (108, 'PRIVATE', 15, 15.00, 0.75, 18.00, 19);
+            INSERT INTO route_details (route_id, operator_type, min_distance, min_fare, fare_per_km, max_fare, max_distance) VALUES (15, 'PUBLIC', 15, 12.00, 0.65, 24.00, 33.4);
+            INSERT INTO route_details (route_id, operator_type, min_distance, min_fare, fare_per_km, max_fare, max_distance) VALUES (16, 'PUBLIC', 15, 12.00, 0.39, 18.00, 30.2);
+            INSERT INTO route_details (route_id, operator_type, min_distance, min_fare, fare_per_km, max_fare, max_distance) VALUES (17, 'PUBLIC', 15, 12.00, 0.78, 21.00, 26.6);
+            INSERT INTO route_details (route_id, operator_type, min_distance, min_fare, fare_per_km, max_fare, max_distance) VALUES (18, 'PUBLIC', 15, 12.00, 0.62, 28.00, 41);
+            INSERT INTO route_details (route_id, operator_type, min_distance, min_fare, fare_per_km, max_fare, max_distance) VALUES (19, 'PUBLIC', 15, 12.00, 0.98, 16.00, 19.1);
+            INSERT INTO route_details (route_id, operator_type, min_distance, min_fare, fare_per_km, max_fare, max_distance) VALUES (20, 'PUBLIC', 15, 12.00, 1.60, 16.00, 17.5);
+            INSERT INTO route_details (route_id, operator_type, min_distance, min_fare, fare_per_km, max_fare, max_distance) VALUES (21, 'PUBLIC', 15, 12.00, 4.44, 16.00, 15.9);
+            INSERT INTO route_details (route_id, operator_type, min_distance, min_fare, fare_per_km, max_fare, max_distance) VALUES (22, 'PUBLIC', 15, 12.00, 0.85, 16.00, 19.7);
+            INSERT INTO route_details (route_id, operator_type, min_distance, min_fare, fare_per_km, max_fare, max_distance) VALUES (23, 'PUBLIC', 15, 12.00, 0.50, 18.00, 27);
+            INSERT INTO route_details (route_id, operator_type, min_distance, min_fare, fare_per_km, max_fare, max_distance) VALUES (24, 'PUBLIC', 15, 12.00, 1.02, 80.00, 81.7);
+            INSERT INTO route_details (route_id, operator_type, min_distance, min_fare, fare_per_km, max_fare, max_distance) VALUES (25, 'PUBLIC', 15, 12.00, 0.81, 55.00, 68.3);
+            INSERT INTO route_details (route_id, operator_type, min_distance, min_fare, fare_per_km, max_fare, max_distance) VALUES (26, 'PUBLIC', 15, 12.00, 4.00, 16.00, 16);
+            INSERT INTO route_details (route_id, operator_type, min_distance, min_fare, fare_per_km, max_fare, max_distance) VALUES (27, 'PUBLIC', 15, 12.00, 0.70, 33.00, 45);
+            INSERT INTO route_details (route_id, operator_type, min_distance, min_fare, fare_per_km, max_fare, max_distance) VALUES (28, 'PUBLIC', 15, 12.00, 0.47, 18.00, 27.8);
+            INSERT INTO route_details (route_id, operator_type, min_distance, min_fare, fare_per_km, max_fare, max_distance) VALUES (29, 'PUBLIC', 15, 12.00, 0.93, 40.00, 45.1);
+            INSERT INTO route_details (route_id, operator_type, min_distance, min_fare, fare_per_km, max_fare, max_distance) VALUES (30, 'PUBLIC', 15, 12.00, 0.92, 55.00, 61.8);
+            INSERT INTO route_details (route_id, operator_type, min_distance, min_fare, fare_per_km, max_fare, max_distance) VALUES (31, 'PUBLIC', 15, 12.00, 0.84, 45.00, 54.1);
+            INSERT INTO route_details (route_id, operator_type, min_distance, min_fare, fare_per_km, max_fare, max_distance) VALUES (32, 'PUBLIC', 15, 15.00, 0.38, 18.00, 23);
+            INSERT INTO route_details (route_id, operator_type, min_distance, min_fare, fare_per_km, max_fare, max_distance) VALUES (33, 'PUBLIC', 15, 15.00, 0.31, 18.00, 24.7);
+            INSERT INTO route_details (route_id, operator_type, min_distance, min_fare, fare_per_km, max_fare, max_distance) VALUES (34, 'PUBLIC', 15, 15.00, 0.25, 18.00, 27);
+            INSERT INTO route_details (route_id, operator_type, min_distance, min_fare, fare_per_km, max_fare, max_distance) VALUES (35, 'PUBLIC', 15, 15.00, 0.21, 18.00, 29);
+            INSERT INTO route_details (route_id, operator_type, min_distance, min_fare, fare_per_km, max_fare, max_distance) VALUES (36, 'PUBLIC', 15, 15.00, 0.37, 18.00, 23.1);
+            INSERT INTO route_details (route_id, operator_type, min_distance, min_fare, fare_per_km, max_fare, max_distance) VALUES (37, 'PUBLIC', 15, 15.00, 0.32, 18.00, 24.4);
+            INSERT INTO route_details (route_id, operator_type, min_distance, min_fare, fare_per_km, max_fare, max_distance) VALUES (38, 'PUBLIC', 15, 15.00, 0.25, 18.00, 27);
+            INSERT INTO route_details (route_id, operator_type, min_distance, min_fare, fare_per_km, max_fare, max_distance) VALUES (39, 'PUBLIC', 15, 12.00, 0.31, 16.00, 27.8);
+            INSERT INTO route_details (route_id, operator_type, min_distance, min_fare, fare_per_km, max_fare, max_distance) VALUES (40, 'PUBLIC', 15, 12.00, 1.82, 16.00, 17.2);
+            INSERT INTO route_details (route_id, operator_type, min_distance, min_fare, fare_per_km, max_fare, max_distance) VALUES (41, 'PUBLIC', 15, 15.00, 0.86, 18.00, 18.5);
+            INSERT INTO route_details (route_id, operator_type, min_distance, min_fare, fare_per_km, max_fare, max_distance) VALUES (42, 'PUBLIC', 10, 12.00, 2.89, 25.00, 14.5);
+            INSERT INTO route_details (route_id, operator_type, min_distance, min_fare, fare_per_km, max_fare, max_distance) VALUES (43, 'PUBLIC', 15, 12.00, 0.37, 18.00, 31.3);
+            INSERT INTO route_details (route_id, operator_type, min_distance, min_fare, fare_per_km, max_fare, max_distance) VALUES (44, 'PUBLIC', 15, 12.00, 1.74, 16.00, 17.3);
+            INSERT INTO route_details (route_id, operator_type, min_distance, min_fare, fare_per_km, max_fare, max_distance) VALUES (45, 'PUBLIC', 15, 15.00, 6.00, 18.00, 15.5);
+            INSERT INTO route_details (route_id, operator_type, min_distance, min_fare, fare_per_km, max_fare, max_distance) VALUES (46, 'PUBLIC', 15, 15.00, 1.67, 18.00, 16.8);
+            INSERT INTO route_details (route_id, operator_type, min_distance, min_fare, fare_per_km, max_fare, max_distance) VALUES (47, 'PUBLIC', 15, 15.00, 0.25, 18.00, 27.1);
+            INSERT INTO route_details (route_id, operator_type, min_distance, min_fare, fare_per_km, max_fare, max_distance) VALUES (48, 'PUBLIC', 15, 15.00, 0.28, 18.00, 25.7);
+            INSERT INTO route_details (route_id, operator_type, min_distance, min_fare, fare_per_km, max_fare, max_distance) VALUES (49, 'PUBLIC', 15, 15.00, 1.15, 18.00, 17.6);
+            INSERT INTO route_details (route_id, operator_type, min_distance, min_fare, fare_per_km, max_fare, max_distance) VALUES (50, 'PUBLIC', 15, 15.00, 0.49, 18.00, 21.1);
+            INSERT INTO route_details (route_id, operator_type, min_distance, min_fare, fare_per_km, max_fare, max_distance) VALUES (51, 'PUBLIC', 15, 15.00, 0.55, 18.00, 20.5);
+            INSERT INTO route_details (route_id, operator_type, min_distance, min_fare, fare_per_km, max_fare, max_distance) VALUES (52, 'PUBLIC', 15, 15.00, 0.91, 18.00, 18.3);
+            INSERT INTO route_details (route_id, operator_type, min_distance, min_fare, fare_per_km, max_fare, max_distance) VALUES (53, 'PUBLIC', 15, 15.00, 0.59, 18.00, 20.1);
+            INSERT INTO route_details (route_id, operator_type, min_distance, min_fare, fare_per_km, max_fare, max_distance) VALUES (54, 'PUBLIC', 15, 12.00, 0.35, 15.00, 23.6);
+            INSERT INTO route_details (route_id, operator_type, min_distance, min_fare, fare_per_km, max_fare, max_distance) VALUES (55, 'PUBLIC', 15, 12.00, 0.31, 15.00, 24.7);
+            INSERT INTO route_details (route_id, operator_type, min_distance, min_fare, fare_per_km, max_fare, max_distance) VALUES (56, 'PUBLIC', 15, 12.00, 0.68, 15.00, 19.4);
+            INSERT INTO route_details (route_id, operator_type, min_distance, min_fare, fare_per_km, max_fare, max_distance) VALUES (57, 'PUBLIC', 15, 12.00, 0.46, 15.00, 21.5);
+            INSERT INTO route_details (route_id, operator_type, min_distance, min_fare, fare_per_km, max_fare, max_distance) VALUES (58, 'PUBLIC', 15, 15.00, 0.57, 18.00, 20.3);
+            INSERT INTO route_details (route_id, operator_type, min_distance, min_fare, fare_per_km, max_fare, max_distance) VALUES (59, 'PUBLIC', 15, 12.00, 0.57, 15.00, 20.3);
+            INSERT INTO route_details (route_id, operator_type, min_distance, min_fare, fare_per_km, max_fare, max_distance) VALUES (60, 'PUBLIC', 15, 12.00, 0.79, 15.00, 18.8);
+            INSERT INTO route_details (route_id, operator_type, min_distance, min_fare, fare_per_km, max_fare, max_distance) VALUES (61, 'PUBLIC', 15, 12.00, 0.46, 18.00, 28.1);
+            INSERT INTO route_details (route_id, operator_type, min_distance, min_fare, fare_per_km, max_fare, max_distance) VALUES (62, 'PUBLIC', 15, 12.00, 0.45, 15.00, 21.7);
+            INSERT INTO route_details (route_id, operator_type, min_distance, min_fare, fare_per_km, max_fare, max_distance) VALUES (63, 'PUBLIC', 15, 15.00, 0.00, 15.00, 21.2);
+            INSERT INTO route_details (route_id, operator_type, min_distance, min_fare, fare_per_km, max_fare, max_distance) VALUES (64, 'PUBLIC', 15, 12.00, 0.70, 15.00, 19.3);
+            INSERT INTO route_details (route_id, operator_type, min_distance, min_fare, fare_per_km, max_fare, max_distance) VALUES (65, 'PUBLIC', 15, 12.00, -3.33, 15.00, 14.1);
+            INSERT INTO route_details (route_id, operator_type, min_distance, min_fare, fare_per_km, max_fare, max_distance) VALUES (66, 'PUBLIC', 15, 12.00, -1.20, 15.00, 12.5);
+            INSERT INTO route_details (route_id, operator_type, min_distance, min_fare, fare_per_km, max_fare, max_distance) VALUES (67, 'PUBLIC', 15, 12.00, 1.15, 23.00, 24.6);
+            INSERT INTO route_details (route_id, operator_type, min_distance, min_fare, fare_per_km, max_fare, max_distance) VALUES (68, 'PUBLIC', 15, 12.00, 0.88, 15.00, 18.4);
+            INSERT INTO route_details (route_id, operator_type, min_distance, min_fare, fare_per_km, max_fare, max_distance) VALUES (69, 'PUBLIC', 8, 12.00, 0.00, 12.00, 8);
+            INSERT INTO route_details (route_id, operator_type, min_distance, min_fare, fare_per_km, max_fare, max_distance) VALUES (70, 'PUBLIC', 15, 12.00, 1.15, 23.00, 24.6);
+            INSERT INTO route_details (route_id, operator_type, min_distance, min_fare, fare_per_km, max_fare, max_distance) VALUES (71, 'PUBLIC', 15, 12.00, -3.00, 15.00, 14);
+            INSERT INTO route_details (route_id, operator_type, min_distance, min_fare, fare_per_km, max_fare, max_distance) VALUES (72, 'PUBLIC', 15, 12.00, 1.50, 15.00, 17);
+            INSERT INTO route_details (route_id, operator_type, min_distance, min_fare, fare_per_km, max_fare, max_distance) VALUES (73, 'PUBLIC', 10, 12.00, 0.75, 15.00, 14);
+            INSERT INTO route_details (route_id, operator_type, min_distance, min_fare, fare_per_km, max_fare, max_distance) VALUES (74, 'PUBLIC', 10, 12.00, 0.60, 15.00, 15);
+            INSERT INTO route_details (route_id, operator_type, min_distance, min_fare, fare_per_km, max_fare, max_distance) VALUES (75, 'PUBLIC', 15, 12.00, 0.85, 23.00, 28);
+            INSERT INTO route_details (route_id, operator_type, min_distance, min_fare, fare_per_km, max_fare, max_distance) VALUES (76, 'PUBLIC', 15, 12.00, 1.00, 23.00, 26);
+            INSERT INTO route_details (route_id, operator_type, min_distance, min_fare, fare_per_km, max_fare, max_distance) VALUES (77, 'PUBLIC', 15, 12.00, 1.50, 15.00, 17);
+            INSERT INTO route_details (route_id, operator_type, min_distance, min_fare, fare_per_km, max_fare, max_distance) VALUES (78, 'PUBLIC', 15, 12.00, 3.00, 15.00, 16);
+            INSERT INTO route_details (route_id, operator_type, min_distance, min_fare, fare_per_km, max_fare, max_distance) VALUES (79, 'PUBLIC', 15, 12.00, 7.50, 15.00, 15.4);
+            INSERT INTO route_details (route_id, operator_type, min_distance, min_fare, fare_per_km, max_fare, max_distance) VALUES (80, 'PUBLIC', 15, 12.00, 0.76, 39.00, 50.5);
+            INSERT INTO route_details (route_id, operator_type, min_distance, min_fare, fare_per_km, max_fare, max_distance) VALUES (81, 'PUBLIC', 15, 12.00, 0.80, 23.00, 28.7);
+            INSERT INTO route_details (route_id, operator_type, min_distance, min_fare, fare_per_km, max_fare, max_distance) VALUES (82, 'PUBLIC', 15, 12.00, 0.95, 43.00, 47.6);
+            INSERT INTO route_details (route_id, operator_type, min_distance, min_fare, fare_per_km, max_fare, max_distance) VALUES (83, 'PUBLIC', 15, 12.00, 1.17, 23.00, 24.4);
+            INSERT INTO route_details (route_id, operator_type, min_distance, min_fare, fare_per_km, max_fare, max_distance) VALUES (84, 'PUBLIC', 15, 12.00, 0.83, 70.00, 85);
+            INSERT INTO route_details (route_id, operator_type, min_distance, min_fare, fare_per_km, max_fare, max_distance) VALUES (85, 'PUBLIC', 10, 12.00, 0.75, 15.00, 14);
+            INSERT INTO route_details (route_id, operator_type, min_distance, min_fare, fare_per_km, max_fare, max_distance) VALUES (86, 'PUBLIC', 15, 12.00, 0.78, 70.00, 89.3);
+            INSERT INTO route_details (route_id, operator_type, min_distance, min_fare, fare_per_km, max_fare, max_distance) VALUES (87, 'PUBLIC', 15, 12.00, 0.38, 18.00, 31);
+            INSERT INTO route_details (route_id, operator_type, min_distance, min_fare, fare_per_km, max_fare, max_distance) VALUES (88, 'PUBLIC', 15, 12.00, 0.91, 140.00, 155);
+            INSERT INTO route_details (route_id, operator_type, min_distance, min_fare, fare_per_km, max_fare, max_distance) VALUES (89, 'PUBLIC', 10, 12.00, 0.75, 15.00, 14);
+            INSERT INTO route_details (route_id, operator_type, min_distance, min_fare, fare_per_km, max_fare, max_distance) VALUES (90, 'PUBLIC', 10, 12.00, 0.91, 15.00, 13.3);
+            INSERT INTO route_details (route_id, operator_type, min_distance, min_fare, fare_per_km, max_fare, max_distance) VALUES (91, 'PUBLIC', 15, 12.00, 1.64, 23.00, 21.7);
+            INSERT INTO route_details (route_id, operator_type, min_distance, min_fare, fare_per_km, max_fare, max_distance) VALUES (92, 'PUBLIC', 10, 12.00, 0.60, 15.00, 15);
+            INSERT INTO route_details (route_id, operator_type, min_distance, min_fare, fare_per_km, max_fare, max_distance) VALUES (93, 'PUBLIC', 10, 12.00, 0.57, 15.00, 15.3);
+            INSERT INTO route_details (route_id, operator_type, min_distance, min_fare, fare_per_km, max_fare, max_distance) VALUES (94, 'PUBLIC', 15, 12.00, 1.25, 15.00, 17.4);
+            INSERT INTO route_details (route_id, operator_type, min_distance, min_fare, fare_per_km, max_fare, max_distance) VALUES (95, 'PUBLIC', 15, 12.00, 1.10, 55.00, 54);
+            INSERT INTO route_details (route_id, operator_type, min_distance, min_fare, fare_per_km, max_fare, max_distance) VALUES (96, 'PUBLIC', 15, 12.00, 1.12, 150.00, 137.7);
+            INSERT INTO route_details (route_id, operator_type, min_distance, min_fare, fare_per_km, max_fare, max_distance) VALUES (97, 'PUBLIC', 15, 12.00, 0.99, 150.00, 154.1);
+            INSERT INTO route_details (route_id, operator_type, min_distance, min_fare, fare_per_km, max_fare, max_distance) VALUES (98, 'PUBLIC', 10, 12.00, 0.75, 15.00, 14);
+            INSERT INTO route_details (route_id, operator_type, min_distance, min_fare, fare_per_km, max_fare, max_distance) VALUES (99, 'PUBLIC', 10, 12.00, 0.60, 15.00, 15);
+            INSERT INTO route_details (route_id, operator_type, min_distance, min_fare, fare_per_km, max_fare, max_distance) VALUES (100, 'PUBLIC', 10, 12.00, 3.00, 15.00, 11);
+            INSERT INTO route_details (route_id, operator_type, min_distance, min_fare, fare_per_km, max_fare, max_distance) VALUES (101, 'PUBLIC', 15, 12.00, 3.60, 30.00, 20);
+            INSERT INTO route_details (route_id, operator_type, min_distance, min_fare, fare_per_km, max_fare, max_distance) VALUES (102, 'PUBLIC', 15, 12.00, 0.60, 18.00, 25);
+            INSERT INTO route_details (route_id, operator_type, min_distance, min_fare, fare_per_km, max_fare, max_distance) VALUES (103, 'PUBLIC', 15, 15.00, 2.05, 150.00, 81);
+            INSERT INTO route_details (route_id, operator_type, min_distance, min_fare, fare_per_km, max_fare, max_distance) VALUES (104, 'PUBLIC', 15, 12.00, 1.23, 120.00, 102.9);
+            INSERT INTO route_details (route_id, operator_type, min_distance, min_fare, fare_per_km, max_fare, max_distance) VALUES (105, 'PUBLIC', 15, 12.00, 1.75, 200.00, 122.2);
+            INSERT INTO route_details (route_id, operator_type, min_distance, min_fare, fare_per_km, max_fare, max_distance) VALUES (106, 'PUBLIC', 15, 12.00, -1.00, 15.00, 12);
+            INSERT INTO route_details (route_id, operator_type, min_distance, min_fare, fare_per_km, max_fare, max_distance) VALUES (107, 'PUBLIC', 15, 12.00, 0.75, 15.00, 19);
+            INSERT INTO route_details (route_id, operator_type, min_distance, min_fare, fare_per_km, max_fare, max_distance) VALUES (108, 'PUBLIC', 15, 12.00, 0.75, 15.00, 19);
+        </sql>
+    </changeSet>
+    <changeSet author="Pavlo.Slyvka" id="routes_kenya_data-insert-test">
+        <sql>
+            INSERT INTO route (id, name, country_id, active) VALUES (4, 'CBD – MOMBASA ROAD CORRIDOR', 206, true);
+            INSERT INTO route (id, name, country_id, active) VALUES (5, 'CBD – RONGAI SOUTHERN BYPASS CORRIDOR', 206, true);
+            INSERT INTO route (id, name, country_id, active) VALUES (6, 'CBD – NGONG ROAD CORRIDOR', 206, true);
+            INSERT INTO route (id, name, country_id, active) VALUES (7, 'CBD – WAIYAKI WAY CORRIDOR', 206, true);
+            INSERT INTO route (id, name, country_id, active) VALUES (8, 'CBD – LIMURU ROAD NORTHERN BYPASS CORRIDOR', 206, true);
+            INSERT INTO route (id, name, country_id, active) VALUES (9, 'CBD- KIAMBU ROAD CORRIDOR', 206, true);
+            INSERT INTO route (id, name, country_id, active) VALUES (10, 'CBD THIKA ROAD CORRIDOR', 206, true);
+            INSERT INTO route (id, name, country_id, active) VALUES (11, 'CBD – KIKUYU CORRIDOR', 206, true);
+            INSERT INTO route (id, name, country_id, active) VALUES (12, 'CBD – JOGOO ROAD CORRIDOR', 206, true);
+            INSERT INTO route (id, name, country_id, active) VALUES (13, 'CBD- JUJA ROAD CORRIDOR', 206, true);
+            INSERT INTO route (id, name, country_id, active) VALUES (14, 'DIASPORA CORRIDOR', 206, true);
+            INSERT INTO route_fares (route_id, start_time, end_time, peak, price) VALUES (4, "00:00:00", "04:59:59", false, 70);
+            INSERT INTO route_fares (route_id, start_time, end_time, peak, price) VALUES (4, "05:00:00", "08:59:59", true, 100);
+            INSERT INTO route_fares (route_id, start_time, end_time, peak, price) VALUES (4, "09:00:00", "14:59:59", false, 70);
+            INSERT INTO route_fares (route_id, start_time, end_time, peak, price) VALUES (4, "15:00:00", "20:59:59", true, 100);
+            INSERT INTO route_fares (route_id, start_time, end_time, peak, price) VALUES (4, "21:00:00", "23:59:59", false, 70);
+            INSERT INTO route_fares (route_id, start_time, end_time, peak, price) VALUES (5, "00:00:00", "04:59:59", false, 80);
+            INSERT INTO route_fares (route_id, start_time, end_time, peak, price) VALUES (5, "05:00:00", "08:59:59", true, 150);
+            INSERT INTO route_fares (route_id, start_time, end_time, peak, price) VALUES (5, "09:00:00", "14:59:59", false, 80);
+            INSERT INTO route_fares (route_id, start_time, end_time, peak, price) VALUES (5, "15:00:00", "20:59:59", true, 150);
+            INSERT INTO route_fares (route_id, start_time, end_time, peak, price) VALUES (5, "21:00:00", "23:59:59", false, 80);
+            INSERT INTO route_fares (route_id, start_time, end_time, peak, price) VALUES (6, "00:00:00", "04:59:59", false, 70);
+            INSERT INTO route_fares (route_id, start_time, end_time, peak, price) VALUES (6, "05:00:00", "08:59:59", true, 150);
+            INSERT INTO route_fares (route_id, start_time, end_time, peak, price) VALUES (6, "09:00:00", "14:59:59", false, 70);
+            INSERT INTO route_fares (route_id, start_time, end_time, peak, price) VALUES (6, "15:00:00", "20:59:59", true, 150);
+            INSERT INTO route_fares (route_id, start_time, end_time, peak, price) VALUES (6, "21:00:00", "23:59:59", false, 70);
+            INSERT INTO route_fares (route_id, start_time, end_time, peak, price) VALUES (7, "00:00:00", "04:59:59", false, 70);
+            INSERT INTO route_fares (route_id, start_time, end_time, peak, price) VALUES (7, "05:00:00", "08:59:59", true, 100);
+            INSERT INTO route_fares (route_id, start_time, end_time, peak, price) VALUES (7, "09:00:00", "14:59:59", false, 70);
+            INSERT INTO route_fares (route_id, start_time, end_time, peak, price) VALUES (7, "15:00:00", "20:59:59", true, 100);
+            INSERT INTO route_fares (route_id, start_time, end_time, peak, price) VALUES (7, "21:00:00", "23:59:59", false, 70);
+            INSERT INTO route_fares (route_id, start_time, end_time, peak, price) VALUES (8, "00:00:00", "04:59:59", false, 60);
+            INSERT INTO route_fares (route_id, start_time, end_time, peak, price) VALUES (8, "05:00:00", "08:59:59", true, 80);
+            INSERT INTO route_fares (route_id, start_time, end_time, peak, price) VALUES (8, "09:00:00", "14:59:59", false, 60);
+            INSERT INTO route_fares (route_id, start_time, end_time, peak, price) VALUES (8, "15:00:00", "20:59:59", true, 80);
+            INSERT INTO route_fares (route_id, start_time, end_time, peak, price) VALUES (8, "21:00:00", "23:59:59", false, 60);
+            INSERT INTO route_fares (route_id, start_time, end_time, peak, price) VALUES (9, "00:00:00", "04:59:59", false, 80);
+            INSERT INTO route_fares (route_id, start_time, end_time, peak, price) VALUES (9, "05:00:00", "08:59:59", true, 150);
+            INSERT INTO route_fares (route_id, start_time, end_time, peak, price) VALUES (9, "09:00:00", "14:59:59", false, 80);
+            INSERT INTO route_fares (route_id, start_time, end_time, peak, price) VALUES (9, "15:00:00", "20:59:59", true, 150);
+            INSERT INTO route_fares (route_id, start_time, end_time, peak, price) VALUES (9, "21:00:00", "23:59:59", false, 80);
+            INSERT INTO route_fares (route_id, start_time, end_time, peak, price) VALUES (10, "00:00:00", "04:59:59", false, 100);
+            INSERT INTO route_fares (route_id, start_time, end_time, peak, price) VALUES (10, "05:00:00", "08:59:59", true, 200);
+            INSERT INTO route_fares (route_id, start_time, end_time, peak, price) VALUES (10, "09:00:00", "14:59:59", false, 100);
+            INSERT INTO route_fares (route_id, start_time, end_time, peak, price) VALUES (10, "15:00:00", "20:59:59", true, 200);
+            INSERT INTO route_fares (route_id, start_time, end_time, peak, price) VALUES (10, "21:00:00", "23:59:59", false, 100);
+            INSERT INTO route_fares (route_id, start_time, end_time, peak, price) VALUES (11, "00:00:00", "04:59:59", false, 50);
+            INSERT INTO route_fares (route_id, start_time, end_time, peak, price) VALUES (11, "05:00:00", "08:59:59", true, 150);
+            INSERT INTO route_fares (route_id, start_time, end_time, peak, price) VALUES (11, "09:00:00", "14:59:59", false, 50);
+            INSERT INTO route_fares (route_id, start_time, end_time, peak, price) VALUES (11, "15:00:00", "20:59:59", true, 150);
+            INSERT INTO route_fares (route_id, start_time, end_time, peak, price) VALUES (11, "21:00:00", "23:59:59", false, 50);
+            INSERT INTO route_fares (route_id, start_time, end_time, peak, price) VALUES (12, "00:00:00", "04:59:59", false, 50);
+            INSERT INTO route_fares (route_id, start_time, end_time, peak, price) VALUES (12, "05:00:00", "08:59:59", true, 100);
+            INSERT INTO route_fares (route_id, start_time, end_time, peak, price) VALUES (12, "09:00:00", "14:59:59", false, 50);
+            INSERT INTO route_fares (route_id, start_time, end_time, peak, price) VALUES (12, "15:00:00", "20:59:59", true, 100);
+            INSERT INTO route_fares (route_id, start_time, end_time, peak, price) VALUES (12, "21:00:00", "23:59:59", false, 50);
+            INSERT INTO route_fares (route_id, start_time, end_time, peak, price) VALUES (13, "00:00:00", "04:59:59", false, 50);
+            INSERT INTO route_fares (route_id, start_time, end_time, peak, price) VALUES (13, "05:00:00", "08:59:59", true, 80);
+            INSERT INTO route_fares (route_id, start_time, end_time, peak, price) VALUES (13, "09:00:00", "14:59:59", false, 50);
+            INSERT INTO route_fares (route_id, start_time, end_time, peak, price) VALUES (13, "15:00:00", "20:59:59", true, 80);
+            INSERT INTO route_fares (route_id, start_time, end_time, peak, price) VALUES (13, "21:00:00", "23:59:59", false, 50);
+            INSERT INTO route_fares (route_id, start_time, end_time, peak, price) VALUES (14, "00:00:00", "04:59:59", false, 50);
+            INSERT INTO route_fares (route_id, start_time, end_time, peak, price) VALUES (14, "05:00:00", "08:59:59", true, 80);
+            INSERT INTO route_fares (route_id, start_time, end_time, peak, price) VALUES (14, "09:00:00", "14:59:59", false, 50);
+            INSERT INTO route_fares (route_id, start_time, end_time, peak, price) VALUES (14, "15:00:00", "20:59:59", true, 80);
+            INSERT INTO route_fares (route_id, start_time, end_time, peak, price) VALUES (14, "21:00:00", "23:59:59", false, 50);
+        </sql>
+    </changeSet>
+    <changeSet author="Pavlo.Slyvka" id="moz-security-rights-insert-test">
+        <sql>
+            INSERT INTO security_right (id, name, description) VALUES (1011, 'MOZ_REG_USER', 'Registering new users');
+            INSERT INTO security_right (id, name, description) VALUES (1012, 'MOZ_KYC_UPLOAD', 'Upload KYC documents');
+            INSERT INTO security_right (id, name, description) VALUES (1013, 'MOZ_LINK_TAG', 'Link tags to account');
+            INSERT INTO security_right (id, name, description) VALUES (1014, 'MOZ_LINK_POS', 'Link POS devices to account');
+            INSERT INTO security_right (id, name, description) VALUES (1015, 'MOZ_TOPUP', 'Top up accounts');
+            INSERT INTO security_right (id, name, description) VALUES (1016, 'MOZ_TAG_MANAGEMENT', 'Tag management');
+            INSERT INTO security_right (id, name, description) VALUES (1017, 'MOZ_STATEMENT', 'View statement');
+            INSERT INTO security_right (id, name, description) VALUES (1018, 'MOZ_PROFILE', 'Profile access');
+            INSERT INTO security_right (id, name, description) VALUES (1019, 'MOZ_VRN_MANAGEMENT', 'VRN management');
+            INSERT INTO security_right (id, name, description) VALUES (1020, 'MOZ_POS_MANAGEMENT', 'POS device management');
+            INSERT INTO security_right (id, name, description) VALUES (1021, 'MOZ_POS_LOGIN', 'POS login');
+            INSERT INTO security_group (id, name, description, active) VALUES (1011, 'Moz Regular Agent', 'Regular agent', true);
+            INSERT INTO security_group (id, name, description, active) VALUES (1012, 'Moz Fematro Agent', 'Fematro agent', true);
+            INSERT INTO security_group (id, name, description, active) VALUES (1013, 'Moz Commuter', 'Commuter', true);
+            INSERT INTO security_group (id, name, description, active) VALUES (1014, 'Moz Transport Owner', 'Transport owner', true);
+            INSERT INTO security_group (id, name, description, active) VALUES (1015, 'Moz Taxi Driver', 'Taxi driver', true);
+            INSERT INTO security_group (id, name, description, active) VALUES (1016, 'Moz Fare Collector', 'Fare collector', true);
+            INSERT INTO security_group_right (security_group_id, security_right_id) VALUES (1011, 1011);
+            INSERT INTO security_group_right (security_group_id, security_right_id) VALUES (1011, 1012);
+            INSERT INTO security_group_right (security_group_id, security_right_id) VALUES (1011, 1013);
+            INSERT INTO security_group_right (security_group_id, security_right_id) VALUES (1011, 1014);
+            INSERT INTO security_group_right (security_group_id, security_right_id) VALUES (1011, 1015);
+            INSERT INTO security_group_right (security_group_id, security_right_id) VALUES (1012, 1011);
+            INSERT INTO security_group_right (security_group_id, security_right_id) VALUES (1012, 1012);
+            INSERT INTO security_group_right (security_group_id, security_right_id) VALUES (1012, 1013);
+            INSERT INTO security_group_right (security_group_id, security_right_id) VALUES (1012, 1014);
+            INSERT INTO security_group_right (security_group_id, security_right_id) VALUES (1012, 1015);
+            INSERT INTO security_group_right (security_group_id, security_right_id) VALUES (1013, 1015);
+            INSERT INTO security_group_right (security_group_id, security_right_id) VALUES (1013, 1016);
+            INSERT INTO security_group_right (security_group_id, security_right_id) VALUES (1013, 1017);
+            INSERT INTO security_group_right (security_group_id, security_right_id) VALUES (1013, 1018);
+            INSERT INTO security_group_right (security_group_id, security_right_id) VALUES (1014, 1015);
+            INSERT INTO security_group_right (security_group_id, security_right_id) VALUES (1014, 1016);
+            INSERT INTO security_group_right (security_group_id, security_right_id) VALUES (1014, 1017);
+            INSERT INTO security_group_right (security_group_id, security_right_id) VALUES (1014, 1018);
+            INSERT INTO security_group_right (security_group_id, security_right_id) VALUES (1014, 1019);
+            INSERT INTO security_group_right (security_group_id, security_right_id) VALUES (1014, 1020);
+            INSERT INTO security_group_right (security_group_id, security_right_id) VALUES (1015, 1021);
+            INSERT INTO security_group_right (security_group_id, security_right_id) VALUES (1016, 1021);
+        </sql>
+    </changeSet>
+
+</databaseChangeLog>

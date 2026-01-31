@@ -1,0 +1,14 @@
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: payments-paygo-service
+  labels:
+    app: payments-paygo-service
+    release: prometheus-operator
+spec:
+  selector:
+    matchLabels:
+      app: payments-paygo-service
+  endpoints:
+    - port: "8585"
+      path: "/actuator/prometheus"

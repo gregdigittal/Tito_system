@@ -1,0 +1,15 @@
+{
+  "vendorRef": "test1",
+  "tx": "PAY",
+  "initiatorType": "card",
+  "currency": "ZWL",
+  "amount": 20,
+  "apiVersion": "1",
+  "partnerId": "1",
+  "date": "2021-09-08T12:30",
+  "initiator": "1",
+  "deviceId": "legacyApiX",
+  "meta": {
+    "description" : "Insurance policy #993819"
+  }
+}

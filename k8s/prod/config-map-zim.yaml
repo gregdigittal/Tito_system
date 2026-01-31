@@ -1,0 +1,56 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: payments-config-map-zim
+data:
+  kafka.bootstrap-servers: kafka-cluster.infra.svc.cluster.local:9092
+  kafka.prefix: prod
+  ice.cash.kafka.topic.partitions: "3"
+  ice.cash.kafka.topic.replicas: "3"
+  spring.datasource.driver-class-name: com.microsoft.sqlserver.jdbc.SQLServerDriver
+  legacy-db.url: jdbc:sqlserver://172.16.54.140:1433;databaseName=Concerto_Zim;encrypt=false
+  mongodb.host: mongodb-0.mongodb-svc.infra.svc.cluster.local:27017,mongodb-1.mongodb-svc.infra.svc.cluster.local:27017,mongodb-2.mongodb-svc.infra.svc.cluster.local:27017
+  mongodb.database: icecash-prod
+  mongodb.auth-db: admin?replicaSet=mongodb&ssl=false
+  ice.cash.zim.api.allowed-banks: mpesa
+  ice.cash.zim.api.payment-timeout: 360s
+  ice.cash.zim.api.check-successful-payment-timeout-before-sp: "false"
+  ice.cash.zim.api.check-successful-payment-timeout-after-sp: "false"
+  ice.cash.zim.api.sp-polling-enabled: "true"
+  ice.cash.zim.api.sp-max-tries: "3"
+  ice.cash.zim.api.sp-tries-interval: 60s
+  ice.cash.zim.api.sp-poll-scheduler-ms: "60000"
+  ice.cash.zim.api.api-key-check: "true"
+  ice.cash.zim.api.api-key: fd836ed0521558b8c18d1bff976b41d3985e12b51078b53e4ddcaac1e16547cc
+  ice.cash.zim.api.api-key-internal: nttzhxmyjarfegtvznkarjxvhgfmxhgsizdvtvegiviceieddfdkfekvwyqtaqdf
+  ice.cash.zim.api.service-host.mpesa: payments-mpesa-service.prod.svc.cluster.local:8589
+  ice.cash.zim.api.service-host.posb: payments-posb-service.prod.svc.cluster.local:8593
+  ice.cash.zim.api.service-host.ecocash: payments-ecocash-service.prod.svc.cluster.local:8586
+  ice.cash.mpesa.api-key: etl4ypresyyy9weu3krq4ylyutsusate
+  ice.cash.mpesa.public-key: MIICIjANBgkqhkiG9w0BAQEFAAOCAg8AMIICCgKCAgEAyrOP7fgXIJgJyp6nP/Vtlu8kW94Qu+gJjfMaTNOSd/mQJChqXiMWsZPH8uOoZGeR/9m7Y8vAU83D96usXUaKoDYiVmxoMBkfmw8DJAtHHt/8LWDdoAS/kpXyZJ5dt19Pv+rTApcjg7AoGczT+yIU7xp4Ku23EqQz70V5Rud+Qgerf6So28Pt3qZ9hxgUA6lgF7OjoYOIAKPqg07pHp2eOp4P6oQW8oXsS+cQkaPVo3nM1f+fctFGQtgLJ0y5VG61ZiWWWFMOjYFkBSbNOyJpQVcMKPcfdDRKq+9r5DFLtFGztPYIAovBm3a1Q6XYDkGYZWtnD8mDJxgEiHWCzog0wZqJtfNREnLf1g2ZOanTDcrEFzsnP2MQwIatV8M6q/fYrh5WejlNm4ujnKUVbnPMYH0wcbXQifSDhg2jcnRLHh9CF9iabkxAzjbYkaG1qa4zG+bCidLCRe0cEQvt0+/lQ40yESvpWF60omTy1dLSd10gl2//0v4IMjLMn9tgxhPp9c+C2Aw7x2Yjx3GquSYhU6IL41lrURwDuCQpg3F30QwIHgy1D8xIfQzno3XywiiUvoq4YfCkN9WiyKz0btD6ZX02RRK6DrXTFefeKjWf0RHREHlfwkhesZ4X168Lxe9iCWjP2d0xUB+lr10835ZUpYYIr4Gon9NTjkoOGwFyS5ECAwEAAQ==
+  ice.cash.mpesa.icecash-business-shortcode: "902012"
+  ice.cash.mpesa.security-credential: Redeviaria#2024
+  ice.cash.mpesa.initiator-identifier: Redeviaria#2024
+  ice.cash.mpesa.origin-header: api.vm.co.mz
+  ice.cash.mpesa.c2b-request.address-host: api.vm.co.mz
+  ice.cash.mpesa.c2b-request.address-port: "18352"
+  ice.cash.mpesa.b2c-request.address-host: api.vm.co.mz
+  ice.cash.mpesa.b2c-request.address-port: "18345"
+  ice.cash.mpesa.b2b-request.address-host: api.vm.co.mz
+  ice.cash.mpesa.b2b-request.address-port: "18349"
+  ice.cash.mpesa.reversal-request.address-host: api.vm.co.mz
+  ice.cash.mpesa.reversal-request.address-port: "18354"
+  ice.cash.mpesa.query-transaction-status-request.address-host: api.vm.co.mz
+  ice.cash.mpesa.query-transaction-status-request.address-port: "18353"
+  ice.cash.mpesa.query-name-request.address-host: api.vm.co.mz
+  ice.cash.mpesa.query-name-request.address-port: "19323"
+  ice.cash.mpesa.fill-optional-reversal-amount: "true"
+  ice.cash.mpesa.send-status-query: "true"
+  ice.cash.mpesa.status-query-after-error-delay: "60s"
+  ice.cash.mpesa.status-query-after-failure-response-delay: "0"
+  logging.level.org.springframework: INFO
+  logging.level.org.apache.kafka: INFO
+  logging.level.org.mongodb.driver: INFO
+  logging.level.cash.ice.zim.api: DEBUG
+  logging.level.org.apache.http.wire: INFO
+  logging.level.httpclient.wire: INFO

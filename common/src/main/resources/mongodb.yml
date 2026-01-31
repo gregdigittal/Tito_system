@@ -1,0 +1,21 @@
+spring:
+  data:
+    mongodb:
+      uri: mongodb://${mongodb.username}:${mongodb.password}@${mongodb.host}/${mongodb.auth-db}
+      database: ${mongodb.database}
+---
+spring.config.activate.on-profile: local, local-perf
+mongodb:
+  host: localhost:27017
+  username: root
+  password: password123
+  database: ice-cash-local
+  auth-db: admin?ssl=false
+---
+spring.config.activate.on-profile: local-docker
+mongodb:
+  host: mongodb-primary:27017
+  username: root
+  password: password123
+  database: ice-cash-local
+  auth-db: admin?ssl=false

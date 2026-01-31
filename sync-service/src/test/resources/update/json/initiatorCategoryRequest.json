@@ -1,0 +1,7 @@
+{
+  "action": "UPDATE",
+  "identifier": "NewCategory",
+  "data": {
+    "LegacyAccountID": 100
+  }
+}

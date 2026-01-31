@@ -1,0 +1,7 @@
+{
+  "action": "UPDATE",
+  "identifier": "AAA",
+  "data": {
+    "Description": "New description"
+  }
+}

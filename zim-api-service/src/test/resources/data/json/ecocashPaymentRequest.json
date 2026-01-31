@@ -1,0 +1,14 @@
+{
+  "vendorRef": "vendorRefTest1",
+  "bankName": "ecocash",
+  "accountNumber": "263788786951",
+  "amount": 10,
+  "metaData": {
+    "walletId": 1,
+    "paymentId": 101,
+    "approvePaymentFlat": true,
+    "transactionCode": "EPAYG",
+    "accountNumber": "36870063298",
+    "description": "Fund card"
+  }
+}

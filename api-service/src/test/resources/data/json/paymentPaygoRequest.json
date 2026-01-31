@@ -1,0 +1,15 @@
+{
+  "vendorRef": "testpg_1",
+  "tx": "PGCBZ",
+  "initiatorType": "paygo",
+  "currency": "ZWL",
+  "amount": "10.00",
+  "partnerId": "1",
+  "apiVersion": "1",
+  "date": "2020-11-02T09:00",
+  "initiator": "263772980098",
+  "deviceId": "legacyApiX",
+  "meta": {
+    "description" : "Insurance policy #993819"
+  }
+}

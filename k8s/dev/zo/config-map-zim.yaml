@@ -1,0 +1,93 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: payments-config-map
+data:
+  spring.datasource.driver-class-name: com.microsoft.sqlserver.jdbc.SQLServerDriver
+  mariadb.url: jdbc:mysql://mysql.infra.svc.cluster.local/dev_icecash?createDatabaseIfNotExist=true&allowPublicKeyRetrieval=true&useSSL=false&serverTimezone=Africa/Harare
+  tidb.url: jdbc:mysql://tidb-tidb.tidb-cluster.svc.cluster.local:4000/dev_icecash?createDatabaseIfNotExist=true&allowPublicKeyRetrieval=true&useSSL=false&serverTimezone=Africa/Harare
+  legacy-db.url: jdbc:sqlserver://10.1.1.122:1433;databaseName=Test_Concerto_Zim
+  legacy-db.config-url: jdbc:sqlserver://10.1.1.122:1433;databaseName=Concerto_Config
+  liquibase.change-log-file: liquibase-db-changelog-test.xml
+  mongodb.host: mongodb-0.mongodb-svc.infra.svc.cluster.local:27017,mongodb-1.mongodb-svc.infra.svc.cluster.local:27017,mongodb-2.mongodb-svc.infra.svc.cluster.local:27017
+  mongodb.database: icecash-dev
+  mongodb.auth-db: admin?replicaSet=mongodb&ssl=false
+  kafka.bootstrap-servers: kafka-service.infra.svc.cluster.local:9092
+  auth.keycloak.url: http://kc-service.infra.svc.cluster.local:8080/
+  auth.keycloak.realm: payments-dev
+  auth.keycloak.backoffice.realm: backoffice-dev
+  auth.trusted-issuers: http://kc-service.infra.svc.cluster.local:8080/realms/payments-dev, http://kc-service.infra.svc.cluster.local:8080/realms/backoffice-dev
+  keycloak.ssl-required: none
+  minio.url: http://minio.infra.svc.cluster.local:9000/
+  minio.bucket: dev-documents
+  minio.folder: /documents/
+  minio.payments-folder: /payments/
+  perf.mariadb.url: jdbc:mysql://mysql.infra.svc.cluster.local/dev_icecash_perf?createDatabaseIfNotExist=true&allowPublicKeyRetrieval=true&useSSL=false&serverTimezone=Africa/Harare
+  perf.tidb.url: jdbc:mysql://tidb-tidb.tidb-cluster.svc.cluster.local:4000/dev_icecash_perf?createDatabaseIfNotExist=true&allowPublicKeyRetrieval=true&useSSL=false&serverTimezone=Africa/Harare
+  perf.liquibase.change-log-file: liquibase-db-changelog-test.xml
+  spring.jpa.database-platform: org.hibernate.dialect.TiDBDialect
+  spring.jpa.show-sql: "false"
+  spring.servlet.multipart.max-file-size: 32MB
+  spring.servlet.multipart.max-request-size: 32MB
+  ice.cash.ip-whitelist.disable-check: "true"
+  ice.cash.user-auth-url: http://payments-api-service.dev.svc.cluster.local:8581/api/v1/users/auth
+  ice.cash.cors.allowed-origins: "*"
+  ice.cash.staff.activate-user-url: http://test-mz-backoffice.digittal.mobi/activate_user/
+  ice.cash.staff.reset-password-url: http://test-mz-backoffice.digittal.mobi/reset_password/
+  ice.cash.staff.review-journal-url: http://test-mz-backoffice.digittal.mobi/review_journal/
+  ice.cash.staff.mfa.otp-digits-amount: "6"
+  ice.cash.entities.statement-export-csv.max-days: "30"
+  ice.cash.moz.validate-email-uniqueness: "false"
+  ice.cash.moz.validate-phone-uniqueness: "false"
+  ice.cash.moz.register-notification-sms-enable: "true"
+  ice.cash.moz.payment-confirmation-sms-enable: "true"
+  ice.cash.paygo.prefix: "423"
+  ice.cash.paygo.id-total-digits: "7"
+  ice.cash.paygo.request-expiry-seconds: "240"
+  ice.cash.paygo.admin.header-value: aa567ce5-8220-42ae-bce1-cde0ed4f8f93
+  ice.cash.ecocash.expired-payments-recheck: "true"
+  ice.cash.ecocash.expired-payments-recheck-after: "900"
+  ice.cash.ecocash.payment-url: https://payonline.econet.co.zw/ecocashGateway-preprod/payment/v1/transactions/amount
+  ice.cash.ecocash.payment-status-url: https://payonline.econet.co.zw/ecocashGateway-preprod/payment/v1/%s/transactions/amount/%s
+  ice.cash.ecocash.refund-url: https://payonline.econet.co.zw/ecocashGateway-preprod/payment/v1/transactions/refund
+#  ice.cash.ecocash.payment-url: https://payonline.econet.co.zw/ecocashGateway/payment/v1/transactions/amount
+#  ice.cash.ecocash.payment-status-url: https://payonline.econet.co.zw/ecocashGateway/payment/v1/%s/transactions/amount/%s
+#  ice.cash.ecocash.refund-url: https://payonline.econet.co.zw/ecocashGateway/payment/v1/transactions/refund
+  ice.cash.onemoney.mock-server-url: http://onemoney-server.dev.svc.cluster.local:8687/ws
+  ice.cash.onemoney.use-mock-server: "false"
+  ice.cash.onemoney.payment-url: http://172.16.52.51:30001/payment/services/APIRequestMgrService
+  ice.cash.onemoney.status-url: http://172.16.52.51:30001/payment/services/SYNCAPIRequestMgrService
+  ice.cash.onemoney.reversal-url: http://172.16.52.51:30001/payment/services/APIRequestMgrService
+  ice.cash.onemoney.status-poll-init-delay: "30"
+  ice.cash.onemoney.expired-payments-recheck: "true"
+  ice.cash.onemoney.expired-payments-recheck-after: "900"
+  ice.cash.onemoney.request.third-party-id: icecash
+  ice.cash.onemoney.request.password: G7YfLQJDq4mgUybzfm61zw==
+  ice.cash.onemoney.request.onemoney-initiator-identifier-type: "14"
+  ice.cash.onemoney.request.onemoney-initiator-identifier: applicationSp
+  ice.cash.onemoney.request.onemoney-security-credential: 3o6sGQDHoWUiCygv1lX3ww==
+  ice.cash.onemoney.request.initiator-identifier-type: "1"
+  ice.cash.onemoney.request.receiver-identifier-type: "4"
+  ice.cash.onemoney.request.receiver-identifier: "1004165"
+  ice.cash.onemoney.result.url-prefix: http://10.1.2.61:30003/payments/onemoney-service
+  ice.cash.fbc.flexcube.url: http://172.16.53.130:7701        # UAT
+#  ice.cash.fbc.flexcube.url: http://172.16.53.130:7801
+  ice.cash.fbc.host: http://payments-zim-api-service.dev.svc.cluster.local:8592/api/v1/zim/fbc/server
+#  ice.cash.fbc.host: http://172.16.55.130:7702/api/v1/zim/fbc/server
+  ice.cash.staff.security-disabled: "true"
+  ice.cash.notification.fake-sms-mobiles: 000000000000, 263000000000, 263000000001
+  ice.cash.notification.fake-emails: test@ice.cash
+  logging.level.org.springframework: INFO
+  logging.level.org.apache.kafka: WARN
+  logging.level.org.mongodb.driver: INFO
+  logging.level.cash.ice.common: DEBUG
+  logging.level.cash.ice.api: DEBUG
+  logging.level.cash.ice.fee: DEBUG
+  logging.level.cash.ice.ledger: DEBUG
+  logging.level.cash.ice.sync: DEBUG
+  logging.level.org.apache.http.wire: INFO
+  logging.level.httpclient.wire: INFO
+  balance-warning-email.from: balance.alert@ice.cash
+  balance-warning-email.subject: "*** TEST wrong balance alert ***"
+  balance-warning-email.body: "<html><p>Wrong balance found for account: %s, expected: %s, actual: %s</p></html>"
+  balance-warning-email.recipients: Pavlo <pavlo@ice.cash>

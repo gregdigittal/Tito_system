@@ -1,0 +1,40 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: payments-ledger-service
+  name: payments-ledger-service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: payments-ledger-service
+  strategy: {}
+  template:
+    metadata:
+      labels:
+        app: payments-ledger-service
+    spec:
+      containers:
+        - env:
+            - name: SPRING_PROFILES_ACTIVE
+              value: dev-k8s
+          envFrom:
+            - configMapRef:
+                name: payments-config-map
+            - secretRef:
+                name: payments-secret
+          image: dockerrepo.icecash.mobi:5000/payments/ledger-service:0.1.0.28
+          name: payments-ledger-service
+          ports:
+            - containerPort: 8284
+          resources:
+            limits:
+              cpu: '1'
+              memory: 1G
+            requests:
+              cpu: 100m
+              memory: 512Mi
+      restartPolicy: Always
+      imagePullSecrets:
+        - name: dockerreg

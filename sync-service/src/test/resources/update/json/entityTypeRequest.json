@@ -1,0 +1,7 @@
+{
+  "action": "UPDATE",
+  "identifier": "NewType",
+  "data": {
+    "Group": "ICEcash"
+  }
+}

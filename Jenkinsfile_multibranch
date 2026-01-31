@@ -1,0 +1,15 @@
+pipeline {
+    agent any
+    stages{
+        stage('Build') {
+                    steps {
+                      
+                        sh '''
+                         mvn install:install-file -Dfile=${WORKSPACE}/mpesa-service/lib/portal-sdk.jar -DgroupId=mz.co.vm.mpesa.vodacom -DartifactId=portal-sdk -Dversion=0.3 -Dpackaging=jar
+                         mvn clean install
+                        '''
+                               
+                        }
+                }	
+   }
+}            

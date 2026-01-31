@@ -1,0 +1,68 @@
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: payments-icecash-ingress
+  namespace: uat
+  annotations:
+    kubernetes.io/ingress.class: cashuat
+    nginx.ingress.kubernetes.io/rewrite-target: /$1
+    nginx.ingress.kubernetes.io/use-regex: "true"
+    nginx.org/client-max-body-size: 100m
+    nginx.org/proxy-connect-timeout: 3600s
+    nginx.ingress.kubernetes.io/proxy-body-size: 100m
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "3600"
+spec:
+  tls:
+    - hosts:
+        - uat-gateway.icecash.mobi
+      secretName: nginx-ingress-serviceaccount-uat-token-gdwwf
+  rules:
+    - host: uat-gateway.icecash.mobi
+      http:
+        paths:
+          - path: /payments/?(.*)
+            backend:
+              serviceName: payments-api-service
+              servicePort: 8581
+          - path: /payments/sync-service/?(.*)
+            backend:
+              serviceName: payments-sync-service
+              servicePort: 8582
+          - path: /payments/fee-service/?(.*)
+            backend:
+              serviceName: payments-fee-service
+              servicePort: 8583
+          - path: /payments/ledger-service/?(.*)
+            backend:
+              serviceName: payments-ledger-service
+              servicePort: 8584
+          - path: /payments/paygo-service/?(.*)
+            backend:
+              serviceName: payments-paygo-service
+              servicePort: 8585
+          - path: /payments/ecocash-service/?(.*)
+            backend:
+              serviceName: payments-ecocash-service
+              servicePort: 8586
+          - path: /payments/onemoney-service/?(.*)
+            backend:
+              serviceName: payments-onemoney-service
+              servicePort: 8587
+          - path: /payments/fbc-service/?(.*)
+            backend:
+              serviceName: payments-fbc-service
+              servicePort: 8588
+    - host: customer-moz-uat.icecash.mobi
+      http:
+        paths:
+          - path: /
+            backend:
+              serviceName: web-moz-customer
+              servicePort: 8881
+    - host: uat-backoffice-v2.icecash.mobi
+      http:
+        paths:
+          - path: /
+            backend:
+              serviceName: web-backoffice
+              servicePort: 8882

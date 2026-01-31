@@ -1,0 +1,15 @@
+{
+  "action": "UPDATE",
+  "identifier": "200",
+  "data": {
+    "BankName": "FBC BANK",
+    "BranchName": "Southerton",
+    "BranchNo": 3,
+    "BranchNoFixed": null,
+    "Code": null,
+    "SwiftCode": "FBCPZWH0",
+    "ICEcashAccountNumber": "6132741250115",
+    "Account_ID": 20000090,
+    "Visible": true
+  }
+}

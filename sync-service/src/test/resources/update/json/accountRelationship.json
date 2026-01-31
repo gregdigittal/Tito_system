@@ -1,0 +1,29 @@
+{
+  "action": "UPDATE",
+  "legacyAccountId": "200",
+  "legacyPartnerId": "200",
+  "data": {
+    "SecurityGroupOnline": "20",
+    "SecurityGroupMobi": "21",
+    "Other_Info1": "info1",
+    "Other_Info2": "info2",
+    "Other_Info3": "info3",
+    "Other_Info4": "info4",
+    "Other_Info5": "info5",
+    "Other_Info6": "info6",
+    "Other_Info7": "info7",
+    "Other_Info8": "info8",
+    "Other_Info9": "info9",
+    "Other_Info10": "info10",
+    "Other_Info11": "info11",
+    "Other_Info12": "info12",
+    "Other_Info13": "info13",
+    "Other_Info14": "info14",
+    "Other_Info15": "info15",
+    "Other_Info16": "info16",
+    "Other_Info17": "info17",
+    "Other_Info18": "info18",
+    "Other_Info19": "info19",
+    "Other_Info20": "info20"
+  }
+}

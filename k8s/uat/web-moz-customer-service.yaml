@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: web-moz-customer
+  name: web-moz-customer
+spec:
+  ports:
+    - name: "8881"
+      port: 8881
+      targetPort: 80
+  selector:
+    app: web-moz-customer
+  type: ClusterIP

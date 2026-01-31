@@ -1,0 +1,25 @@
+server:
+  port: 8282
+  shutdown: graceful
+management:
+  endpoint:
+    health:
+      show-details: always
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+spring:
+  lifecycle:
+    timeout-per-shutdown-phase: 1m
+  devtools:
+    livereload:
+      enabled: false
+  main:
+    allow-circular-references: true
+
+---
+spring.config.activate.on-profile: local,local-docker
+ice:
+  cash:
+    user-auth-url: http://localhost:8281/api/v1/users/auth

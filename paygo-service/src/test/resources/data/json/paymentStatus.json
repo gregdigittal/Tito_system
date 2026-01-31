@@ -1,0 +1,52 @@
+{
+  "merchantPaymentId": "8a464e00-1b49-4051-b222-5786ea60e384",
+  "amount": 10.00,
+  "complete": true,
+  "success": false,
+  "created": "2022-04-26T14:33:32.364643+02:00",
+  "updated": "2022-04-26T14:43:32.500909+02:00",
+  "currencyCode": "ZWL",
+  "expiresAt": "2022-04-26T14:43:32.36465+02:00",
+  "initiator": "ICEcash",
+  "narration": "Insurance policy #993819",
+  "reference": "KUH2GBAY0744FJNNRSUBV1EU6K",
+  "token": "4233016",
+  "advices": [
+    {
+      "acquiringInstitutionId": "605872",
+      "additionalData": {
+        "complianceData": {
+          "origin": {
+            "contactNumber": "N/A",
+            "emailAddress": "N/A",
+            "firstName": "N/A",
+            "lastName": "N/A",
+            "nationalId": "N/A",
+            "type": "PERSON"
+          }
+        }
+      },
+      "amount": 5.00,
+      "cardAcceptorId": "123456789012345",
+      "channel": "USSD",
+      "created": "2022-04-26T14:34:13.746717+02:00",
+      "currencyCode": "ZWL",
+      "deviceReference": "8a464e00-1b49-4051-b222-5786ea60e384",
+      "extendedType": "P2M",
+      "forwardingInstitutionId": "400",
+      "messageType": "ADVICE",
+      "msisdn": "263773284618",
+      "narration": "bananas",
+      "network": "econet",
+      "participantReference": "3e8b9b79-5e72-4c03-a989-23a7e61b1e14",
+      "payee": "4233016",
+      "paymentMethod": "CARD",
+      "paymentReference": "KUH2GBAY0744FJNNRSUBV1EU6K",
+      "reference": "4736a26b-e981-43fc-9e5a-83c3236a1510",
+      "responseCode": "000",
+      "responseDescription": "APPROVED",
+      "terminalId": "12345678",
+      "type": "PURCHASE"
+    }
+  ]
+}

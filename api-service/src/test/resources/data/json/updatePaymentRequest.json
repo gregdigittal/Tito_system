@@ -1,0 +1,36 @@
+{
+  "id": 1,
+  "accountId": 70,
+  "accountSide": "DR",
+  "description": "Some payment",
+  "taxDeclarationId": 1,
+  "taxReasonId": 1,
+  "meta": {
+    "notifyTo": "263718733835",
+    "notifySubject": "Subject",
+    "notifyMessage": "Body",
+    "locationId":  1,
+    "channel": "WEB",
+    "notes": "Notes"
+  },
+  "paymentLines": [
+    {
+      "id": 7,
+      "accountId": 70,
+      "details": "Test payment",
+      "amount": 1.00,
+      "currency": "ZWL",
+      "transactionCode": "TRN",
+      "meta": {
+        "paymentMethod": "RTGS",
+        "bankName": "FBC",
+        "bankBin": "601704",
+        "branchCode": "002",
+        "swiftCode": "FBCPZWH0",
+        "bankAccountNo": "10099209810",
+        "beneficiaryName": "Gordon Gangata",
+        "beneficiaryReference": "Test RTGS transaction"
+      }
+    }
+  ]
+}

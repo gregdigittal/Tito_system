@@ -1,0 +1,40 @@
+spring:
+  cache:
+    type: redis
+    redis:
+      time-to-live: 1m
+      cache-null-values: false
+      json-format: true
+---
+spring.config.activate.on-profile: local, local-perf
+spring:
+  data:
+    redis:
+      host: localhost
+      password: redis
+
+---
+spring.config.activate.on-profile: dev-k8s, dev-mysql-k8s, dev-k8s-perf, dev-mysql-k8s-perf
+spring:
+  cache:
+    redis:
+      key-prefix: "dev::"
+  data:
+    redis:
+      host: redis-master.infra.svc.cluster.local
+---
+spring.config.activate.on-profile: uat-k8s
+spring:
+  cache:
+    redis:
+      key-prefix: "uat::"
+  data:
+    redis:
+      host: redis-master.uat.svc.cluster.local
+---
+spring.config.activate.on-profile: prod-k8s
+spring:
+  cache:
+    redis:
+      time-to-live: 5m
+      key-prefix: "prod::"

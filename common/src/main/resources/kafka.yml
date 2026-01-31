@@ -1,0 +1,106 @@
+spring:
+  kafka:
+    bootstrap-servers: ${kafka.bootstrap-servers}
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+    consumer:
+      auto-offset-reset: earliest
+      key-deserializer: org.springframework.kafka.support.serializer.ErrorHandlingDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.ErrorHandlingDeserializer
+      properties:
+        spring.deserializer.key.delegate.class: org.apache.kafka.common.serialization.StringDeserializer
+        spring.deserializer.value.delegate.class: org.springframework.kafka.support.serializer.JsonDeserializer
+        spring.json.trusted.packages: "cash.ice.common.dto,cash.ice.common.dto.fee,cash.ice.common.dto.zim"
+ice:
+  cash:
+    kafka:
+      retry-policy:
+        back-off-type: exponentialWithMaxRetries           # exponentialWithMaxRetries(attempts,interval-ms,multiplier,max-interval-ms) / exponential(interval-ms,multiplier,max-interval-ms,max-elapsed-time-ms) / fixed(interval-ms,attempts)
+        interval-ms: 300
+        multiplier: 2.0
+        attempts: 10
+      topic:
+        partitions: 1
+        replicas: 1
+        payment-request: ${kafka.prefix}.payment.RequestTopic
+        payment-request-dlt: ${kafka.prefix}.payment.RequestTopic.DLT
+        fee-service: ${kafka.prefix}.payment.FeeServiceTopic
+        fee-service-dlt: ${kafka.prefix}.payment.FeeServiceTopic.DLT
+        payment-selector: ${kafka.prefix}.payment.SelectorTopic
+        payment-selector-dlt: ${kafka.prefix}.payment.SelectorTopic.DLT
+        sub-payment-result: ${kafka.prefix}.payment.SubResultTopic
+        sub-payment-result-dlt: ${kafka.prefix}.payment.SubResultTopic.DLT
+        paygo-service: ${kafka.prefix}.payment.PaygoServiceTopic
+        paygo-service-dlt: ${kafka.prefix}.payment.PaygoServiceTopic.DLT
+        paygo-success-payment: ${kafka.prefix}.payment.LedgerServiceTopic
+        paygo-success-payment-dlt: ${kafka.prefix}.payment.LedgerServiceTopic.DLT
+        ecocash-service: ${kafka.prefix}.payment.zim.EcocashServiceTopic
+        ecocash-service-dlt: ${kafka.prefix}.payment.zim.EcocashServiceTopic.DLT
+        ecocash-success-payment: ${kafka.prefix}.payment.LedgerServiceTopic
+        ecocash-success-payment-dlt: ${kafka.prefix}.payment.LedgerServiceTopic.DLT
+        onemoney-service: ${kafka.prefix}.payment.zim.OnemoneyServiceTopic
+        onemoney-service-dlt: ${kafka.prefix}.payment.zim.OnemoneyServiceTopic.DLT
+        onemoney-success-payment: ${kafka.prefix}.payment.LedgerServiceTopic
+        onemoney-success-payment-dlt: ${kafka.prefix}.payment.LedgerServiceTopic.DLT
+        flexcube-ledger-service: ${kafka.prefix}.payment.zim.FlexcubeLedgerServiceTopic
+        flexcube-ledger-service-dlt: ${kafka.prefix}.payment.zim.FlexcubeLedgerServiceTopic.DLT
+        flexcube-ledger-success-payment: ${kafka.prefix}.payment.zim.RtgsServiceTopic
+        flexcube-ledger-success-payment-dlt: ${kafka.prefix}.payment.zim.RtgsServiceTopic.DLT
+        rtgs-service: ${kafka.prefix}.payment.zim.RtgsServiceTopic
+        rtgs-service-dlt: ${kafka.prefix}.payment.zim.RtgsServiceTopic.DLT
+        rtgs-success-payment: ${kafka.prefix}.payment.SuccessTopic
+        rtgs-success-payment-dlt: ${kafka.prefix}.payment.SuccessTopic.DLT
+        zipit-service: ${kafka.prefix}.payment.ZipitServiceTopic
+        zipit-service-dlt: ${kafka.prefix}.payment.ZipitServiceTopic.DLT
+        zipit-success-payment: ${kafka.prefix}.payment.LedgerServiceTopic
+        zipit-success-payment-dlt: ${kafka.prefix}.payment.LedgerServiceTopic.DLT
+        zim-switch-service: ${kafka.prefix}.payment.ZimSwitchServiceTopic
+        zim-switch-service-dlt: ${kafka.prefix}.payment.ZimSwitchServiceTopic.DLT
+        zim-switch-success-payment: ${kafka.prefix}.payment.LedgerServiceTopic
+        zim-switch-success-payment-dlt: ${kafka.prefix}.payment.LedgerServiceTopic.DLT
+        mpesa-service: ${kafka.prefix}.payment.MpesaServiceTopic
+        mpesa-service-dlt: ${kafka.prefix}.payment.MpesaServiceTopic.DLT
+        mpesa-success-payment: ${kafka.prefix}.payment.LedgerServiceTopic
+        mpesa-success-payment-dlt: ${kafka.prefix}.payment.LedgerServiceTopic.DLT
+        emola-service: ${kafka.prefix}.payment.EmolaServiceTopic
+        emola-service-dlt: ${kafka.prefix}.payment.EmolaServiceTopic.DLT
+        emola-success-payment: ${kafka.prefix}.payment.LedgerServiceTopic
+        emola-success-payment-dlt: ${kafka.prefix}.payment.LedgerServiceTopic.DLT
+        zim-payment-request: ${kafka.prefix}.payment.zim.RequestTopic
+        zim-payment-request-dlt: ${kafka.prefix}.payment.zim.RequestTopic.DLT
+        zim-payment-result: ${kafka.prefix}.payment.zim.ResultTopic
+        zim-payment-result-dlt: ${kafka.prefix}.payment.zim.ResultTopic.DLT
+        zim-payment-error: ${kafka.prefix}.payment.zim.ErrorTopic
+        zim-payment-error-dlt: ${kafka.prefix}.payment.zim.ErrorTopic.DLT
+        posb-service: ${kafka.prefix}.payment.zim.PosbServiceTopic
+        fbc-service: ${kafka.prefix}.payment.zim.FbcServiceTopic
+        fbc-service-dlt: ${kafka.prefix}.payment.zim.FbcServiceTopic.DLT
+        fcb-service: ${kafka.prefix}.payment.zim.FcbServiceTopic
+        fcb-service-dlt: ${kafka.prefix}.payment.zim.FcbServiceTopic.DLT
+        ledger-service: ${kafka.prefix}.payment.LedgerServiceTopic
+        ledger-service-dlt: ${kafka.prefix}.payment.LedgerServiceTopic.DLT
+        success-payment: ${kafka.prefix}.payment.SuccessTopic
+        success-payment-dlt: ${kafka.prefix}.payment.SuccessTopic.DLT
+        error-payment: ${kafka.prefix}.payment.ErrorTopic
+        error-payment-dlt: ${kafka.prefix}.payment.ErrorTopic.DLT
+        after-success-payment: ${kafka.prefix}.payment.AfterSuccessTopic
+        after-success-payment-dlt: ${kafka.prefix}.payment.AfterSuccessTopic.DLT
+        balance-audit: ${kafka.prefix}.payment.BalanceAuditTopic
+        balance-audit-dlt: ${kafka.prefix}.payment.BalanceAuditTopic.DLT
+        email-notification: ${kafka.prefix}.communication.email
+        email-notification-dlt: ${kafka.prefix}.communication.email.DLT
+        sms-notification: ${kafka.prefix}.communication.sms
+        sms-notification-dlt: ${kafka.prefix}.communication.sms.DLT
+        invalidate-cache: ${kafka.prefix}.payment.InvalidateCache
+---
+spring.config.activate.on-profile: local,local-perf
+kafka:
+  bootstrap-servers: 127.0.0.1:29092
+  prefix: local
+ice.cash.kafka.retry-policy.attempts: 1
+---
+spring.config.activate.on-profile: local-docker
+kafka:
+  bootstrap-servers: kafka:29592
+ice.cash.kafka.retry-policy.attempts: 1

@@ -1,0 +1,6 @@
+applicationType: default
+defaultPackage: cash.ice
+testFramework: junit
+sourceLanguage: java
+buildTool: maven
+features: [ annotation-api, app-name, data, data-mongodb, http-client, jackson-databind, java, java-application, junit, kafka, logback, lombok, maven, maven-enforcer-plugin, micronaut-aot, micronaut-http-validation, mockito, mongo-sync, netty-server, properties, readme, shade, static-resources, test-resources ]

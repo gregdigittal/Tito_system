@@ -1,0 +1,69 @@
+server:
+  port: 8287
+  shutdown: graceful
+management:
+  endpoint:
+    health:
+      show-details: always
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+spring:
+  lifecycle:
+    timeout-per-shutdown-phase: 1m
+  devtools:
+    livereload:
+      enabled: false
+ice:
+  cash:
+    onemoney:
+      group: ${kafka.prefix}.onemoney-service
+      mock-server-url: http://localhost:8387/ws
+      use-mock-server: false
+      payment-url: http://172.16.52.51:30002/payment/services/APIRequestMgrService
+      status-url: http://172.16.52.51:30002/payment/services/SYNCAPIRequestMgrService
+      reversal-url: http://172.16.52.51:30002/payment/services/APIRequestMgrService
+      status-poll-check-ms: 5000
+      status-poll-init-delay: 30
+      payment-timeout: 35
+      cleanup-history-cron: "0 0 0 * * ?"
+      cleanup-history-older-days: 365
+      expired-payments-recheck: "true"
+      expired-payments-recheck-ms: 5000
+      expired-payments-recheck-after: 900
+      request:
+        header-version: 1.0
+        caller-type: 2
+        third-party-id: Cx_Caller
+        password: 27Wt7tU1zLGgUybzfm61zw==
+        key-owner: 1
+        timestamp-pattern: yyyyMMddHHmmss
+        onemoney-initiator-identifier-type: 14
+        onemoney-initiator-identifier: applicationSp
+        onemoney-security-credential: lKbA9sn1ZXU/3xDWLmRO1Q==
+        initiator-identifier-type: 1
+        receiver-identifier-type: 4
+        receiver-identifier: 40001
+        default-remark: None
+      result:
+        url-prefix: http://localhost:8287
+#        url-prefix: http://10.1.2.61:30003/payments/onemoney-service
+        location-uri: /ws
+        port-type-name: OneMoneyPaymentResult
+      simulate-response:
+        "0710000000": SUCCESS
+        "0710000001": RESPONSE_FAILED
+        "0710000002": RESULT_FAILED
+        "0710000003": RESULT_TIMED_OUT
+        "0710000004": STATUS_FAILED
+        "0710000005": STATUS_SUCCESS
+        "0710000006": REFUND_RESPONSE_FAILED
+        "0710000007": REFUND_RESULT_FAILED
+---
+spring.config.activate.on-profile: uat-k8s
+ice:
+  cash:
+    onemoney:
+      result:
+        url-prefix: https://uat-gateway.icecash.mobi/payments/onemoney-service

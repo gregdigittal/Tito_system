@@ -1,0 +1,85 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: payments-config-map-zim
+data:
+  spring.datasource.driver-class-name: com.microsoft.sqlserver.jdbc.SQLServerDriver
+#  legacy-db.url: jdbc:sqlserver://vmwaredb-test.icecashzw.local:1433;databaseName=TEST_Concerto_Zim;encrypt=false
+  legacy-db.url: jdbc:sqlserver://172.16.54.140:1433;databaseName=TEST_Concerto_Zim;encrypt=false
+  mongodb.host: mongodb-0.mongodb-svc.infra.svc.cluster.local:27017,mongodb-1.mongodb-svc.infra.svc.cluster.local:27017,mongodb-2.mongodb-svc.infra.svc.cluster.local:27017
+  mongodb.database: icecash-uat
+  mongodb.auth-db: admin?replicaSet=mongodb&ssl=false
+  kafka.bootstrap-servers: kafka-cluster.infra.svc.cluster.local:9092
+#  kafka.bootstrap-servers: kafka.infra.svc.cluster.local:9092
+  kafka.prefix: uat
+  ice.cash.kafka.topic.partitions: "3"
+  ice.cash.kafka.topic.replicas: "3"
+  ice.cash.zim.api.kafka-group: uat.zim-api-service
+  ice.cash.mpesa.group: uat.mpesa-service
+#  spring.jpa.show-sql: "false"
+#  spring.servlet.multipart.max-file-size: 32MB
+#  spring.servlet.multipart.max-request-size: 32MB
+#  ice.cash.cors.allowed-origins: "*"
+  ice.cash.zim.api.allowed-banks: POSB, mpesa, ecocash
+  ice.cash.zim.api.payment-timeout: 90s
+  ice.cash.zim.api.check-successful-payment-timeout-before-sp: "false"
+  ice.cash.zim.api.check-successful-payment-timeout-after-sp: "false"
+  ice.cash.zim.api.sp-polling-enabled: "true"
+  ice.cash.zim.api.sp-max-tries: "3"
+  ice.cash.zim.api.sp-tries-interval: 60s
+  ice.cash.zim.api.sp-poll-scheduler-ms: "60000"
+  ice.cash.zim.api.api-key-check: "true"
+  ice.cash.zim.api.api-key: fd836ed0521558b8c18d1bff976b41d3985e12b51078b53e4ddcaac1e16547cc
+  ice.cash.zim.api.api-key-internal: nttzhxmyjarfegtvznkarjxvhgfmxhgsizdvtvegiviceieddfdkfekvwyqtaqdf
+  ice.cash.zim.api.service-host.mpesa: payments-mpesa-service.uat.svc.cluster.local:8589
+  ice.cash.zim.api.service-host.posb: payments-posb-service.uat.svc.cluster.local:8593
+  ice.cash.zim.api.service-host.ecocash: payments-ecocash-service.uat.svc.cluster.local:8586
+  ice.cash.mpesa.fill-optional-reversal-amount: "true"
+  ice.cash.mpesa.send-status-query: "true"
+  ice.cash.mpesa.status-query-after-error-delay: "60s"
+  ice.cash.mpesa.status-query-after-failure-response-delay: "0"
+  ice.cash.paygo.prefix: "423"
+  ice.cash.paygo.id-total-digits: "7"
+  ice.cash.paygo.request-expiry-seconds: "240"
+  ice.cash.paygo.admin.header-value: aa567ce5-8220-42ae-bce1-cde0ed4f8f93
+  ice.cash.ecocash.expired-payments-recheck: "true"
+  ice.cash.ecocash.expired-payments-recheck-after: "900"
+  ice.cash.ecocash.payment-url: https://payonline.econet.co.zw/ecocashGateway-preprod/payment/v1/transactions/amount
+  ice.cash.ecocash.payment-status-url: https://payonline.econet.co.zw/ecocashGateway-preprod/payment/v1/%s/transactions/amount/%s
+  ice.cash.ecocash.refund-url: https://payonline.econet.co.zw/ecocashGateway-preprod/payment/v1/transactions/refund
+  ice.cash.ecocash.notify-url-host: https://uat-zw-api.icecash.mobi
+#  ice.cash.ecocash.payment-url: https://payonline.econet.co.zw/ecocashGateway/payment/v1/transactions/amount
+#  ice.cash.ecocash.payment-status-url: https://payonline.econet.co.zw/ecocashGateway/payment/v1/%s/transactions/amount/%s
+#  ice.cash.ecocash.refund-url: https://payonline.econet.co.zw/ecocashGateway/payment/v1/transactions/refund
+  ice.cash.onemoney.mock-server-url: http://onemoney-server.uat.svc.cluster.local:8687/ws
+  ice.cash.onemoney.use-mock-server: "false"
+  ice.cash.onemoney.payment-url: http://172.16.52.51:30001/payment/services/APIRequestMgrService
+  ice.cash.onemoney.status-url: http://172.16.52.51:30001/payment/services/SYNCAPIRequestMgrService
+  ice.cash.onemoney.reversal-url: http://172.16.52.51:30001/payment/services/APIRequestMgrService
+  ice.cash.onemoney.status-poll-init-delay: "30"
+  ice.cash.onemoney.expired-payments-recheck: "true"
+  ice.cash.onemoney.expired-payments-recheck-after: "900"
+  ice.cash.onemoney.request.third-party-id: icecash
+  ice.cash.onemoney.request.password: G7YfLQJDq4mgUybzfm61zw==
+  ice.cash.onemoney.request.onemoney-initiator-identifier-type: "14"
+  ice.cash.onemoney.request.onemoney-initiator-identifier: applicationSp
+  ice.cash.onemoney.request.onemoney-security-credential: 3o6sGQDHoWUiCygv1lX3ww==
+  ice.cash.onemoney.request.initiator-identifier-type: "1"
+  ice.cash.onemoney.request.receiver-identifier-type: "4"
+  ice.cash.onemoney.request.receiver-identifier: "1004165"
+  ice.cash.onemoney.result.url-prefix: http://10.1.2.61:30003/payments/onemoney-service
+  ice.cash.posb.host: http://payments-posb-service.uat.svc.cluster.local:8589/posb
+  ice.cash.fbc.flexcube.url: http://172.16.53.130:7701        # UAT
+#  ice.cash.fbc.flexcube.url: http://172.16.53.130:7801
+  ice.cash.fbc.host: http://payments-zim-api-service.uat.svc.cluster.local:8592/api/v1/zim/fbc/server
+#  ice.cash.fbc.host: http://172.16.55.130:7702
+  ice.cash.fbc.initiator-id: ICECASH
+  ice.cash.fbc.payment-details: FEES
+  ice.cash.notification.fake-sms-mobiles: 000000000000, 263000000000, 263000000001
+  ice.cash.notification.fake-emails: test@ice.cash
+  logging.level.org.springframework: INFO
+  logging.level.org.apache.kafka: INFO
+  logging.level.org.mongodb.driver: INFO
+  logging.level.cash.ice.zim.api: DEBUG
+  logging.level.org.apache.http.wire: INFO
+  logging.level.httpclient.wire: INFO

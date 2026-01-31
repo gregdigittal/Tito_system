@@ -1,0 +1,11 @@
+{
+  "idTypeId": 1,
+  "idNumber": "1234567890123456",
+  "firstName": "firstName",
+  "lastName": "lastName",
+  "entityType": "Personal",
+  "email": "test@test.com",
+  "company": "ICEcash",
+  "card": "1234567890123456",
+  "mobile": "123-45-67"
+}

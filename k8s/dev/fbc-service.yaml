@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: payments-fbc-service
+  name: payments-fbc-service
+spec:
+  ports:
+    - name: "8588"
+      port: 8588
+      targetPort: 8288
+  selector:
+    app: payments-fbc-service
+  type: ClusterIP

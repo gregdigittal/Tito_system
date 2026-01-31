@@ -1,0 +1,67 @@
+server:
+  port: 8289
+  shutdown: graceful
+management:
+  endpoint:
+    health:
+      show-details: always
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+spring:
+  lifecycle:
+    timeout-per-shutdown-phase: 1m
+  devtools:
+    livereload:
+      enabled: false
+ice:
+  cash:
+    mpesa:
+      group: ${kafka.prefix}.mpesa-service
+      api-key: zomy8cbu3l36rfocyos76i43encnm5ij
+      public-key: MIICIjANBgkqhkiG9w0BAQEFAAOCAg8AMIICCgKCAgEAmptSWqV7cGUUJJhUBxsMLonux24u+FoTlrb+4Kgc6092JIszmI1QUoMohaDDXSVueXx6IXwYGsjjWY32HGXj1iQhkALXfObJ4DqXn5h6E8y5/xQYNAyd5bpN5Z8r892B6toGzZQVB7qtebH4apDjmvTi5FGZVjVYxalyyQkj4uQbbRQjgCkubSi45Xl4CGtLqZztsKssWz3mcKncgTnq3DHGYYEYiKq0xIj100LGbnvNz20Sgqmw/cH+Bua4GJsWYLEqf/h/yiMgiBbxFxsnwZl0im5vXDlwKPw+QnO2fscDhxZFAwV06bgG0oEoWm9FnjMsfvwm0rUNYFlZ+TOtCEhmhtFp+Tsx9jPCuOd5h2emGdSKD8A6jtwhNa7oQ8RtLEEqwAn44orENa1ibOkxMiiiFpmmJkwgZPOG/zMCjXIrrhDWTDUOZaPx/lEQoInJoE2i43VN/HTGCCw8dKQAwg0jsEXau5ixD0GUothqvuX3B9taoeoFAIvUPEq35YulprMM7ThdKodSHvhnwKG82dCsodRwY428kg2xM/UjiTENog4B6zzZfPhMxFlOSFX4MnrqkAS+8Jamhy1GgoHkEMrsT5+/ofjCx0HjKbT5NuA2V/lmzgJLl3jIERadLzuTYnKGWxVJcGLkWXlEPYLbiaKzbJb2sYxt+Kt5OxQqC1MCAwEAAQ==
+      icecash-business-shortcode: 171717
+      origin-header: developer.mpesa.vm.co.mz
+      security-credential: Mpesa2019
+      initiator-identifier: MPesa2018
+      fill-optional-reversal-amount: true
+      send-status-query: true
+      status-query-after-error-delay: 10s
+      status-query-after-failure-response-delay: 0
+      c2b-request:
+        address-host: api.sandbox.vm.co.mz
+        address-port: 18352
+        use-ssl: true
+        method-type: POST
+        path: /ipg/v1x/c2bPayment/singleStage/
+      b2c-request:
+        address-host: api.sandbox.vm.co.mz
+        address-port: 18345
+        use-ssl: true
+        method-type: POST
+        path: /ipg/v1x/b2cPayment/
+      b2b-request:
+        address-host: api.sandbox.vm.co.mz
+        address-port: 18349
+        use-ssl: true
+        method-type: POST
+        path: /ipg/v1x/b2bPayment/
+      reversal-request:
+        address-host: api.sandbox.vm.co.mz
+        address-port: 18354
+        use-ssl: true
+        method-type: PUT
+        path: /ipg/v1x/reversal/
+      query-transaction-status-request:
+        address-host: api.sandbox.vm.co.mz
+        address-port: 18353
+        use-ssl: true
+        method-type: GET
+        path: /ipg/v1x/queryTransactionStatus/
+      query-name-request:
+        address-host: api.sandbox.vm.co.mz
+        address-port: 19323
+        use-ssl: true
+        method-type: GET
+        path: /ipg/v1x/queryCustomerName/

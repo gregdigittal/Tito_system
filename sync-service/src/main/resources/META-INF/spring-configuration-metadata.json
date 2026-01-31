@@ -1,0 +1,39 @@
+{
+  "properties": [
+    {
+      "name": "ice.cash.kafka-retry.type",
+      "type": "java.lang.String",
+      "description": "BackOff type for kafka retry policy, can be one of: exponentialWithMaxRetries, exponential, fixed"
+    },
+    {
+      "name": "ice.cash.kafka-retry.interval-ms",
+      "type": "java.lang.Long",
+      "description": "Initial BackOff interval in milliseconds"
+    },
+    {
+      "name": "ice.cash.kafka-retry.max-interval-ms",
+      "type": "java.lang.Long",
+      "description": "Max BackOff interval in milliseconds"
+    },
+    {
+      "name": "ice.cash.kafka-retry.multiplier",
+      "type": "java.lang.Double",
+      "description": "BackOff interval multiplier"
+    },
+    {
+      "name": "ice.cash.kafka-retry.attempts",
+      "type": "java.lang.Integer",
+      "description": "BackOff max attempts amount"
+    },
+    {
+      "name": "ice.cash.kafka-retry.max-elapsed-time-ms",
+      "type": "java.lang.Long",
+      "description": "The maximum BackOff elapsed time in milliseconds for 'exponential' type"
+    },
+    {
+      "name": "ice.cash.user-auth-url",
+      "type": "java.lang.String",
+      "description": "New User authentication data registration URL"
+    }
+  ]
+}

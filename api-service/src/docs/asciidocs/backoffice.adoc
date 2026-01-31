@@ -1,0 +1,3741 @@
+= Backoffice API Guide
+Pavlo Slyvka<pavlo@ice.cash>
+v1.0, 2024-01-22
+:toc: right
+:toclevels: 4
+:sectnums:
+
+Api for Backoffice.
+
+[[auth]]
+== Authentication API
+
+Sequence of calling GraphQL endpoints to acquire access token::
+    . <<staff_login, loginStaffMember>>
+    . <<staff_login_mfa, enterLoginMfaCode>>
+
+Alternatively, the user can use the <<staff_login_backup, backup code>> to obtain an access token or recover a forgotten password, which involves 2 steps:
+
+    . <<staff_forgot_password, forgotStaffMemberPassword>>
+    . <<staff_reset_password, resetStaffMemberPassword>>
+
+[[staff_login]]
+=== Login backoffice user
+`"*loginStaffMember*"` `Mutation` is the first step to log user in and acquire access token. Depending on MFA type, a different user authentication mechanism is used:
+
+    * `OTP` - if the specified password is correct, a temporary one-time password is created and sent to the user's primary phone, which should be entered on the <<staff_login_mfa, next step>>. Each time this method is used for the same account, a new one-time password is created. <<staff_reset_password, Resend OTP endpoint>> is used to resend the same one-time password.
+    * `TOTP` - if the specified password is correct, a time-based one-time password is required to be entered on the <<staff_login_mfa, next step>>. Google Authenticator or Microsoft Authenticator application can be used to generate required password.
+    * `null` - if the specified password is correct, access token is returned immediately.
+
+Login status of entity must be in `"ACTIVE"` status.
+
+IMPORTANT: If a user enters an incorrect password or MFA code 3 times, their account is locked. In this case, any backoffice user with a valid access token can <<staff_update_login_status, unlock the user's account>>. Whenever a successful login occurs, the failed login counter is cleared.
+
+NOTE: postman example:   "ICE Cash Payments > GraphQL > Management > Backoffice > Login"
+
+.+Parameters:+
+|===
+    |Name|Type|Values|Required|Description
+
+    |`+request.username+` |`+String+` |valid backoffice user email |yes |Email
+    |`+request.password+` |`+String+` |string consisting of 4 digits |yes |Password
+
+|===
+
+.Request example:
+[source,graphql,options="nowrap"]
+----
+mutation {
+    loginStaffMember(request: {
+        username: "pavlo@ice.cash"
+        password: "1234"
+    }) {
+        status
+        mfaType
+        msisdn
+        accessToken {
+            tokenType
+            token
+            expiresIn
+            refreshToken
+            refreshExpiresIn
+            error
+            errorDescription
+        }
+    }
+}
+----
+.Response example:
+[source,json,options="nowrap"]
+----
+{
+    "data": {
+        "loginStaffMember": {
+            "status": "MFA_REQUIRED",
+            "mfaType": "OTP",
+            "msisdn": "000000000000",
+            "accessToken": null
+        }
+    }
+}
+----
+
+
+[[staff_login_mfa]]
+=== Enter login MFA code
+`"*enterLoginMfaCode*"` `Mutation` is the second step to log user in for OTP and TOTP MFA types, and acquire access token. If user provided correct MFA code, access token is returned immediately.
+
+IMPORTANT: If a user enters an incorrect password or MFA code 3 times, their account is locked. In this case, any backoffice user with a valid access token can <<staff_update_login_status, unlock the user's account>>. Whenever a successful login occurs, the failed login counter is cleared.
+
+NOTE: postman example:   "ICE Cash Payments > GraphQL > Management > Backoffice > Enter MFA code"
+
+.+Parameters:+
+|===
+    |Name|Type|Values|Required|Description
+
+    |`+mfaRequest.username+` |`+String+` |valid backoffice user email |yes |Email
+    |`+mfaRequest.code+` |`+String+` |string consisting of 4 digits |yes |Valid MFA code
+
+|===
+
+.Request example:
+[source,graphql,options="nowrap"]
+----
+mutation {
+    enterLoginMfaCode(mfaRequest: {
+        username: "pavlo@ice.cash"
+        code: "2398"
+    }) {
+        status
+        mfaType
+        accessToken {
+            tokenType
+            token
+            expiresIn
+            refreshToken
+            refreshExpiresIn
+            error
+            errorDescription
+        }
+    }
+}
+----
+.Response example:
+[source,json,options="nowrap"]
+----
+{
+    "data": {
+        "enterLoginMfaCode": {
+            "status": "SUCCESS",
+            "mfaType": "OTP",
+            "accessToken": {
+                "tokenType": "Bearer",
+                "token": "eyJhbGciOiJSUzI1NiIsInR5cCIgOiAiSldUIiwia2lkIiA6ICJRTnN1VXcwNkw1SGU4Z0FuV1NyXzAyT2FsZWRPN0xKTVVRR2RVb2V4R01JIn0.eyJleHAiOjE3MDY3NTczODksImlhdCI6MTcwNjc1Mzc4OSwianRpIjoiMTRhNmJkYjQtYTgyYy00Y2IxLTk2YWUtNWJkMjdiYjlmYjM5IiwiaXNzIjoiaHR0cDovL2tleWNsb2FrLmluZnJhLnN2Yy5jbHVzdGVyLmxvY2FsL3JlYWxtcy9iYWNrb2ZmaWNlLWxvY2FsIiwiYXVkIjoiYWNjb3VudCIsInN1YiI6ImUzNzkzYmM1LTQ5OTktNDE5Yi1hNjZlLWEzNjhkYzgyZTFhNSIsInR5cCI6IkJlYXJlciIsImF6cCI6ImljZWNhc2giLCJzZXNzaW9uX3N0YXRlIjoiMzQzMTI0NWEtYTY4My00ZGM1LThlZjUtNDI1MDViMGE4ZDlmIiwiYWxsb3dlZC1vcmlnaW5zIjpbImh0dHA6Ly9sb2NhbGhvc3Q6ODI4MSJdLCJyZWFsbV9hY2Nlc3MiOnsicm9sZXMiOlsib2ZmbGluZV9hY2Nlc3MiLCJCQUNLT0ZGSUNFIiwidW1hX2F1dGhvcml6YXRpb24iLCJkZWZhdWx0LXJvbGVzLWJhY2tvZmZpY2UtbG9jYWwiXX0sInJlc291cmNlX2FjY2VzcyI6eyJhY2NvdW50Ijp7InJvbGVzIjpbIm1hbmFnZS1hY2NvdW50IiwibWFuYWdlLWFjY291bnQtbGlua3MiLCJ2aWV3LXByb2ZpbGUiXX19LCJzY29wZSI6InByb2ZpbGUgZW1haWwiLCJzaWQiOiIzNDMxMjQ1YS1hNjgzLTRkYzUtOGVmNS00MjUwNWIwYThkOWYiLCJlbWFpbF92ZXJpZmllZCI6dHJ1ZSwibmFtZSI6IlBhdmxvIFNseXZrYSIsInByZWZlcnJlZF91c2VybmFtZSI6InN0YWZmX3BhdmxvQGljZS5jYXNoIiwiZ2l2ZW5fbmFtZSI6IlBhdmxvIiwiZmFtaWx5X25hbWUiOiJTbHl2a2EiLCJlbWFpbCI6InBhdmxvQGljZS5jYXNoIn0.rD3SAcx_rj79aMztPUR69TTrV_3C6uVWdt_BIHCtmscGRIiyUXMMdKU69Cccx6g5mLa4aNydi_B6lFZyLR165C9acue93j20IhSou4Mupnuloy_C9LcwV8kjAVIE62ylu6p9lanX_I3GVlBPPkxCX650Ed3na-09SVUfLXFsr7ptahZnhuTTOcFvOI0Z-RrWz5hBSellymWI6L9MvYswqHDk_ZRC74UnF2l23pT2cC0wAmKj6iTSmzDaH2EexQ9HY0JO98z7lXFhiUb6vAbwT0ZYyN7HAJg17zZmGa6U6_JVzzwNFKZ3VOnzHjyI_0qoWDm0ahzN1iUHxkewb0TtPg",
+                "expiresIn": 3600,
+                "refreshToken": "eyJhbGciOiJIUzI1NiIsInR5cCIgOiAiSldUIiwia2lkIiA6ICI1ZjJiNDYzMi1hNjA5LTQxZjgtOGVmNS1jMzU2YWNmMzg2ZjYifQ.eyJleHAiOjE3MDY3NTU1ODksImlhdCI6MTcwNjc1Mzc4OSwianRpIjoiZmQwMjBhYWQtOGU3YS00ZmI0LWEyNWMtOTFhYTYwYjMxNDQ5IiwiaXNzIjoiaHR0cDovL2tleWNsb2FrLmluZnJhLnN2Yy5jbHVzdGVyLmxvY2FsL3JlYWxtcy9iYWNrb2ZmaWNlLWxvY2FsIiwiYXVkIjoiaHR0cDovL2tleWNsb2FrLmluZnJhLnN2Yy5jbHVzdGVyLmxvY2FsL3JlYWxtcy9iYWNrb2ZmaWNlLWxvY2FsIiwic3ViIjoiZTM3OTNiYzUtNDk5OS00MTliLWE2NmUtYTM2OGRjODJlMWE1IiwidHlwIjoiUmVmcmVzaCIsImF6cCI6ImljZWNhc2giLCJzZXNzaW9uX3N0YXRlIjoiMzQzMTI0NWEtYTY4My00ZGM1LThlZjUtNDI1MDViMGE4ZDlmIiwic2NvcGUiOiJwcm9maWxlIGVtYWlsIiwic2lkIjoiMzQzMTI0NWEtYTY4My00ZGM1LThlZjUtNDI1MDViMGE4ZDlmIn0.CuppQMPdDiQzjeZgoYoPVjRiov-4_5pTEP80DHzBjM8",
+                "refreshExpiresIn": 1800,
+                "error": null,
+                "errorDescription": null
+            }
+        }
+    }
+}
+----
+
+
+[[staff_login_backup]]
+=== Enter login backup code
+`"*enterLoginBackupCode*"` `Mutation` is an alternative way of obtaining access token. By default, the user has 6 valid backup codes and each of them can only be used 1 time, after which it becomes invalid. Also at any time the user can <<staff_generate_backup_codes, generate new 6 valid backup codes>>. Login status of entity must be in `"ACTIVE"` status.
+
+NOTE: postman example:   "ICE Cash Payments > GraphQL > Management > Backoffice > Enter Backup code"
+
+.+Parameters:+
+|===
+    |Name|Type|Values|Required|Description
+
+    |`+mfaRequest.username+` |`+String+` |valid backoffice user email |yes |Email
+    |`+mfaRequest.code+` |`+String+` |string consisting of 4 digits |yes |Valid MFA code
+
+|===
+
+.Request example:
+[source,graphql,options="nowrap"]
+----
+mutation {
+    enterLoginBackupCode(mfaRequest: {
+        username: "pavlo@ice.cash"
+        code: "z92x-twtf-2ud9-gowu"
+    }) {
+        status
+        mfaType
+        accessToken {
+            tokenType
+            token
+            expiresIn
+            refreshToken
+            refreshExpiresIn
+            error
+            errorDescription
+        }
+    }
+}
+----
+.Response example:
+[source,json,options="nowrap"]
+----
+{
+    "data": {
+        "enterLoginBackupCode": {
+            "status": "SUCCESS",
+            "mfaType": "OTP",
+            "accessToken": {
+                "tokenType": "Bearer",
+                "token": "eyJhbGciOiJSUzI1NiIsInR5cCIgOiAiSldUIiwia2lkIiA6ICJRTnN1VXcwNkw1SGU4Z0FuV1NyXzAyT2FsZWRPN0xKTVVRR2RVb2V4R01JIn0.eyJleHAiOjE3MDY3NTc1ODEsImlhdCI6MTcwNjc1Mzk4MSwianRpIjoiM2MzNTE2MzktZTc4MC00OTkzLWExMjAtM2I4YjAxYWRlNDQyIiwiaXNzIjoiaHR0cDovL2tleWNsb2FrLmluZnJhLnN2Yy5jbHVzdGVyLmxvY2FsL3JlYWxtcy9iYWNrb2ZmaWNlLWxvY2FsIiwiYXVkIjoiYWNjb3VudCIsInN1YiI6ImUzNzkzYmM1LTQ5OTktNDE5Yi1hNjZlLWEzNjhkYzgyZTFhNSIsInR5cCI6IkJlYXJlciIsImF6cCI6ImljZWNhc2giLCJzZXNzaW9uX3N0YXRlIjoiZTg1Y2IzMjEtYTJlYS00MTk0LWE3NjEtNDNjYjVlNDFiYjNkIiwiYWxsb3dlZC1vcmlnaW5zIjpbImh0dHA6Ly9sb2NhbGhvc3Q6ODI4MSJdLCJyZWFsbV9hY2Nlc3MiOnsicm9sZXMiOlsib2ZmbGluZV9hY2Nlc3MiLCJCQUNLT0ZGSUNFIiwidW1hX2F1dGhvcml6YXRpb24iLCJkZWZhdWx0LXJvbGVzLWJhY2tvZmZpY2UtbG9jYWwiXX0sInJlc291cmNlX2FjY2VzcyI6eyJhY2NvdW50Ijp7InJvbGVzIjpbIm1hbmFnZS1hY2NvdW50IiwibWFuYWdlLWFjY291bnQtbGlua3MiLCJ2aWV3LXByb2ZpbGUiXX19LCJzY29wZSI6InByb2ZpbGUgZW1haWwiLCJzaWQiOiJlODVjYjMyMS1hMmVhLTQxOTQtYTc2MS00M2NiNWU0MWJiM2QiLCJlbWFpbF92ZXJpZmllZCI6dHJ1ZSwibmFtZSI6IlBhdmxvIFNseXZrYSIsInByZWZlcnJlZF91c2VybmFtZSI6InN0YWZmX3BhdmxvQGljZS5jYXNoIiwiZ2l2ZW5fbmFtZSI6IlBhdmxvIiwiZmFtaWx5X25hbWUiOiJTbHl2a2EiLCJlbWFpbCI6InBhdmxvQGljZS5jYXNoIn0.HkQwotaLaEP4_j60YLx-aqH5gFcTU8tHEgEDoHYIf6rEnRI_PqeGrIzYXJAuly3f8HOcxpDYKpj2hEMuHTL8xEX_x15F5furdZvrWHyXDTIy-SHo_flkIaJhKGTvLlK3WczIheZb94B5F31_V2-SzQiT10VQ48oPHg2hN0bmxvXAx_BGcSUDERYlujz_LWmdzT2CSM90oE7-YRzKyroB_CzQun5aojN30Cfqj_5UChR_71fGRGZqd1_U0xr35KYW3ZSuloOkiC29x3THatGvQcXWN8LHvd0fdeNESig8MTVXqhgvJ9xJ6xWB8lU_TLmD3BzIuQ4caFgo9WYhHvoJAw",
+                "expiresIn": 3600,
+                "refreshToken": "eyJhbGciOiJIUzI1NiIsInR5cCIgOiAiSldUIiwia2lkIiA6ICI1ZjJiNDYzMi1hNjA5LTQxZjgtOGVmNS1jMzU2YWNmMzg2ZjYifQ.eyJleHAiOjE3MDY3NTU3ODEsImlhdCI6MTcwNjc1Mzk4MSwianRpIjoiNzU2ZGMzZjctZDc0NC00MTk2LWJlZjQtODJiNjhiMDU0MmI4IiwiaXNzIjoiaHR0cDovL2tleWNsb2FrLmluZnJhLnN2Yy5jbHVzdGVyLmxvY2FsL3JlYWxtcy9iYWNrb2ZmaWNlLWxvY2FsIiwiYXVkIjoiaHR0cDovL2tleWNsb2FrLmluZnJhLnN2Yy5jbHVzdGVyLmxvY2FsL3JlYWxtcy9iYWNrb2ZmaWNlLWxvY2FsIiwic3ViIjoiZTM3OTNiYzUtNDk5OS00MTliLWE2NmUtYTM2OGRjODJlMWE1IiwidHlwIjoiUmVmcmVzaCIsImF6cCI6ImljZWNhc2giLCJzZXNzaW9uX3N0YXRlIjoiZTg1Y2IzMjEtYTJlYS00MTk0LWE3NjEtNDNjYjVlNDFiYjNkIiwic2NvcGUiOiJwcm9maWxlIGVtYWlsIiwic2lkIjoiZTg1Y2IzMjEtYTJlYS00MTk0LWE3NjEtNDNjYjVlNDFiYjNkIn0.CgvlBTkdyBv1ElDrr5Ifj9Un8SW2CJXu0eYb3x_XEO4",
+                "refreshExpiresIn": 1800,
+                "error": null,
+                "errorDescription": null
+            }
+        }
+    }
+}
+----
+
+
+[[staff_resend_otp]]
+=== Resend OTP code
+`"*resendOtpCode*"` `Mutation` resends the one-time password generated during the <<staff_login, login phase>> to the user's primary MSISDN.
+
+NOTE: postman example:   "ICE Cash Payments > GraphQL > Management > Backoffice > Resend OTP code"
+
+.+Parameters:+
+|===
+    |Name|Type|Values|Required|Description
+
+    |`+username+` |`+String+` |valid backoffice user email |yes |Email
+
+|===
+
+.Request example:
+[source,graphql,options="nowrap"]
+----
+mutation {
+    resendOtpCode(username: "pavlo@ice.cash")
+}
+----
+.Response example:
+[source,json,options="nowrap"]
+----
+{
+    "data": {
+        "resendOtpCode": true
+    }
+}
+----
+
+
+[[staff_check_totp_code]]
+=== Check TOTP code
+`"*checkStaffMemberTotpCode*"` `Mutation` checks whether time-based one-time password is correct or not.
+
+IMPORTANT: Endpoint requires staff member access token (user must have "ROLE_BACKOFFICE" role).
+
+NOTE: postman example:   "ICE Cash Payments > GraphQL > Management > Backoffice > Check TOTP code"
+
+.+Parameters:+
+|===
+    |Name|Type|Values|Required|Description
+
+    |`+totpCode+` |`+String+` | |yes |Time-based one-time password
+
+|===
+
+.Request example:
+[source,graphql,options="nowrap"]
+----
+mutation {
+    checkStaffMemberTotpCode(totpCode: "124147")
+}
+
+----
+.Response example:
+[source,json,options="nowrap"]
+----
+{
+    "data": {
+        "checkStaffMemberTotpCode": true
+    }
+}
+----
+
+
+[[staff_forgot_password]]
+=== Forgot password
+`"*forgotStaffMemberPassword*"` `Mutation` generates and sends a special key to the user's email, which is then used to reset the password in the <<staff_reset_password, next step>>. Client UI may provide the custom URL address, that is used in the email along with a special key, that user should go to reset the password. `"sendEmail"` parameter specifies whether to send email or not (by default = true).
+
+NOTE: postman example:   "ICE Cash Payments > GraphQL > Management > Backoffice > Forgot Password"
+
+.+Parameters:+
+|===
+    |Name|Type|Values|Required|Description
+
+    |`+email+` |`+String+` |valid backoffice user email |yes |Email
+    |`+url+` |`+String+` |valid URL address | |Custom URL page to reset password
+    |`+sendEmail+` |`+Boolean+` | by default is "true" |yes |Whether to send email or not
+
+|===
+
+.Request example:
+[source,graphql,options="nowrap"]
+----
+mutation {
+    forgotStaffMemberPassword(
+        email: "pavlo@ice.cash",
+        url: "https://test-mz-backoffice.digittal.mobi/reset_password/")
+}
+----
+.Response example:
+[source,json,options="nowrap"]
+----
+{
+    "data": {
+        "forgotStaffMemberPassword": true
+    }
+}
+----
+
+
+[[staff_reset_password]]
+=== Reset password
+`"*resetStaffMemberPassword*"` `Mutation` accepts a special key generated during the <<staff_forgot_password, forgot password step>> to set a new password for the backoffice user associated with the key.
+
+NOTE: postman example:   "ICE Cash Payments > GraphQL > Management > Backoffice > Reset Password"
+
+.+Parameters:+
+|===
+    |Name|Type|Values|Required|Description
+
+    |`+key+` |`+String+` | |yes |special key generated on the previous step
+    |`+newPassword+` |`+String+` |string consisting of 4 digits |yes |
+
+|===
+
+.Request example:
+[source,graphql,options="nowrap"]
+----
+mutation {
+    resetStaffMemberPassword(
+        key: "ZVHMNETYMCLBIQ7SEUKT5LKVR5SQ2WAC",
+        newPassword: "4321"
+    ) {
+        id
+        email
+    }
+}
+
+----
+.Response example:
+[source,json,options="nowrap"]
+----
+{
+    "data": {
+        "resetStaffMemberPassword": {
+            "id": "1",
+            "email": "pavlo@ice.cash"
+        }
+    }
+}
+----
+
+
+[[staff_generate_backup_codes]]
+=== Generate new Backup codes
+`"*generateNewBackupCodes*"` `Mutation` generates new backup codes required for use by the <<staff_login_backup, login by backup code>> endpoint. All previous backup codes are no longer valid.
+
+IMPORTANT: Endpoint requires staff member access token (user must have "ROLE_BACKOFFICE" role).
+
+NOTE: postman example:   "ICE Cash Payments > GraphQL > Management > Backoffice > Generate My Backup codes"
+
+.Request example:
+[source,graphql,options="nowrap"]
+----
+mutation {
+    generateNewBackupCodes {
+        id
+        email
+        mfaBackupCodes
+    }
+}
+
+----
+.Response example:
+[source,json,options="nowrap"]
+----
+{
+    "data": {
+        "generateNewBackupCodes": {
+            "id": "1",
+            "email": "pavlo@ice.cash",
+            "mfaBackupCodes": [
+                "7twb-oc8w-5yzc-v6ce",
+                "alf0-ep35-pt4z-q487",
+                "h1pk-bot7-1ajn-8qi3",
+                "sa0k-w52x-4fch-plji",
+                "3vy3-jbzn-dj6y-r8sb",
+                "aazr-yxwt-ppy2-sm10"
+            ]
+        }
+    }
+}
+----
+
+
+=== Refresh Access Token
+`"*refreshStaffMemberAccessToken*"` `Mutation` refreshes expired access token of backoffice user. It is preferred way of updating stale access token. The refresh token is usually supplied along with the access token as the `"refreshToken"` parameter and has longer time to live.
+
+NOTE: postman example:   "ICE Cash Payments > GraphQL > Management > Backoffice > Refresh access token"
+
+.+Parameters:+
+|===
+    |Name|Type|Values|Required|Description
+
+    |`+refreshToken+` |`+String+` |valid refresh token |yes |Refresh token
+
+|===
+
+.Request example (login by account number):
+[source,graphql,options="nowrap"]
+----
+mutation {
+    refreshStaffMemberAccessToken(refreshToken: "eyJhbGciOiJIUzI1NiIsInR5cCIgOiAiSldUIiwia2lkIiA6ICJiNDdmZjZhMy1kNWYwLTRiNmQtYTlkMS0wNTIzMDg1OTAwZTUifQ.eyJleHAiOjE2NzUyNzczMDEsImlhdCI6MTY3NTI3MzcwMSwianRpIjoiNzY0OTkwODgtOTNkMC00MzQ0LWFjMzQtMDFjNjkxYjQ2ZDM1IiwiaXNzIjoiaHR0cDovL2xvY2FsaG9zdDo4MTgwL2F1dGgvcmVhbG1zL3BheW1lbnRzLWxvY2FsIiwiYXVkIjoiaHR0cDovL2xvY2FsaG9zdDo4MTgwL2F1dGgvcmVhbG1zL3BheW1lbnRzLWxvY2FsIiwic3ViIjoiZmJhNzg0ODctN2MwMy00ZWM4LTkwOGEtN2Y3NmFkMzE2NjU2IiwidHlwIjoiUmVmcmVzaCIsImF6cCI6ImljZWNhc2giLCJzZXNzaW9uX3N0YXRlIjoiMDFiNWJiZjgtNjFiYS00ZGNhLThjZTUtZjkyMGE5ZGE0YTQyIiwic2NvcGUiOiJlbWFpbCBwcm9maWxlIiwic2lkIjoiMDFiNWJiZjgtNjFiYS00ZGNhLThjZTUtZjkyMGE5ZGE0YTQyIn0.t5r41BPtO0tbHAq8cwh8zCO--ZsJ4nz3iSvqmiimxXU") {
+        status
+        mfaType
+        accessToken {
+            tokenType
+            token
+            expiresIn
+            refreshToken
+            refreshExpiresIn
+            error
+            errorDescription
+        }
+    }
+}
+
+----
+.Response example:
+[source,json,options="nowrap"]
+----
+{
+    "data": {
+        "refreshStaffMemberAccessToken": {
+            "status": "SUCCESS",
+            "mfaType": null,
+            "accessToken": {
+                "tokenType": "Bearer",
+                "token": "eyJhbGciOiJSUzI1NiIsInR5cCIgOiAiSldUIiwia2lkIiA6ICJPVGt3cnZHdkx2aF8ybVhXTW93MW94czctYVAtY2JOaXZoZElseWZ3aG5ZIn0.eyJleHAiOjE3MDE3NTMxODksImlhdCI6MTcwMTc0OTU4OSwianRpIjoiYzhlZjgxY2EtOTJkZS00NmZmLTk1N2YtMzk5ZDU1NjEyYjg3IiwiaXNzIjoiaHR0cDovL2xvY2FsaG9zdDo4MTgwL2F1dGgvcmVhbG1zL3BheW1lbnRzLWxvY2FsIiwiYXVkIjoiYWNjb3VudCIsInN1YiI6IjBiOWMzYjc1LWI5MmQtNDg0Ny05Y2VhLWZkZTU0ZTIwMDRlOCIsInR5cCI6IkJlYXJlciIsImF6cCI6ImljZWNhc2giLCJzZXNzaW9uX3N0YXRlIjoiMDI2ZmIxNDEtM2UxZS00NGYxLTlkN2EtMjczZDY0OTA3ZGViIiwiYWNyIjoiMSIsImFsbG93ZWQtb3JpZ2lucyI6WyJodHRwOi8vbG9jYWxob3N0OjgyODEiXSwicmVhbG1fYWNjZXNzIjp7InJvbGVzIjpbIlBBWU1FTlQiLCJvZmZsaW5lX2FjY2VzcyIsInVtYV9hdXRob3JpemF0aW9uIiwiZGVmYXVsdC1yb2xlcy1wYXltZW50cy1sb2NhbCJdfSwicmVzb3VyY2VfYWNjZXNzIjp7ImFjY291bnQiOnsicm9sZXMiOlsibWFuYWdlLWFjY291bnQiLCJtYW5hZ2UtYWNjb3VudC1saW5rcyIsInZpZXctcHJvZmlsZSJdfX0sInNjb3BlIjoiZW1haWwgcHJvZmlsZSIsInNpZCI6IjAyNmZiMTQxLTNlMWUtNDRmMS05ZDdhLTI3M2Q2NDkwN2RlYiIsImVtYWlsX3ZlcmlmaWVkIjpmYWxzZSwibmFtZSI6IlBhdmxvIFNseXZrYSIsInByZWZlcnJlZF91c2VybmFtZSI6ImVudGl0eV8zMDAwMDA1MyIsImdpdmVuX25hbWUiOiJQYXZsbyIsImZhbWlseV9uYW1lIjoiU2x5dmthIiwiZW1haWwiOiJwYXZsb0BpY2UuY2FzaCJ9.KhqFGI-CwK8wbjMrLTwLo7-dEMLdngRNDwLlAZwZC1hKifSFw0vw3-j_L6q63m8r07vlIVFbgCMPk9flf77ILSy8RnWHHHq5lfAkyOeyOblb7NtVz9AUuzbHl9NGTq4N3oXIwslUM4eOXj-5xf5d1pomJxqZFdxnMDKLMzAu6Y6UylBNd81EVH4g_HR2ySlPVGKFBjes64_Cgq9f4q4bjEE2uRsfb0Kh9rSHlZyPWMfS3ldFQ7KOKpWyyn-NEDjhWIYjkLEXGx2zhazpSdhPd6quxWPEOQ2pIlEWoiqBgolH7EGYzLumwZVFP5dDX9YtjlSTHkmlIf97a537a3A-zA",
+                "expiresIn": 3600,
+                "refreshToken": "eyJhbGciOiJIUzI1NiIsInR5cCIgOiAiSldUIiwia2lkIiA6ICIxOTlhNWE0Yi1kMzdjLTQ5ZTMtOWJkZS03MDExMDQxNWE4MTAifQ.eyJleHAiOjE3MDE3NTEzODksImlhdCI6MTcwMTc0OTU4OSwianRpIjoiOTI2NzYwOWMtYWY2NS00NzI3LWI1NmMtNTU4NjIwNjc5MjE5IiwiaXNzIjoiaHR0cDovL2xvY2FsaG9zdDo4MTgwL2F1dGgvcmVhbG1zL3BheW1lbnRzLWxvY2FsIiwiYXVkIjoiaHR0cDovL2xvY2FsaG9zdDo4MTgwL2F1dGgvcmVhbG1zL3BheW1lbnRzLWxvY2FsIiwic3ViIjoiMGI5YzNiNzUtYjkyZC00ODQ3LTljZWEtZmRlNTRlMjAwNGU4IiwidHlwIjoiUmVmcmVzaCIsImF6cCI6ImljZWNhc2giLCJzZXNzaW9uX3N0YXRlIjoiMDI2ZmIxNDEtM2UxZS00NGYxLTlkN2EtMjczZDY0OTA3ZGViIiwic2NvcGUiOiJlbWFpbCBwcm9maWxlIiwic2lkIjoiMDI2ZmIxNDEtM2UxZS00NGYxLTlkN2EtMjczZDY0OTA3ZGViIn0.QfsCzXXL3brY1Vu1oq3N8IYL1hYpWWCRvPDwXCXMPAk",
+                "refreshExpiresIn": 1800,
+                "error": null,
+                "errorDescription": null
+            }
+        }
+    }
+}
+----
+
+=== Invalidate Refresh Token
+`"*invalidateStaffMemberRefreshToken*"` `Mutation` invalidates refresh token. Since access token is impossible to invalidate, invalidating refresh token is preferred way to log user out.
+
+NOTE: postman example:   "ICE Cash Payments > GraphQL > Management > Backoffice > Invalidate refresh token"
+
+.+Parameters:+
+|===
+    |Name|Type|Values|Required|Description
+
+    |`+refreshToken+` |`+String+` |valid refresh token |yes |Refresh token
+
+|===
+
+.Request example (login by account number):
+[source,graphql,options="nowrap"]
+----
+mutation {
+    invalidateStaffMemberRefreshToken(refreshToken: "eyJhbGciOiJIUzI1NiIsInR5cCIgOiAiSldUIiwia2lkIiA6ICJiNDdmZjZhMy1kNWYwLTRiNmQtYTlkMS0wNTIzMDg1OTAwZTUifQ.eyJleHAiOjE2NzUyNzczMjksImlhdCI6MTY3NTI3MzcyOSwianRpIjoiZWEyZDQ0NWUtZTQ3NC00ZGE4LWE1YmMtNTM1NTFiNjdjMDYxIiwiaXNzIjoiaHR0cDovL2xvY2FsaG9zdDo4MTgwL2F1dGgvcmVhbG1zL3BheW1lbnRzLWxvY2FsIiwiYXVkIjoiaHR0cDovL2xvY2FsaG9zdDo4MTgwL2F1dGgvcmVhbG1zL3BheW1lbnRzLWxvY2FsIiwic3ViIjoiZmJhNzg0ODctN2MwMy00ZWM4LTkwOGEtN2Y3NmFkMzE2NjU2IiwidHlwIjoiUmVmcmVzaCIsImF6cCI6ImljZWNhc2giLCJzZXNzaW9uX3N0YXRlIjoiMDFiNWJiZjgtNjFiYS00ZGNhLThjZTUtZjkyMGE5ZGE0YTQyIiwic2NvcGUiOiJlbWFpbCBwcm9maWxlIiwic2lkIjoiMDFiNWJiZjgtNjFiYS00ZGNhLThjZTUtZjkyMGE5ZGE0YTQyIn0.8YYuL_Hjv9KnDOPlrgq45Ps_Bn5WxypBgVGRBsxgHLM") {
+        status
+        mfaType
+        accessToken {
+            tokenType
+            token
+            expiresIn
+            refreshToken
+            refreshExpiresIn
+            error
+            errorDescription
+        }
+    }
+}
+
+----
+.Response example:
+[source,json,options="nowrap"]
+----
+{
+    "data": {
+        "invalidateStaffMemberRefreshToken": {
+            "status": "SUCCESS",
+            "mfaType": null,
+            "accessToken": null
+        }
+    }
+}
+----
+
+
+[[staff_update_login_status]]
+=== Update login status
+`"*updateStaffMemberLoginStatus*"` `Mutation` is used to change login status of backoffice user. Usually it is used to activate, inactivate or lock backoffice user account for login.
+
+IMPORTANT: Endpoint requires staff member access token (user must have "ROLE_BACKOFFICE" role).
+
+NOTE: postman example:   "ICE Cash Payments > GraphQL > Management > Backoffice > Update login status"
+
+.+Parameters:+
+|===
+    |Name|Type|Values|Required|Description
+
+    |`+email+` |`+String+` |valid backoffice user email |yes |Email
+    |`+loginStatus+` |`+Enum+` |ACTIVE +
+                                INACTIVE +
+                                LOCKED |yes |New login status
+
+|===
+
+.Request example:
+[source,graphql,options="nowrap"]
+----
+mutation {
+    updateStaffMemberLoginStatus(
+        email: "pavlo@ice.cash",
+        loginStatus: ACTIVE
+    ) {
+        id
+        email
+        loginStatus
+    }
+}
+
+----
+.Response example:
+[source,json,options="nowrap"]
+----
+{
+    "data": {
+        "updateStaffMemberLoginStatus": {
+            "id": "1",
+            "email": "pavlo@ice.cash",
+            "loginStatus": "ACTIVE"
+        }
+    }
+}
+----
+
+
+[[staff_update_password]]
+=== Update password
+`"*updateStaffMemberPassword*"` `Mutation` is used to update backoffice user's password in case the user knows the current password.
+
+IMPORTANT: Endpoint requires staff member access token (user must have "ROLE_BACKOFFICE" role).
+
+NOTE: postman example:   "ICE Cash Payments > GraphQL > Management > Backoffice > Update password"
+
+.+Parameters:+
+|===
+    |Name|Type|Values|Required|Description
+
+    |`+oldPassword+` |`+String+` |string consisting of 4 digits |yes |Current password
+    |`+newPassword+` |`+String+` |string consisting of 4 digits |yes |New password
+
+|===
+
+.Request example:
+[source,graphql,options="nowrap"]
+----
+mutation {
+    updateStaffMemberPassword(
+        oldPassword: "4321",
+        newPassword: "1234"
+    ) {
+        id
+        email
+    }
+}
+
+----
+.Response example:
+[source,json,options="nowrap"]
+----
+{
+    "data": {
+        "updateStaffMemberPassword": {
+            "id": "1",
+            "email": "pavlo@ice.cash"
+        }
+    }
+}
+----
+
+
+[[user_api]]
+== Backoffice user API
+
+Sequence of calling GraphQL endpoints to create new backoffice user::
+. <<staff_new, newStaffMember>>
+. <<staff_activate, activateNewStaffMember>>
+
+[[staff_new]]
+=== Register backoffice user
+`"*newStaffMember*"` `Mutation` creates a new staff member (backoffice user). The email uniquely identifies the user, usually is used as a `"username"` parameter in authentication operations and must be unique. A special key is created and sent to the specified email address, which, together with the URL (provided with the request or default one), forms a link to activate the account. The user cannot perform any authentications operation until the account is activated. The MFA type is set to `OTP` by default.
+
+NOTE: postman example:   "ICE Cash Payments > GraphQL > Management > Backoffice > Create new user"
+
+.+Parameters:+
+|===
+    |Name|Type|Values|Required|Description
+
+    |`+staffMember.email+` |`+String+` |unique email |yes |E-mail
+    |`+staffMember.firstName+` |`+String+` |any string |yes |First Name
+    |`+staffMember.lastName+` |`+String+` |any string | |Last Name
+    |`+staffMember.idNumberType+` |`+Integer+` | |yes |ID number type, link:moz.html#id_types[see details]
+    |`+staffMember.idNumber+` |`+String+` |unique string |yes |ID number
+    |`+staffMember.msisdn+` |`+String+` |valid unique mobile |yes |Primary mobile number (MSISDN)
+    |`+staffMember.department+` |`+String+` |any string |yes |Department
+    |`+staffMember.locale+` |`+String+` |en (default) +
+                                        pt | |User Language
+    |`+staffMember.entityId+` |`+Integer+` |valid Entity ID | |Entity ID, if backoffice user needs a link to an existing Entity ID.
+    |`+staffMember.securityGroupId+` |`+Integer+` |valid Security Group ID |yes |ID of the security group to which the user belongs, link:moz.html#security_groups[see details]
+    |`+staffMember.loginStatus+` |`+Enum+` |ACTIVE (default) +
+                                            INACTIVE +
+                                            LOCKED | |Login Status
+    |`+url+` |`+String+` |valid URL | |Custom URL page to activate user
+    |`+sendEmail+` |`+Boolean+` |true (default)
+                                false |yes |Whether send email or not (with instructions and activation link).
+
+|===
+
+.Request example:
+[source,graphql,options="nowrap"]
+----
+mutation {
+    newStaffMember(staffMember: {
+        email: "pavlo@ice.cash"
+        firstName: "Pavlo"
+        lastName: "Slyvka"
+        idNumber: "12345678"
+        idNumberType: 1
+        msisdn: "000000000000"
+        department: "ICEcash"
+        securityGroupId: 1
+        locale: "en"
+        entityId: 1
+        loginStatus: ACTIVE
+    }) {
+        id
+        email
+        loginStatus
+        mfaType
+        mfaSecretCode
+        mfaBackupCodes
+        createdDate
+    }
+}
+
+----
+.Response example:
+[source,json,options="nowrap"]
+----
+{
+    "data": {
+        "newStaffMember": {
+            "id": "30008",
+            "email": "pavlo@ice.cash",
+            "loginStatus": "ACTIVE",
+            "mfaType": "OTP",
+            "mfaSecretCode": "UG5CRPRV4LHPS7UNH7J4NL5PMZH3FH25",
+            "mfaBackupCodes": [
+                "lepu-sazg-sff9-lg82",
+                "opg5-qmlt-wlrx-jkpj",
+                "czwu-n0fs-tn9l-osla",
+                "lctx-q0f0-54hz-uunq",
+                "ibhb-woap-s4iy-kexd",
+                "6u0k-j1v5-8jvg-p9vo"
+            ],
+            "createdDate": "2024-02-01 04:46:11"
+        }
+    }
+}
+----
+
+
+[[staff_activate]]
+=== Activate backoffice user
+`"*activateNewStaffMember*"` `Mutation` accepts a special key generated during the <<staff_new, new staff member creation step>> to set activate the user associated with the key. This step also sets a new password which is required on <<staff_login, login step>> to obtain an access token. The endpoint creates a new account on the authentication server and does not change the login status, so if the user needs to unlock or activate the login status, <<staff_update_login_status, this endpoint must be used instead>>.
+
+NOTE: postman example:   "ICE Cash Payments > GraphQL > Management > Backoffice > Activate new user"
+
+.+Parameters:+
+|===
+    |Name|Type|Values|Required|Description
+
+    |`+key+` |`+String+` | |yes |special key generated on the previous step
+    |`+newPassword+` |`+String+` |string consisting of 4 digits |yes |Password
+
+|===
+
+.Request example:
+[source,graphql,options="nowrap"]
+----
+mutation {
+    activateNewStaffMember(
+        key: "VLEO3PY6N7NYEJU7M2OXNFLVEDUVX6HD",
+        newPassword: "1234"
+    ) {
+        id
+        email
+    }
+}
+
+----
+.Response example:
+[source,json,options="nowrap"]
+----
+{
+    "data": {
+        "activateNewStaffMember": {
+            "id": "30008",
+            "email": "pavlo@ice.cash"
+        }
+    }
+}
+----
+
+
+[[staff_update_msisdn]]
+=== Update MSISDN
+`"*updateStaffMemberMsisdn*"` `Mutation` updates backoffice user primary mobile number (MSISDN).
+
+IMPORTANT: Endpoint requires staff member access token (user must have "ROLE_BACKOFFICE" role).
+
+NOTE: postman example:   "ICE Cash Payments > GraphQL > Management > Backoffice > Update msisdn"
+
+.+Parameters:+
+|===
+    |Name|Type|Values|Required|Description
+
+    |`+msisdn+` |`+String+` |unique msisdn |yes |New primary mobile number (MSISDN)
+
+|===
+
+.Request example:
+[source,graphql,options="nowrap"]
+----
+mutation {
+    updateStaffMemberMsisdn(msisdn: "000000000000") {
+        id
+        email
+        msisdn
+    }
+}
+
+----
+.Response example:
+[source,json,options="nowrap"]
+----
+{
+    "data": {
+        "updateStaffMemberMsisdn": {
+            "id": "1",
+            "email": "pavlo@ice.cash",
+            "msisdn": "000000000000"
+        }
+    }
+}
+----
+
+
+[[staff_update_mfa_type]]
+=== Update MFA type
+`"*updateStaffMemberMfaType*"` `Mutation` updates backoffice user MFA type. This endpoint changes authentication mechanism on <<staff_login, Login step>>.
+
+IMPORTANT: Endpoint requires staff member access token (user must have "ROLE_BACKOFFICE" role).
+
+NOTE: postman example:   "ICE Cash Payments > GraphQL > Management > Backoffice > Update mfaType"
+
+.+Parameters:+
+|===
+    |Name|Type|Values|Required|Description
+
+    |`+mfaType+` |`+Enum+` |OTP +
+                            TOTP +
+                            null | |MFA type
+
+|===
+
+.Request example:
+[source,graphql,options="nowrap"]
+----
+mutation {
+    updateStaffMemberMfaType(mfaType: OTP) {
+        email
+        mfaType
+    }
+}
+
+----
+.Response example:
+[source,json,options="nowrap"]
+----
+{
+    "data": {
+        "updateStaffMemberMfaType": {
+            "email": "pavlo@ice.cash",
+            "mfaType": "OTP"
+        }
+    }
+}
+----
+
+
+[[staff_update]]
+=== Update backoffice user details
+`"*updateStaffMember*"` `Mutation` updates backoffice user details. All fields are updated, even if only the required fields are submitted. Empty fields are filled in with null. Thus, even if only one or a few fields require updating, the full state of the user (all fields) must be submitted. After a successful operation of updating the user's fields, an email will be sent to the user's email with a report on what exactly was changed.
+
+IMPORTANT: Endpoint requires staff member access token (user must have "ROLE_BACKOFFICE" role).
+
+NOTE: postman example:   "ICE Cash Payments > GraphQL > Management > Backoffice > Update user"
+
+.+Parameters:+
+|===
+    |Name|Type|Values|Required|Description
+
+    |`+staffMember.email+` |`+String+` |unique email |yes |E-mail
+    |`+staffMember.firstName+` |`+String+` |any string |yes |First Name
+    |`+staffMember.lastName+` |`+String+` |any string | |Last Name
+    |`+staffMember.idNumberType+` |`+Integer+` | |yes |ID number type, link:moz.html#id_types[see details]
+    |`+staffMember.idNumber+` |`+String+` |unique string |yes |ID number
+    |`+staffMember.msisdn+` |`+String+` |valid unique mobile |yes |Primary mobile number (MSISDN)
+    |`+staffMember.department+` |`+String+` |any string |yes |Department
+    |`+staffMember.locale+` |`+String+` |en (default) +
+                                        pt | |User Language
+    |`+staffMember.loginStatus+` |`+Enum+` |ACTIVE (default) +
+                                            INACTIVE +
+                                            LOCKED | |Login Status
+    |`+staffMember.entityId+` |`+Integer+` |valid Entity ID | |Entity ID, if backoffice user needs a link to an existing Entity ID.
+    |`+staffMember.securityGroupId+` |`+Integer+` |valid Security Group ID |yes |ID of the security group to which the user belongs, link:moz.html#security_groups[see details]
+    |`+sendEmail+` |`+Boolean+` |true, false |yes |Whether send email or not
+
+|===
+
+.Request example:
+[source,graphql,options="nowrap"]
+----
+mutation {
+    updateStaffMember(staffMember: {
+        email: "pavlo@ice.cash"
+        firstName: "Pavlo"
+        lastName: "Slyvka"
+        idNumber: "12345678"
+        idNumberType: 1
+        msisdn: "000000000000"
+        department: "ICEcash"
+        mfaType: OTP
+        securityGroupId: 1
+        loginStatus: ACTIVE
+        locale: "en"
+        entityId: 1
+    }) {
+        email
+        loginStatus
+        mfaType
+    }
+}
+
+----
+.Response example:
+[source,json,options="nowrap"]
+----
+{
+    "data": {
+        "updateStaffMember": {
+            "email": "pavlo@ice.cash",
+            "loginStatus": "ACTIVE",
+            "mfaType": "OTP"
+        }
+    }
+}
+----
+
+
+[[staff_delete]]
+=== Delete backoffice user
+`"*deleteStaffMember*"` `Mutation` permanently removes the backoffice user from the system identified by valid staff member (backoffice user) ID.
+
+IMPORTANT: Endpoint requires staff member access token (user must have "ROLE_BACKOFFICE" role).
+
+NOTE: postman example:   "ICE Cash Payments > GraphQL > Management > Backoffice > Delete"
+
+.+Parameters:+
+|===
+    |Name|Type|Values|Required|Description
+
+    |`+id+` |`+Integer+` | |yes |valid staff member ID
+
+|===
+
+.Request example:
+[source,graphql,options="nowrap"]
+----
+mutation {
+    deleteStaffMember(id: 386) {
+        id
+        email
+    }
+}
+
+----
+.Response example:
+[source,json,options="nowrap"]
+----
+{
+    "data": {
+        "deleteStaffMember": {
+            "id": 386,
+            "email": "pavlo@ice.cash"
+        }
+    }
+}
+
+----
+
+
+[[staff_details]]
+=== Get backoffice user details
+
+`"*staffMember*"` `Query` returns details of current staff member (backoffice user).
+
+IMPORTANT: Endpoint requires staff member access token (user must have "ROLE_BACKOFFICE" role).
+
+NOTE: postman example:   "ICE Cash Payments > GraphQL > Management > Backoffice > GET"
+
+.Request example:
+[source,graphql,options="nowrap"]
+----
+query {
+    staffMember {
+        id
+        email
+        loginStatus
+        mfaType
+        mfaSecretCode
+        mfaQrCode
+        mfaBackupCodes
+        locale
+        firstName
+        lastName
+        idNumber
+        idNumberType
+        msisdn
+        entityId
+        department
+        securityGroupId
+        securityGroup {
+            name
+        }
+        createdDate
+    }
+}
+
+----
+.Response example:
+[source,json,options="nowrap"]
+----
+{
+    "data": {
+        "staffMember": {
+            "id": "1",
+            "email": "pavlo@ice.cash",
+            "loginStatus": "ACTIVE",
+            "mfaType": "OTP",
+            "mfaSecretCode": "YUUYZRUVMHRDNTBLVLOEKUSD27K6EFDE",
+            "mfaQrCode": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAV4AAAFeAQAAAADlUEq3AAAC60lEQVR4Xu2YUYrkMAxEBT5AjpSr+0g5gMGrV3LPmt5hmZ+FpcsiZNL2cz4KqaRMzJ/HiPeVv8SB9zjwHgfe48B7HHiPA+/xz+Eg7jn7uPLKhR5X7kU+t4e95gTz/NwJwFyd7Uv81XN9AT7wEy0XuZAro+AQnKoawgL6iK9TPTOKdUsYJkN1RBbpryMMcwvgSNPxUYajN1jBEulOlb67JKATvOKVTg2TQTTg39suMOI86JOlREaFykqJpHu3grOacr2lwaqgRHKwMaXQgySgC5yNRorlkY5ugeFISfLqTbqPhyVRptM9SSruKElZkV214gMzlqjnajih9eRx6Rmlqhcc/MVhJsaLjJQVTB7Hh61gVVMpBgaQO+iZ9/USG1jJs+5kjo407PdOPgxhzWN5DdwGGampHF9XbzKCZ41nakAw+q8ILelCw9B7fOAhy62tyqIqriDueEukT4er3VBZGlYnX/3sVGrFH7374+HQmDq1hWDlOdKu1p1gXXzi4SrIpSkFDb+R7sNh+NVrNKxqZJV6t9aL8oElkWYS+DpbHRnpvOCoLgNJCyYwHF6iZ17lA6vzfgl1U1NlMhdT/dSHnhG8sqWH+jI/ka7mEz04wfGaTstq6EdYLg/JD3qQETxqKpNK6ju5cU81o9B3nxs8Nbq3EurhoDRMPTnuBeO0pE1TQTUZC8eRjuxalAccctfKJawmRasRRc+loQ+cgFKIxUoqvEVtiK3FuMBD0mkXrJFOXUr2eK34wJPWIyfJCpJoMPwM3iAT9oEHppq5pC3tlrEE5pM3nn1gkauO5CqB27x4XNcJrmB9dSLakPIHh+FVTrCo7LyVQmSRms7KqEZrNoJRRmlDZVFirNRxnt3gGkXW53/qxs9BV+oslf2awUoekmryiVcPs+YWQ5j7mlSXXEFS4cNkmg88KSvJdUsodSKujozv7fjDYbQqy9X33dAn/1CJlZ5W8M/iwHsceI8D73HgPQ68x4H3+F/gXwIDFc7i7Nb4AAAAAElFTkSuQmCC",
+            "mfaBackupCodes": [
+                "7twb-oc8w-5yzc-v6ce",
+                "alf0-ep35-pt4z-q487",
+                "h1pk-bot7-1ajn-8qi3",
+                "sa0k-w52x-4fch-plji",
+                "3vy3-jbzn-dj6y-r8sb",
+                "aazr-yxwt-ppy2-sm10"
+            ],
+            "locale": "en",
+            "firstName": "Pavlo",
+            "lastName": "Slyvka",
+            "idNumber": "12345678",
+            "idNumberType": "1",
+            "msisdn": "000000000000",
+            "entityId": null,
+            "department": "ICEcash",
+            "securityGroupId": "1",
+            "securityGroup": null,
+            "createdDate": "2023-01-12 12:10:40"
+        }
+    }
+}
+----
+
+
+[[staff_search]]
+=== Search backoffice users
+`"*searchStaffMembers*"` `Query` is a text search for backoffice users. Additionally, the search result can be filtered by specific login status. The following criteria can be used as search text:
+
+    * ID
+    * Name
+    * E-mail
+
+By default, backoffice users with the highest match appear first in search result, and those with the least match appear last.
+
+IMPORTANT: Endpoint requires staff member access token (user must have "ROLE_BACKOFFICE" role).
+
+NOTE: postman example:   "ICE Cash Payments > GraphQL > Management > Backoffice > Search"
+
+.+Parameters:+
+|===
+    |Name|Type|Values|Required|Description
+
+    |`+searchText+` |`+String+` |any string | |
+    |`+status+` |`+Enum+` |ACTIVE +
+                            INACTIVE +
+                            LOCKED | |If provided, shows only users with specific status
+    |`+page+` |`+Integer+` |Valid number, by defult = 0 | |Page number
+    |`+size+` |`+Integer+` |Valid number, by defult = 30 | |Page size
+    |`+sort+` |`+SortInput+` |One of: +
+                            "asc": array of fields +
+                            "desc": array of fields +
+                            "by": array of SortProperty | |If specified, performs results sorting by certain criteria
+
+|===
+
+.Request example:
+[source,graphql,options="nowrap"]
+----
+query {
+    searchStaffMembers(
+        searchText: "1",
+        status: ACTIVE,
+        sort: {asc: ["email"]}
+    ) {
+        id
+        email
+        firstName
+        lastName
+        loginStatus
+    }
+}
+
+----
+.Response example:
+[source,json,options="nowrap"]
+----
+{
+    "data": {
+        "searchStaffMembers": [
+            {
+                "id": "18",
+                "email": "gordon.gangata@icecash.co.zw",
+                "firstName": "Gordon",
+                "lastName": "Gangata",
+                "loginStatus": "ACTIVE"
+            },
+            {
+                "id": "17",
+                "email": "ketavahle.karonga@icecash.co.zw",
+                "firstName": "Ketavahle",
+                "lastName": "Karonga",
+                "loginStatus": "ACTIVE"
+            },
+            {
+                "id": "19",
+                "email": "lucky.munkondya@icecash.co.zw",
+                "firstName": "Lucky",
+                "lastName": "Munkondya",
+                "loginStatus": "ACTIVE"
+            },
+            {
+                "id": "1",
+                "email": "pavlo@ice.cash",
+                "firstName": "Pavlo",
+                "lastName": "Slyvka",
+                "loginStatus": "ACTIVE"
+            }
+        ]
+    }
+}
+----
+
+
+[[journal]]
+== Journal API
+
+[[journal_create]]
+=== Create Journal
+`"*createJournal*"` `Mutation` creates and saves a new journal in `PENDING` status. The journal is used to create and perform a new payment transaction on <<journal_accept, accept journal step>>. Backoffice user may override credit/debit accounts and one or more fees associated with the transaction. If fee amount is 0, the desired fee is removed from execution. Original fee cannot be overridden. After successful journal creation a notification email is sent with the journal details.
+
+IMPORTANT: Endpoint requires staff member access token (user must have "ROLE_BACKOFFICE" role).
+
+NOTE: postman example:   "ICE Cash Payments > GraphQL > Management > Backoffice > Journal > Create Journal"
+
+.+Parameters:+
+|===
+    |Name|Type|Values|Required|Description
+
+    |`+journal.currencyId+` |`+Integer+` |valid currency ID |yes |Currency ID, link:moz.html#currencies[see details]
+    |`+journal.transactionCodeId+` |`+ID+` |valid transaction code ID |yes |Transaction code ID, link:moz.html#transaction_codes[see details]
+    |`+journal.amount+` |`+Float+` |float number |yes |Amount
+    |`+journal.drAccountId+` |`+Integer+` |valid account ID |yes |Debit account ID
+    |`+journal.crAccountId+` |`+Integer+` |valid account ID |yes |Credit account ID
+    |`+journal.details+` |`+String+` |any string |yes |Journal details
+    |`+journal.notes+` |`+String+` |any string | |Journal notes
+    |`+fees+` |`+array+` | | |Array of fees details
+    |`+fees.feeId+` |`+Integer+` |valid fee ID |yes |Fee ID, +
+        Note: fees list can be obtained along with the transaction code (providing "additionalFees" param)
+    |`+fees.amount+` |`+Float+` |float number |yes |Amount
+    |`+url+` |`+String+` | | |Custom URL to client page for journal details that is sent in email
+    |`+sendEmail+` |`+Boolean+` |true, false |yes |Whether send email or not
+
+|===
+
+.Request example:
+[source,graphql,options="nowrap"]
+----
+mutation {
+    createJournal(journal: {
+        currencyId: 1
+        transactionCodeId: 1
+        amount: 10.0
+        drAccountId: 1
+        crAccountId: 4
+        details: "some details"
+        notes: "some notes"
+    }, fees: [
+        {feeId: 1, amount: 0.5},
+        {feeId: 2, amount: 0}
+    ]) {
+        id
+        status
+        amount
+        drAccountId
+        crAccountId
+        transactionCodeId
+        fees {
+            feeId
+            amount
+            chargeType
+            drAccountId
+            crAccountId
+        }
+        details
+        notes
+        createdDate
+    }
+}
+
+----
+.Response example:
+[source,json,options="nowrap"]
+----
+{
+    "data": {
+        "createJournal": {
+            "id": "65",
+            "status": "PENDING",
+            "amount": 10.0,
+            "drAccountId": "1",
+            "crAccountId": "4",
+            "transactionCodeId": "1",
+            "fees": [
+                {
+                    "feeId": "1",
+                    "amount": 0.5,
+                    "chargeType": "FIXED",
+                    "drAccountId": "4",
+                    "crAccountId": "1"
+                },
+                {
+                    "feeId": "2",
+                    "amount": 0.0,
+                    "chargeType": "PERCENT",
+                    "drAccountId": "4",
+                    "crAccountId": "10"
+                }
+            ],
+            "details": "some details",
+            "notes": "some notes",
+            "createdDate": "2024-02-01 05:16:11"
+        }
+    }
+}
+----
+
+
+[[journal_reject]]
+=== Reject Journal
+`"*rejectJournal*"` `Mutation` cancels the journal updating its status to REJECTED. It also saves the information of who rejected the journal.
+
+IMPORTANT: Endpoint requires staff member access token (user must have "ROLE_BACKOFFICE" role).
+
+NOTE: postman example:   "ICE Cash Payments > GraphQL > Management > Backoffice > Journal > Reject Journal"
+
+.+Parameters:+
+|===
+    |Name|Type|Values|Required|Description
+
+    |`+journalId+` |`+Integer+` |valid journal ID |yes |Journal ID
+
+|===
+
+.Request example:
+[source,graphql,options="nowrap"]
+----
+mutation {
+    rejectJournal(journalId: 1) {
+        id
+        status
+        amount
+        drAccountId
+        crAccountId
+        transactionCodeId
+        fees {
+            feeId
+            amount
+            chargeType
+            drAccountId
+            crAccountId
+        }
+        details
+        notes
+        createdDate
+    }
+}
+
+----
+.Response example:
+[source,json,options="nowrap"]
+----
+{
+    "data": {
+        "rejectJournal": {
+            "id": "65",
+            "status": "REJECTED",
+            "amount": 10.0,
+            "drAccountId": "1",
+            "crAccountId": "4",
+            "transactionCodeId": "1",
+            "fees": [
+                {
+                    "feeId": "1",
+                    "amount": 0.5,
+                    "chargeType": "FIXED",
+                    "drAccountId": "4",
+                    "crAccountId": "1"
+                },
+                {
+                    "feeId": "2",
+                    "amount": 0.0,
+                    "chargeType": "PERCENT",
+                    "drAccountId": "4",
+                    "crAccountId": "10"
+                }
+            ],
+            "details": "some details",
+            "notes": "some notes",
+            "createdDate": "2024-02-01 05:16:12"
+        }
+    }
+}
+----
+
+
+[[journal_accept]]
+=== Accept Journal
+`"*acceptJournal*"` `Mutation` performs the journal updating its status to ACCEPTED. A new payment is created and executed immediately. If any fee was overridden, this information is saved in the transaction metadata, and used in Fee service to update transaction fees. It also saves the information of who accepted the journal.
+
+IMPORTANT: Endpoint requires staff member access token (user must have "ROLE_BACKOFFICE" role).
+
+NOTE: postman example:   "ICE Cash Payments > GraphQL > Management > Backoffice > Journal > Accept Journal"
+
+.+Parameters:+
+|===
+    |Name|Type|Values|Required|Description
+
+    |`+journalId+` |`+Integer+` |valid journal ID |yes |Journal ID
+
+|===
+
+.Request example:
+[source,graphql,options="nowrap"]
+----
+mutation {
+    acceptJournal(journalId: 1) {
+        id
+        status
+        amount
+        drAccountId
+        crAccountId
+        transactionCodeId
+        fees {
+            feeId
+            amount
+            chargeType
+            drAccountId
+            crAccountId
+        }
+        details
+        notes
+        createdDate
+    }
+}
+
+----
+.Response example:
+[source,json,options="nowrap"]
+----
+{
+    "data": {
+        "rejectJournal": {
+            "id": "65",
+            "status": "ACCEPTED",
+            "amount": 10.0,
+            "drAccountId": "1",
+            "crAccountId": "4",
+            "transactionCodeId": "1",
+            "fees": [
+                {
+                    "feeId": "1",
+                    "amount": 0.5,
+                    "chargeType": "FIXED",
+                    "drAccountId": "4",
+                    "crAccountId": "1"
+                },
+                {
+                    "feeId": "2",
+                    "amount": 0.0,
+                    "chargeType": "PERCENT",
+                    "drAccountId": "4",
+                    "crAccountId": "10"
+                }
+            ],
+            "details": "some details",
+            "notes": "some notes",
+            "createdDate": "2024-02-01 05:16:12"
+        }
+    }
+}
+----
+
+
+[[journal_get]]
+=== GET Journals
+`"*journals*"` `Query` returns the list of journals in a specific status for a certain period of days.
+
+IMPORTANT: Endpoint requires staff member access token (user must have "ROLE_BACKOFFICE" role).
+
+NOTE: postman example:   "ICE Cash Payments > GraphQL > Management > Backoffice > Journal > GET Journals"
+
+.+Parameters:+
+|===
+    |Name|Type|Values|Required|Description
+
+    |`+journalStatus+` |`+Enum+` |PENDING +
+                                    ACCEPTED +
+                                    REJECTED |yes |Journal Status to filter journals
+    |`+days+` |`+Integer+` |1-30 |yes |Days to load
+    |`+page+` |`+Integer+` |Valid number, by defult = 0 | |Page number
+    |`+size+` |`+Integer+` |Valid number, by defult = 30 | |Page size
+    |`+sort+` |`+SortInput+` |One of: +
+                            "asc": array of fields +
+                            "desc": array of fields +
+                            "by": array of SortProperty | |If specified, performs results sorting by certain criteria
+
+|===
+
+.Request example:
+[source,graphql,options="nowrap"]
+----
+query {
+    journals(
+        journalStatus: PENDING
+        days: 30
+    ) {
+        total
+        content {
+            id
+            status
+            amount
+            drAccountId
+            drAccount {
+                accountNumber
+            }
+            crAccountId
+            crAccount {
+                accountNumber
+            }
+            transactionCodeId
+            transactionCode {
+                code
+            }
+            details
+            notes
+            documents {
+                id
+                fileName
+            }
+            createdDate
+        }
+    }
+}
+
+----
+.Response example:
+[source,json,options="nowrap"]
+----
+{
+    "data": {
+        "journals": {
+            "total": 1,
+            "content": [
+                {
+                    "id": "66",
+                    "status": "PENDING",
+                    "amount": 10.0,
+                    "drAccountId": "1",
+                    "drAccount": {
+                        "accountNumber": "30000000010"
+                    },
+                    "crAccountId": "4",
+                    "crAccount": {
+                        "accountNumber": "30000000020"
+                    },
+                    "transactionCodeId": "1",
+                    "transactionCode": {
+                        "code": "PAY"
+                    },
+                    "details": "some details",
+                    "notes": "some notes",
+                    "documents": null,
+                    "createdDate": "2024-02-01 05:18:30"
+                }
+            ]
+        }
+    }
+}
+----
+
+
+[[entities]]
+== Entities
+
+[[entities_exists_id]]
+=== Exists entity ID
+`"*existsUserId*"` `Query` checks whether user with such ID type + ID number pair exists in the system or not. Depending on `"isEntity"` parameter checks existence of Entity or Backoffice user.
+
+NOTE: postman example:   "ICE Cash Payments > GraphQL > Management > Entities > Exists user ID"
+
+.+Parameters:+
+|===
+    |Name|Type|Values|Required|Description
+
+    |`+idTypeId+` |`+Integer+` |valid ID Type ID |yes |ID Type ID, link:moz.html#id_types[see details]
+    |`+idNumber+` |`+String+` |any string |yes |ID Number
+    |`+isEntity+` |`+Boolean+` |true (default) +
+                                false |yes |if "true" - checks whether Entity exists +
+                                            if "false - checks whether Backoffice user exists
+    |`+forceCheck+` |`+Boolean+` |true +
+                                false (default) |yes |if "true" - always check in the DB ignoring other properties.
+
+|===
+
+.Request example:
+[source,graphql,options="nowrap"]
+----
+query {
+    existsUserId(
+        idTypeId: 1
+        idNumber: "1234567890"
+        isEntity: true
+        forceCheck: true
+    )
+}
+
+----
+.Response example:
+[source,json,options="nowrap"]
+----
+{
+    "data": {
+        "existsUserId": true
+    }
+}
+----
+
+
+[[entities_exists_email]]
+=== Exists entity Email
+`"*existsUserEmail*"` `Query` checks whether user with such email exists in the system or not. Depending on `"isEntity"` parameter checks existence of Entity or Backoffice user.
+
+NOTE: postman example:   "ICE Cash Payments > GraphQL > Management > Entities > Exists user email"
+
+.+Parameters:+
+|===
+    |Name|Type|Values|Required|Description
+
+    |`+email+` |`+String+` |valid email |yes |E-mail
+    |`+isEntity+` |`+Boolean+` |true (default) +
+                                false |yes |if "true" - checks whether Entity exists +
+                                            if "false - checks whether Backoffice user exists
+    |`+forceCheck+` |`+Boolean+` |true +
+                                false (default) |yes |if "true" - always check in the DB ignoring other properties.
+
+|===
+
+.Request example:
+[source,graphql,options="nowrap"]
+----
+query {
+    existsUserEmail(
+        email: "pavlo@ice.cash"
+        isEntity: true
+        forceCheck: true
+    )
+}
+
+----
+.Response example:
+[source,json,options="nowrap"]
+----
+{
+    "data": {
+        "existsUserEmail": true
+    }
+}
+----
+
+
+[[entities_exists_msisdn]]
+=== Exists entity MSISDN
+`"*existsUserMsisdn*"` `Query` checks whether user with such phone number (MSISDN) exists in the system or not. Depending on `"isEntity"` parameter checks existence of Entity or Backoffice user.
+
+NOTE: postman example:   "ICE Cash Payments > GraphQL > Management > Entities > Exists user msisdn"
+
+.+Parameters:+
+|===
+    |Name|Type|Values|Required|Description
+
+    |`+msisdn+` |`+String+` |valid MSISDN |yes |Phone number (MSISDN)
+    |`+checkOnlyPrimary+` |`+Boolean+` |true (default) +
+                                        false |yes |Whether to check only Primary number existence, or any number type
+    |`+forceCheck+` |`+Boolean+` |true +
+                                false (default) |yes |if "true" - always check in the DB ignoring other properties.
+
+|===
+
+.Request example:
+[source,graphql,options="nowrap"]
+----
+query {
+    existsUserMsisdn(
+        msisdn: "000000000000"
+        checkOnlyPrimary: true
+        forceCheck: true
+    )
+}
+
+----
+.Response example:
+[source,json,options="nowrap"]
+----
+{
+    "data": {
+        "existsUserMsisdn": true
+    }
+}
+----
+
+
+[[entities_create]]
+=== Create entity
+
+`"*registerIndividualUserMoz*"` `Mutation` and `"*registerCorporateUserMoz*"` `Mutation` might be used by backoffice user to create a new individual or corporate entity. These endpoints also might be used by a Regular Agent, Fematro Agent or even invoked without any authentication token, but if the call is made by backoffice user, by default, OTP check is not performed, and "otp" parameter is ignored. Also, backoffice user may provide additional parameters. In case if `"pin"` parameter is not provided, new PIN password is generated and send via SMS message to primary mobile number (MSISDN).
+
+More information on link:moz.html#reg_individual[individual entity registration] and link:moz.html#reg_corporate[corporate entity registration].
+
+.+Additional parameters:+
+|===
+    |Name|Type|Values|Required|Description
+
+    |`+optionalData.status+` |`+Enum+` |ACTIVE +
+                                        FROZEN | |Entity Status
+    |`+optionalData.loginStatus+` |`+Enum+` |ACTIVE +
+                                            INACTIVE +
+                                            LOCKED | |Login Status
+    |`+optionalData.gender+` |`+Enum+` |MALE +
+                                        FEMALE | |Gender
+    |`+optionalData.citizenshipCountryId+` |`+Integer+` |valid Country ID | |Citizenship country ID, link:moz.html#countries[see details]
+    |`+optionalData.contactName+` |`+String+` |any string | |Primary MSISDN contact name
+    |`+optionalData.altContactName+` |`+String+` |any string | |Secondary MSISDN contact name
+    |`+optionalData.altMobile+` |`+String+` |valid MSISDN | |Secondary MSISDN
+    |`+optionalData.authorisationType+` |`+Enum+` |SINGLE (default) +
+                                                DUAL_OR +
+                                                DUAL_AND |yes |Authorisation Type
+    |`+optionalData.corporateFee+` |`+Boolean+` |true +
+                                                false (default) |yes |Corporate Fee
+    |`+optionalData.transactionLimitTier+` |`+Enum+` |Tier1 +
+                                                    Tier2 | |Transaction Limit Tier
+    |`+optionalData.transactionLimitTier+` |`+Enum+` |Tier1 +
+                                                    Tier2 | |Transaction Limit Tier
+    |`+optionalData.kycStatus+` |`+Enum+` |NONE (default) +
+                                            PARTIAL +
+                                            FULL |yes |KYC status
+    |`+optionalData.address.countryId+` |`+Integer+` |Valid country ID value |yes |Country ID , link:moz.html#countries[see details]
+    |`+optionalData.address.city+` |`+String+` |any string |yes |City
+    |`+optionalData.address.postalCode+` |`+String+` |string consisting of 5 digits |yes |Postal Code
+    |`+optionalData.address.address1+` |`+String+` |any string |yes |Address 1
+    |`+optionalData.address.address2+` |`+String+` |any string | |Address 2
+    |`+optionalData.address.notes+` |`+String+` |any string | |Notes
+    |`+optionalData.company+` |`+String+` |any string | |Company
+
+|===
+
+.Register individual user request example:
+[source,graphql,options="nowrap"]
+----
+mutation {
+    registerIndividualUserMoz(
+        user: {
+            accountType: CommuterRegular,
+            firstName: "Pavlo",
+            lastName: "Slyvka",
+            idType: ID,
+            idNumber: "12345678901",
+            nuit: "12345678",
+            mobile: "000000000000",
+            email: "pavlo@ice.cash",
+            locale: "en"
+        },
+        optionalData: {
+            status: ACTIVE,
+            loginStatus: ACTIVE,
+            gender: MALE,
+            citizenshipCountryId: 205,
+            contactName: "Pavlo Slyvka primary",
+            altContactName: "Pavlo Slyvka secondary",
+            altMobile: "000000000000",
+            authorisationType: SINGLE,
+            corporateFee: false,
+            transactionLimitTier: Tier1,
+            kycStatus: NONE,
+            address: {
+                countryId: 206,
+                city: "Maputo",
+                postalCode: "12345",
+                address1: "some address 1",
+                address2: "some address 2",
+                notes: "some notes"
+            },
+            company: "ICEcash"
+        }
+    ) {
+        id
+        firstName
+        lastName
+        email
+        msisdn {
+            msisdn
+        }
+        idNumber
+        idTypeId
+        idType {
+            description
+        }
+        accounts {
+            id
+            accountNumber
+            accountType {
+                name
+                currencyId
+            }
+            createdDate
+        }
+        entityTypeId
+        entityType {
+            description
+        }
+        relationships {
+            partnerAccountId
+            securityGroupMoz {
+                id
+                name
+                active
+                rightsList
+            }
+        }
+        status
+        loginStatus
+        locale
+        createdDate
+    }
+}
+
+----
+.Response example:
+[source,json,options="nowrap"]
+----
+{
+    "data": {
+        "registerIndividualUserMoz": {
+            "id": "511",
+            "firstName": "Pavlo",
+            "lastName": "Slyvka",
+            "email": "pavlo@ice.cash",
+            "msisdn": [
+                {
+                    "msisdn": "000000000000"
+                }
+            ],
+            "idNumber": "12345678901",
+            "idTypeId": "4",
+            "idType": {
+                "description": "Mozambican National ID"
+            },
+            "accounts": [
+                {
+                    "id": "1295",
+                    "accountNumber": "37866803655",
+                    "accountType": {
+                        "name": "Primary",
+                        "currencyId": "4"
+                    },
+                    "createdDate": "2023-12-05 05:59:28"
+                },
+                {
+                    "id": "1296",
+                    "accountNumber": "38869125815",
+                    "accountType": {
+                        "name": "Subsidy",
+                        "currencyId": "4"
+                    },
+                    "createdDate": "2023-12-05 05:59:28"
+                },
+                {
+                    "id": "1297",
+                    "accountNumber": "33199410045",
+                    "accountType": {
+                        "name": "Prepaid",
+                        "currencyId": "4"
+                    },
+                    "createdDate": "2023-12-05 05:59:28"
+                }
+            ],
+            "entityTypeId": "10",
+            "entityType": {
+                "description": "Private"
+            },
+            "relationships": [
+                {
+                    "partnerAccountId": "1295",
+                    "securityGroupMoz": [
+                        {
+                            "id": "1013",
+                            "name": "Moz Commuter",
+                            "active": true,
+                            "rightsList": [
+                                "MOZ_TOPUP",
+                                "MOZ_PROFILE",
+                                "MOZ_TAG_MANAGEMENT",
+                                "MOZ_STATEMENT"
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "partnerAccountId": "1296",
+                    "securityGroupMoz": [
+                        {
+                            "id": "1013",
+                            "name": "Moz Commuter",
+                            "active": true,
+                            "rightsList": [
+                                "MOZ_TOPUP",
+                                "MOZ_PROFILE",
+                                "MOZ_TAG_MANAGEMENT",
+                                "MOZ_STATEMENT"
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "partnerAccountId": "1297",
+                    "securityGroupMoz": [
+                        {
+                            "id": "1013",
+                            "name": "Moz Commuter",
+                            "active": true,
+                            "rightsList": [
+                                "MOZ_TOPUP",
+                                "MOZ_PROFILE",
+                                "MOZ_TAG_MANAGEMENT",
+                                "MOZ_STATEMENT"
+                            ]
+                        }
+                    ]
+                }
+            ],
+            "status": "ACTIVE",
+            "loginStatus": "ACTIVE",
+            "locale": "en",
+            "createdDate": "2023-12-01 15:59:27"
+        }
+    }
+}
+----
+
+.Register corporate user request example:
+[source,graphql,options="nowrap"]
+----
+mutation {
+    registerCorporateUserMoz(
+        company: {
+            name: "ICEcash",
+            nuel: "1234567",
+            nuit: "12345679",
+            mobile: "000000000000",
+            email: "support@ice.cash",
+            address: {
+                countryId: 205,
+                city: "Maputo",
+                postalCode: "12345",
+                address1: "address1",
+                address2: "address2",
+                notes: "some notes"
+            }
+        },
+        representative: {
+            accountType: CommuterRegular,
+            firstName: "Pavlo",
+            lastName: "Slyvka",
+            idType: ID,
+            idNumber: "12345678901",
+            nuit: "12345678",
+            mobile: "000000000000",
+            email: "pavlo@ice.cash",
+            locale: "en"
+        },
+        optionalData: {
+            status: ACTIVE,
+            loginStatus: ACTIVE,
+            gender: MALE,
+            citizenshipCountryId: 205,
+            contactName: "Pavlo Slyvka primary",
+            altContactName: "Pavlo Slyvka secondary",
+            altMobile: "000000000000",
+            authorisationType: SINGLE,
+            corporateFee: true,
+            transactionLimitTier: Tier1,
+            kycStatus: NONE,
+            address: {
+                countryId: 206,
+                city: "Maputo",
+                postalCode: "12345",
+                address1: "some address 1",
+                address2: "some address 2",
+                notes: "some notes"
+            }
+        }
+    ) {
+        id
+        firstName
+        lastName
+        email
+        msisdn {
+            msisdn
+        }
+        idNumber
+        idTypeId
+        idType {
+            description
+        }
+        accounts {
+            id
+            accountNumber
+            accountType {
+                name
+                currencyId
+            }
+            createdDate
+        }
+        entityTypeId
+        entityType {
+            description
+        }
+        relationships {
+            partnerAccountId
+            securityGroupMoz {
+                id
+                name
+                active
+                rightsList
+            }
+        }
+        status
+        loginStatus
+        locale
+        createdDate
+    }
+}
+
+----
+.Response example:
+[source,json,options="nowrap"]
+----
+{
+    "data": {
+        "registerCorporateUserMoz": {
+            "id": "512",
+            "firstName": "ICEcash",
+            "lastName": null,
+            "email": "pavlo@ice.cash",
+            "msisdn": [
+                {
+                    "msisdn": "000000000000"
+                },
+                {
+                    "msisdn": "000000000000"
+                }
+            ],
+            "idNumber": "1234567",
+            "idTypeId": "7",
+            "idType": {
+                "description": "Mozambican NUEL"
+            },
+            "accounts": [
+                {
+                    "id": "1298",
+                    "accountNumber": "39875117002",
+                    "accountType": {
+                        "name": "Primary",
+                        "currencyId": "4"
+                    },
+                    "createdDate": "2023-12-05 06:03:59"
+                },
+                {
+                    "id": "1299",
+                    "accountNumber": "37055786182",
+                    "accountType": {
+                        "name": "Subsidy",
+                        "currencyId": "4"
+                    },
+                    "createdDate": "2023-12-05 06:03:59"
+                },
+                {
+                    "id": "1300",
+                    "accountNumber": "32516110650",
+                    "accountType": {
+                        "name": "Prepaid",
+                        "currencyId": "4"
+                    },
+                    "createdDate": "2023-12-05 06:03:59"
+                }
+            ],
+            "entityTypeId": "2",
+            "entityType": {
+                "description": "Business"
+            },
+            "relationships": [
+                {
+                    "partnerAccountId": "1298",
+                    "securityGroupMoz": [
+                        {
+                            "id": "1013",
+                            "name": "Moz Commuter",
+                            "active": true,
+                            "rightsList": [
+                                "MOZ_TOPUP",
+                                "MOZ_PROFILE",
+                                "MOZ_TAG_MANAGEMENT",
+                                "MOZ_STATEMENT"
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "partnerAccountId": "1299",
+                    "securityGroupMoz": [
+                        {
+                            "id": "1013",
+                            "name": "Moz Commuter",
+                            "active": true,
+                            "rightsList": [
+                                "MOZ_TOPUP",
+                                "MOZ_PROFILE",
+                                "MOZ_TAG_MANAGEMENT",
+                                "MOZ_STATEMENT"
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "partnerAccountId": "1300",
+                    "securityGroupMoz": [
+                        {
+                            "id": "1013",
+                            "name": "Moz Commuter",
+                            "active": true,
+                            "rightsList": [
+                                "MOZ_TOPUP",
+                                "MOZ_PROFILE",
+                                "MOZ_TAG_MANAGEMENT",
+                                "MOZ_STATEMENT"
+                            ]
+                        }
+                    ]
+                }
+            ],
+            "status": "ACTIVE",
+            "loginStatus": "ACTIVE",
+            "locale": "en",
+            "createdDate": "2023-12-01 16:03:59"
+        }
+    }
+}
+----
+
+
+[[entities_update]]
+=== Update entity
+`"*updateEntity*"` `Query` updates entity details. All fields are updated, even if only the required fields are submitted. Empty fields are filled in with null. Thus, even if only one or a few fields require updating, the full state of the entity (all fields) must be submitted.
+
+IMPORTANT: Endpoint requires staff member access token (user must have "ROLE_BACKOFFICE" role).
+
+NOTE: postman example:   "ICE Cash Payments > GraphQL > Management > Entities > Update entity (backoffice)"
+
+.+Parameters:+
+|===
+    |Name|Type|Values|Required|Description
+
+    |`+entityId+` |`+Integer+` |valid Entity ID |yes |Entity ID
+    |`+details.entityTypeId+` |`+Integer+` |valid Entity Type ID |yes |
+    |`+details.firstName+` |`+String+` |any string | |First name
+    |`+details.lastName+` |`+String+` |any string | |Last name
+    |`+details.idType+` |`+Integer+` | |yes |ID number type, link:moz.html#id_types[see details]
+    |`+details.idNumber+` |`+String+` |unique string |yes |ID number
+    |`+details.gender+` |`+Enum+` |MALE +
+                                    FEMALE | |Gender
+    |`+details.status+` |`+Enum+` |ACTIVE +
+                                    FROZEN | |Entity status
+    |`+details.birthDate+` |`+String+` |valid date, format: "yyyy-MM-dd" | |Birth date
+    |`+details.citizenshipCountryId+` |`+Integer+` |valid Country ID | |Citizenship country ID, link:moz.html#countries[see details]
+    |`+details.email+` |`+String+` |unique email |yes |E-mail
+    |`+details.mfaType+` |`+Enum+` |OTP +
+                                    TOTP +
+                                    null | |MFA type
+    |`+details.locale+` |`+String+` |en +
+                                        pt | |User Language
+
+|===
+
+.Request example:
+[source,graphql,options="nowrap"]
+----
+mutation {
+    updateEntity(entityId: 511, details: {
+        entityTypeId: 1,
+        firstName: "John",
+        lastName: "Doe",
+        idType: 1
+        idNumber: "1234567890"
+        gender: MALE,
+        status: ACTIVE
+        birthDate: "1984-12-23"
+        citizenshipCountryId: 204
+        email: "john.doe@ice.cash"
+        mfaType: OTP
+        locale: "en"
+    }) {
+        id
+        email
+        msisdn {
+            msisdnType
+            msisdn
+        }
+        loginStatus
+        mfaType
+        mfaBackupCodes
+        createdDate
+        accounts {
+            accountNumber
+        }
+    }
+}
+
+----
+.Response example:
+[source,json,options="nowrap"]
+----
+{
+    "data": {
+        "updateEntity": {
+            "id": "511",
+            "email": "john.doe@ice.cash",
+            "msisdn": [
+                {
+                    "msisdnType": "PRIMARY",
+                    "msisdn": "000000000000"
+                }
+            ],
+            "loginStatus": "ACTIVE",
+            "mfaType": "OTP",
+            "mfaBackupCodes": [
+                "d2ak-jzro-t0fr-m8a2",
+                "06hy-cwlh-2pft-4pio",
+                "n2l0-q0km-xs2b-wjj9",
+                "6c4k-64zv-czll-cp5y",
+                "aarp-u4js-ad9c-26u0",
+                "9yzj-jgax-0s0k-bghf"
+            ],
+            "createdDate": "2023-12-05 05:59:27",
+            "accounts": [
+                {
+                    "accountNumber": "37866803655"
+                },
+                {
+                    "accountNumber": "38869125815"
+                },
+                {
+                    "accountNumber": "33199410045"
+                }
+            ]
+        }
+    }
+}
+----
+
+
+[[entities_update_mfa]]
+=== Update entity MFA
+`"*updateEntityMfa*"` `Mutation` updates entity MFA type. This endpoint changes authentication mechanism on Entity Login step.
+
+NOTE: postman example:   "ICE Cash Payments > GraphQL > Management > Entities > Update MFA type"
+
+.+Parameters:+
+|===
+    |Name|Type|Values|Required|Description
+
+    |`+id+` |`+Integer+` |valid Entity ID |yes |Entity ID
+    |`+mfaType+` |`+Enum+` |OTP +
+                            TOTP +
+                            null| |new MFA type
+
+|===
+
+.Request example:
+[source,graphql,options="nowrap"]
+----
+mutation {
+    updateEntityMfa(id: 511, mfaType: OTP) {
+        id
+        email
+        loginStatus
+        mfaType
+    }
+}
+
+----
+.Response example:
+[source,json,options="nowrap"]
+----
+{
+    "data": {
+        "updateEntityMfa": {
+            "id": "511",
+            "email": "john.doe@ice.cash",
+            "loginStatus": "ACTIVE",
+            "mfaType": "OTP"
+        }
+    }
+}
+----
+
+
+[[entities_generate_password]]
+=== Generate new entity password
+`"*generateNewEntityPassword*"` `Mutation` generates new 4 digit password for Entity, and sends it as SMS to Primary entity mobile (MSISDN).
+
+NOTE: postman example:   "ICE Cash Payments > GraphQL > Management > Entities > Generate New Password"
+
+.+Parameters:+
+|===
+    |Name|Type|Values|Required|Description
+
+    |`+id+` |`+Integer+` |valid Entity ID |yes |Entity ID
+
+|===
+
+.Request example:
+[source,graphql,options="nowrap"]
+----
+mutation {
+    generateNewEntityPassword(id: 511) {
+        id
+        email
+        loginStatus
+        mfaType
+    }
+}
+
+----
+.Response example:
+[source,json,options="nowrap"]
+----
+{
+    "data": {
+        "generateNewEntityPassword": {
+            "id": "511",
+            "email": "john.doe@ice.cash",
+            "loginStatus": "ACTIVE",
+            "mfaType": "OTP"
+        }
+    }
+}
+----
+
+
+[[entities_check_totp]]
+=== Check entity TOTP code
+`"*checkEntityTotpCode*"` `Mutation` checks whether entity time-based one-time password is correct or not.
+
+NOTE: postman example:   "ICE Cash Payments > GraphQL > Management > Entities > Check TOTP code"
+
+.+Parameters:+
+|===
+    |Name|Type|Values|Required|Description
+
+    |`+totpCode+` |`+String+` |4-6 digits string |yes |TOTP (time-based one-time password) code
+
+|===
+
+.Request example:
+[source,graphql,options="nowrap"]
+----
+mutation {
+    checkEntityTotpCode(totpCode: "454382")
+}
+
+----
+.Response example:
+[source,json,options="nowrap"]
+----
+{
+    "data": {
+        "checkEntityTotpCode": true
+    }
+}
+----
+
+
+[[entities_initiator_update_status]]
+=== Update initiator status
+`"*updateInitiatorStatus*"` `Mutation` updates initiator status.
+
+NOTE: postman example:   "ICE Cash Payments > GraphQL > Management > Entities > Initiator update status"
+
+.+Parameters:+
+|===
+    |Name|Type|Values|Required|Description
+
+    |`+initiatorId+` |`+Integer+` |valid Initiator ID |yes |Initiator ID
+    |`+status+` |`+String+` |Active +
+                            Lost +
+                            Expired +
+                            Redeemed +
+                            Limited +
+                            Frozen +
+                            Unassigned |yes |new Initiator status
+
+|===
+
+.Request example:
+[source,graphql,options="nowrap"]
+----
+mutation {
+    updateInitiatorStatus(
+        initiatorId: 1,
+        status: "Active"
+    ) {
+        id
+        initiatorStatusId
+    }
+}
+
+----
+.Response example:
+[source,json,options="nowrap"]
+----
+{
+    "data": {
+        "updateInitiatorStatus": {
+            "initiatorId": 1,
+            "status": "Active"
+        }
+    }
+}
+----
+
+
+[[entities_initiator_reset_pin]]
+=== Reset initiator PIN
+`"*resetInitiatorPIN*"` `Mutation` generates a new 4 digits PIN code for initiator and sends it as SMS to Primary Entity mobile (MSISDN) of the initiator owner.
+
+NOTE: postman example:   "ICE Cash Payments > GraphQL > Management > Entities > Initiator reset PIN"
+
+.+Parameters:+
+|===
+    |Name|Type|Values|Required|Description
+
+    |`+initiatorId+` |`+Integer+` |valid Initiator ID |yes |Initiator ID
+
+|===
+
+.Request example:
+[source,graphql,options="nowrap"]
+----
+mutation {
+    resetInitiatorPIN(initiatorId: 1) {
+        id
+    }
+}
+
+----
+.Response example:
+[source,json,options="nowrap"]
+----
+{
+    "data": {
+        "resetInitiatorPIN": {
+            "id": 1
+        }
+    }
+}
+----
+
+
+[[entities_account_set_active]]
+=== Block/Unblock account
+`"*setAccountActive*"` `Mutation` blocks/unblocks account. Account must belong to the Entity identified by access token.
+
+IMPORTANT: Endpoint requires entity access token of any account type.
+
+NOTE: postman example:   "ICE Cash Payments > GraphQL > Management > Accounts > Block/Unblock"
+
+.+Parameters:+
+|===
+    |Name|Type|Values|Required|Description
+
+    |`+id+` |`+ID+` |valid Account ID |yes |Account ID
+    |`+active+` |`+Boolean+` |true +
+                                false |yes |Is account active
+
+|===
+
+.Request example:
+[source,graphql,options="nowrap"]
+----
+mutation {
+    setAccountActive(
+        id: 53,
+        active: true
+    ) {
+        id
+        accountStatus
+    }
+}
+
+----
+.Response example:
+[source,json,options="nowrap"]
+----
+{
+    "data": {
+        "setAccountActive": {
+            "id": 53,
+            "accountStatus": "ACTIVE"
+        }
+    }
+}
+
+----
+
+
+[[entities_accounts_get]]
+=== GET Accounts
+`"*accounts*"` `Query` returns list of accounts of current entity.
+
+IMPORTANT: Endpoint requires entity access token of any account type.
+
+NOTE: postman example:   "ICE Cash Payments > GraphQL > Management > Accounts > GET entity accounts"
+
+.+Parameters:+
+|===
+    |Name|Type|Values|Required|Description
+
+    |`+page+` |`+Integer+` |Valid number, by defult = 0 | |Page number
+    |`+size+` |`+Integer+` |Valid number, by defult = 30 | |Page size
+    |`+sort+` |`+SortInput+` |One of: +
+                            "asc": array of fields +
+                            "desc": array of fields +
+                            "by": array of SortProperty | |If specified, performs results sorting by certain criteria
+
+|===
+
+.Request example:
+[source,graphql,options="nowrap"]
+----
+query {
+    accounts {
+        id
+        accountNumber
+        accountStatus
+        balance
+        entityId
+        entity {
+            firstName
+        }
+        accountTypeId
+        accountType {
+            name
+        }
+        authorisationType
+        dailyLimit
+        overdraftLimit
+        balanceMinimum
+        balanceWarning
+        balanceMinimumEnforce
+        notificationEnabled
+        autoDebit
+        createdDate
+        initiators {
+            id
+            accountId
+            initiatorTypeId
+            initiatorType {
+                id
+                description
+                active
+                entityId
+            }
+            identifier
+            initiatorCategoryId
+            initiatorCategory {
+                id
+                category
+            }
+            initiatorStatusId
+            initiatorStatus {
+                id
+                name
+                permitTransaction
+                active
+            }
+            pvv
+            notes
+            createdDate
+            startDate
+            expiryDate
+            metaData
+            configuration
+        }
+    }
+}
+
+----
+.Response example:
+[source,json,options="nowrap"]
+----
+{
+    "data": {
+        "accounts": [
+            {
+                "id": "58",
+                "accountNumber": "34958881434",
+                "accountStatus": "ACTIVE",
+                "balance": 356.0,
+                "entityId": "53",
+                "entity": {
+                    "firstName": "Pavlo"
+                },
+                "accountTypeId": "67",
+                "accountType": {
+                    "name": "Primary"
+                },
+                "authorisationType": null,
+                "dailyLimit": null,
+                "overdraftLimit": null,
+                "balanceMinimum": null,
+                "balanceWarning": null,
+                "balanceMinimumEnforce": false,
+                "notificationEnabled": false,
+                "autoDebit": false,
+                "createdDate": "2023-05-25 19:55:32",
+                "initiators": null
+            },
+            {
+                "id": "59",
+                "accountNumber": "34922410112",
+                "accountStatus": "ACTIVE",
+                "balance": 9917.6,
+                "entityId": "53",
+                "entity": {
+                    "firstName": "Pavlo"
+                },
+                "accountTypeId": "68",
+                "accountType": {
+                    "name": "Subsidy"
+                },
+                "authorisationType": null,
+                "dailyLimit": null,
+                "overdraftLimit": null,
+                "balanceMinimum": null,
+                "balanceWarning": null,
+                "balanceMinimumEnforce": false,
+                "notificationEnabled": false,
+                "autoDebit": false,
+                "createdDate": "2023-05-25 19:55:33",
+                "initiators": null
+            },
+            {
+                "id": "60",
+                "accountNumber": "35298550332",
+                "accountStatus": "ACTIVE",
+                "balance": 101700.4,
+                "entityId": "53",
+                "entity": {
+                    "firstName": "Pavlo"
+                },
+                "accountTypeId": "71",
+                "accountType": {
+                    "name": "Prepaid"
+                },
+                "authorisationType": null,
+                "dailyLimit": null,
+                "overdraftLimit": null,
+                "balanceMinimum": null,
+                "balanceWarning": null,
+                "balanceMinimumEnforce": false,
+                "notificationEnabled": false,
+                "autoDebit": false,
+                "createdDate": "2023-05-25 19:55:33",
+                "initiators": [
+                    {
+                        "id": "2",
+                        "accountId": "60",
+                        "initiatorTypeId": "8",
+                        "initiatorType": {
+                            "id": "8",
+                            "description": "tag",
+                            "active": true,
+                            "entityId": null
+                        },
+                        "identifier": "tag3",
+                        "initiatorCategoryId": "5",
+                        "initiatorCategory": {
+                            "id": "5",
+                            "category": "MZ Transport"
+                        },
+                        "initiatorStatusId": "1",
+                        "initiatorStatus": {
+                            "id": "1",
+                            "name": "Active",
+                            "permitTransaction": true,
+                            "active": true
+                        },
+                        "pvv": null,
+                        "notes": null,
+                        "createdDate": "2023-03-09 08:40:50",
+                        "startDate": null,
+                        "expiryDate": null,
+                        "metaData": null,
+                        "configuration": null
+                    },
+                    {
+                        "id": "3",
+                        "accountId": "60",
+                        "initiatorTypeId": "8",
+                        "initiatorType": {
+                            "id": "8",
+                            "description": "tag",
+                            "active": true,
+                            "entityId": null
+                        },
+                        "identifier": "tag1",
+                        "initiatorCategoryId": "5",
+                        "initiatorCategory": {
+                            "id": "5",
+                            "category": "MZ Transport"
+                        },
+                        "initiatorStatusId": "1",
+                        "initiatorStatus": {
+                            "id": "1",
+                            "name": "Active",
+                            "permitTransaction": true,
+                            "active": true
+                        },
+                        "pvv": null,
+                        "notes": null,
+                        "createdDate": "2023-06-07 22:33:54",
+                        "startDate": "2023-06-07",
+                        "expiryDate": null,
+                        "metaData": null,
+                        "configuration": null
+                    },
+                    {
+                        "id": "15",
+                        "accountId": "60",
+                        "initiatorTypeId": "8",
+                        "initiatorType": {
+                            "id": "8",
+                            "description": "tag",
+                            "active": true,
+                            "entityId": null
+                        },
+                        "identifier": "tag2",
+                        "initiatorCategoryId": "5",
+                        "initiatorCategory": {
+                            "id": "5",
+                            "category": "MZ Transport"
+                        },
+                        "initiatorStatusId": "1",
+                        "initiatorStatus": {
+                            "id": "1",
+                            "name": "Active",
+                            "permitTransaction": true,
+                            "active": true
+                        },
+                        "pvv": null,
+                        "notes": null,
+                        "createdDate": "2023-02-07 12:30:10",
+                        "startDate": "2023-02-07",
+                        "expiryDate": null,
+                        "metaData": null,
+                        "configuration": null
+                    }
+                ]
+            }
+        ]
+    }
+}
+----
+
+
+[[entities_account_statement]]
+=== Account statement
+`"*accountStatement*"` `Query` returns list of all payment transactions for an account identified by its type and currency.
+
+IMPORTANT: Endpoint requires entity access token of any account type.
+
+NOTE: postman example:   "ICE Cash Payments > GraphQL > Management > Accounts > GET statement"
+
+.+Parameters:+
+|===
+    |Name|Type|Values|Required|Description
+
+    |`+id+` |`+Integer+` |valid Entity ID | |if specified - Entity ID, otherwise current Entity is used
+    |`+accountType+` |`+String+` |eg. Primary +
+                                    Subsidy +
+                                    Prepaid | |valid Account Type value
+    |`+currency+` |`+String+` |eg. MZN +
+                                ZWL | |valid Currency code
+    |`+page+` |`+Integer+` |Valid number, by defult = 0 | |Page number
+    |`+size+` |`+Integer+` |Valid number, by defult = 30 | |Page size
+    |`+sort+` |`+SortInput+` |One of: +
+                            "asc": array of fields +
+                            "desc": array of fields +
+                            "by": array of SortProperty | |If specified, performs results sorting by certain criteria
+
+|===
+
+.Request example:
+[source,graphql,options="nowrap"]
+----
+query {
+    accountStatement(accountType: "Primary", currency: "MZN") {
+        total
+        content {
+            id
+            createdDate
+            statementDate
+            transactionCodeId
+            transactionCode {
+                code
+            }
+            amount
+            lines {
+                id
+                transactionCode {
+                    code
+                }
+                description
+                amount
+            }
+            metaData
+        }
+    }
+}
+
+----
+.Response example:
+[source,json,options="nowrap"]
+----
+{
+    "data": {
+        "accountStatement": {
+            "total": 39,
+            "content": [
+                {
+                    "id": "4",
+                    "createdDate": "2023-01-27 11:30:00",
+                    "statementDate": "2023-01-27 11:30:00",
+                    "transactionCodeId": "36",
+                    "transactionCode": {
+                        "code": "TSF"
+                    },
+                    "amount": 10.0,
+                    "lines": [
+                        {
+                            "id": "18",
+                            "transactionCode": {
+                                "code": "TSF"
+                            },
+                            "description": "MZ NFC payment received for Pavlo Slyvka ref(moz6)",
+                            "amount": 8.0
+                        },
+                        {
+                            "id": "20",
+                            "transactionCode": {
+                                "code": "TSF"
+                            },
+                            "description": "MZ NFC payment received for Pavlo Slyvka ref(moz6)",
+                            "amount": 2.0
+                        }
+                    ],
+                    "metaData": {
+                        "deviceCode": "FX2R",
+                        "requestBalanceAccountTypes": []
+                    }
+                },
+                {
+                    "id": "5",
+                    "createdDate": "2023-02-08 11:30:00",
+                    "statementDate": "2023-02-08 11:30:00",
+                    "transactionCodeId": "36",
+                    "transactionCode": {
+                        "code": "TSF"
+                    },
+                    "amount": 5.0,
+                    "lines": [
+                        {
+                            "id": "22",
+                            "transactionCode": {
+                                "code": "TSF"
+                            },
+                            "description": "MZ NFC payment received for Pavlo Slyvka ref(moz7)",
+                            "amount": 4.0
+                        },
+                        {
+                            "id": "24",
+                            "transactionCode": {
+                                "code": "TSF"
+                            },
+                            "description": "MZ NFC payment received for Pavlo Slyvka ref(moz7)",
+                            "amount": 1.0
+                        }
+                    ],
+                    "metaData": {
+                        "deviceCode": "FX2R",
+                        "requestBalanceAccountTypes": []
+                    }
+                },
+                {
+                    "id": "6",
+                    "createdDate": "2023-02-28 11:30:00",
+                    "statementDate": "2023-02-28 11:30:00",
+                    "transactionCodeId": "36",
+                    "transactionCode": {
+                        "code": "TSF"
+                    },
+                    "amount": 15.0,
+                    "lines": [
+                        {
+                            "id": "26",
+                            "transactionCode": {
+                                "code": "TSF"
+                            },
+                            "description": "MZ NFC payment received for Pavlo Slyvka ref(moz8)",
+                            "amount": 12.0
+                        },
+                        {
+                            "id": "28",
+                            "transactionCode": {
+                                "code": "TSF"
+                            },
+                            "description": "MZ NFC payment received for Pavlo Slyvka ref(moz8)",
+                            "amount": 3.0
+                        }
+                    ],
+                    "metaData": {
+                        "deviceCode": "FX2R",
+                        "requestBalanceAccountTypes": []
+                    }
+                },
+                {
+                    "id": "7",
+                    "createdDate": "2023-03-15 12:30:00",
+                    "statementDate": "2023-03-15 12:30:00",
+                    "transactionCodeId": "36",
+                    "transactionCode": {
+                        "code": "TSF"
+                    },
+                    "amount": 20.0,
+                    "lines": [
+                        {
+                            "id": "30",
+                            "transactionCode": {
+                                "code": "TSF"
+                            },
+                            "description": "MZ NFC payment received for Pavlo Slyvka ref(moz9)",
+                            "amount": 16.0
+                        },
+                        {
+                            "id": "32",
+                            "transactionCode": {
+                                "code": "TSF"
+                            },
+                            "description": "MZ NFC payment received for Pavlo Slyvka ref(moz9)",
+                            "amount": 4.0
+                        }
+                    ],
+                    "metaData": {
+                        "deviceCode": "FX2R",
+                        "requestBalanceAccountTypes": []
+                    }
+                },
+                {
+                    "id": "8",
+                    "createdDate": "2023-04-08 12:30:00",
+                    "statementDate": "2023-04-08 12:30:00",
+                    "transactionCodeId": "36",
+                    "transactionCode": {
+                        "code": "TSF"
+                    },
+                    "amount": 25.0,
+                    "lines": [
+                        {
+                            "id": "34",
+                            "transactionCode": {
+                                "code": "TSF"
+                            },
+                            "description": "MZ NFC payment received for Pavlo Slyvka ref(moz10)",
+                            "amount": 20.0
+                        },
+                        {
+                            "id": "36",
+                            "transactionCode": {
+                                "code": "TSF"
+                            },
+                            "description": "MZ NFC payment received for Pavlo Slyvka ref(moz10)",
+                            "amount": 5.0
+                        }
+                    ],
+                    "metaData": {
+                        "deviceCode": "FX2R",
+                        "requestBalanceAccountTypes": []
+                    }
+                },
+                {
+                    "id": "9",
+                    "createdDate": "2023-05-18 12:30:00",
+                    "statementDate": "2023-05-18 12:30:00",
+                    "transactionCodeId": "36",
+                    "transactionCode": {
+                        "code": "TSF"
+                    },
+                    "amount": 30.0,
+                    "lines": [
+                        {
+                            "id": "38",
+                            "transactionCode": {
+                                "code": "TSF"
+                            },
+                            "description": "MZ NFC payment received for Pavlo Slyvka ref(moz11)",
+                            "amount": 24.0
+                        },
+                        {
+                            "id": "40",
+                            "transactionCode": {
+                                "code": "TSF"
+                            },
+                            "description": "MZ NFC payment received for Pavlo Slyvka ref(moz11)",
+                            "amount": 6.0
+                        }
+                    ],
+                    "metaData": {
+                        "deviceCode": "FX2R",
+                        "requestBalanceAccountTypes": []
+                    }
+                },
+                {
+                    "id": "10",
+                    "createdDate": "2021-09-08 12:30:00",
+                    "statementDate": "2023-05-31 17:19:32",
+                    "transactionCodeId": "36",
+                    "transactionCode": {
+                        "code": "TSF"
+                    },
+                    "amount": 10.0,
+                    "lines": [
+                        {
+                            "id": "42",
+                            "transactionCode": {
+                                "code": "TSF"
+                            },
+                            "description": "MZ NFC payment received for Pavlo Slyvka ref(te4st1)",
+                            "amount": 8.0
+                        },
+                        {
+                            "id": "44",
+                            "transactionCode": {
+                                "code": "TSF"
+                            },
+                            "description": "MZ NFC payment received for Pavlo Slyvka ref(te4st1)",
+                            "amount": 2.0
+                        }
+                    ],
+                    "metaData": {
+                        "deviceCode": "FX2R",
+                        "requestBalanceAccountTypes": []
+                    }
+                },
+                {
+                    "id": "11",
+                    "createdDate": "2021-09-08 12:30:00",
+                    "statementDate": "2023-05-31 17:25:17",
+                    "transactionCodeId": "36",
+                    "transactionCode": {
+                        "code": "TSF"
+                    },
+                    "amount": 10.0,
+                    "lines": [
+                        {
+                            "id": "46",
+                            "transactionCode": {
+                                "code": "TSF"
+                            },
+                            "description": "MZ NFC payment received for Pavlo Slyvka ref(te5st1)",
+                            "amount": 8.0
+                        },
+                        {
+                            "id": "48",
+                            "transactionCode": {
+                                "code": "TSF"
+                            },
+                            "description": "MZ NFC payment received for Pavlo Slyvka ref(te5st1)",
+                            "amount": 2.0
+                        }
+                    ],
+                    "metaData": {
+                        "deviceCode": "FX2R",
+                        "requestBalanceAccountTypes": []
+                    }
+                },
+                {
+                    "id": "12",
+                    "createdDate": "2021-09-08 12:30:00",
+                    "statementDate": "2023-06-06 14:48:59",
+                    "transactionCodeId": "36",
+                    "transactionCode": {
+                        "code": "TSF"
+                    },
+                    "amount": 10.0,
+                    "lines": [
+                        {
+                            "id": "50",
+                            "transactionCode": {
+                                "code": "TSF"
+                            },
+                            "description": "MZ NFC payment received for Pavlo Slyvka ref(test1)",
+                            "amount": 8.0
+                        },
+                        {
+                            "id": "52",
+                            "transactionCode": {
+                                "code": "TSF"
+                            },
+                            "description": "MZ NFC payment received for Pavlo Slyvka ref(test1)",
+                            "amount": 2.0
+                        }
+                    ],
+                    "metaData": {
+                        "deviceCode": "FX2R",
+                        "requestBalanceAccountTypes": []
+                    }
+                },
+                {
+                    "id": "13",
+                    "createdDate": "2021-09-08 12:30:00",
+                    "statementDate": "2023-06-06 14:49:46",
+                    "transactionCodeId": "36",
+                    "transactionCode": {
+                        "code": "TSF"
+                    },
+                    "amount": 10.0,
+                    "lines": [
+                        {
+                            "id": "54",
+                            "transactionCode": {
+                                "code": "TSF"
+                            },
+                            "description": "MZ NFC payment received for Pavlo Slyvka ref(te6st1)",
+                            "amount": 8.0
+                        },
+                        {
+                            "id": "56",
+                            "transactionCode": {
+                                "code": "TSF"
+                            },
+                            "description": "MZ NFC payment received for Pavlo Slyvka ref(te6st1)",
+                            "amount": 2.0
+                        }
+                    ],
+                    "metaData": {
+                        "deviceCode": "FX2R",
+                        "requestBalanceAccountTypes": []
+                    }
+                },
+                {
+                    "id": "14",
+                    "createdDate": "2021-09-08 12:30:00",
+                    "statementDate": "2023-06-06 17:59:34",
+                    "transactionCodeId": "36",
+                    "transactionCode": {
+                        "code": "TSF"
+                    },
+                    "amount": 10.0,
+                    "lines": [
+                        {
+                            "id": "58",
+                            "transactionCode": {
+                                "code": "TSF"
+                            },
+                            "description": "MZ NFC payment received for Pavlo Slyvka ref(t1est1)",
+                            "amount": 8.0
+                        },
+                        {
+                            "id": "60",
+                            "transactionCode": {
+                                "code": "TSF"
+                            },
+                            "description": "MZ NFC payment received for Pavlo Slyvka ref(t1est1)",
+                            "amount": 2.0
+                        }
+                    ],
+                    "metaData": {
+                        "deviceCode": "FX2R",
+                        "requestBalanceAccountTypes": []
+                    }
+                },
+                {
+                    "id": "15",
+                    "createdDate": "2021-09-08 12:30:00",
+                    "statementDate": "2023-06-06 18:11:51",
+                    "transactionCodeId": "36",
+                    "transactionCode": {
+                        "code": "TSF"
+                    },
+                    "amount": 10.0,
+                    "lines": [
+                        {
+                            "id": "62",
+                            "transactionCode": {
+                                "code": "TSF"
+                            },
+                            "description": "MZ NFC payment received for Pavlo Slyvka ref(t2est1)",
+                            "amount": 8.0
+                        },
+                        {
+                            "id": "64",
+                            "transactionCode": {
+                                "code": "TSF"
+                            },
+                            "description": "MZ NFC payment received for Pavlo Slyvka ref(t2est1)",
+                            "amount": 2.0
+                        }
+                    ],
+                    "metaData": {
+                        "deviceCode": "FX2R",
+                        "requestBalanceAccountTypes": []
+                    }
+                },
+                {
+                    "id": "16",
+                    "createdDate": "2021-09-08 12:30:00",
+                    "statementDate": "2023-06-06 18:14:36",
+                    "transactionCodeId": "36",
+                    "transactionCode": {
+                        "code": "TSF"
+                    },
+                    "amount": 10.0,
+                    "lines": [
+                        {
+                            "id": "66",
+                            "transactionCode": {
+                                "code": "TSF"
+                            },
+                            "description": "MZ NFC payment received for Pavlo Slyvka ref(t3est1)",
+                            "amount": 8.0
+                        },
+                        {
+                            "id": "68",
+                            "transactionCode": {
+                                "code": "TSF"
+                            },
+                            "description": "MZ NFC payment received for Pavlo Slyvka ref(t3est1)",
+                            "amount": 2.0
+                        }
+                    ],
+                    "metaData": {
+                        "deviceCode": "FX2R",
+                        "requestBalanceAccountTypes": []
+                    }
+                },
+                {
+                    "id": "17",
+                    "createdDate": "2021-09-08 12:30:00",
+                    "statementDate": "2023-06-06 18:16:47",
+                    "transactionCodeId": "36",
+                    "transactionCode": {
+                        "code": "TSF"
+                    },
+                    "amount": 10.0,
+                    "lines": [
+                        {
+                            "id": "70",
+                            "transactionCode": {
+                                "code": "TSF"
+                            },
+                            "description": "MZ NFC payment received for Pavlo Slyvka ref(t4est1)",
+                            "amount": 8.0
+                        },
+                        {
+                            "id": "72",
+                            "transactionCode": {
+                                "code": "TSF"
+                            },
+                            "description": "MZ NFC payment received for Pavlo Slyvka ref(t4est1)",
+                            "amount": 2.0
+                        }
+                    ],
+                    "metaData": {
+                        "deviceCode": "FX2R",
+                        "requestBalanceAccountTypes": []
+                    }
+                },
+                {
+                    "id": "18",
+                    "createdDate": "2021-09-08 12:30:00",
+                    "statementDate": "2023-06-07 03:18:27",
+                    "transactionCodeId": "36",
+                    "transactionCode": {
+                        "code": "TSF"
+                    },
+                    "amount": 10.0,
+                    "lines": [
+                        {
+                            "id": "74",
+                            "transactionCode": {
+                                "code": "TSF"
+                            },
+                            "description": "MZ NFC payment received for Pavlo Slyvka ref(test2)",
+                            "amount": 8.0
+                        },
+                        {
+                            "id": "76",
+                            "transactionCode": {
+                                "code": "TSF"
+                            },
+                            "description": "MZ NFC payment received for Pavlo Slyvka ref(test2)",
+                            "amount": 2.0
+                        }
+                    ],
+                    "metaData": {
+                        "deviceCode": "FX2R",
+                        "requestBalanceAccountTypes": []
+                    }
+                },
+                {
+                    "id": "19",
+                    "createdDate": "2021-09-08 12:30:00",
+                    "statementDate": "2023-06-07 03:20:47",
+                    "transactionCodeId": "36",
+                    "transactionCode": {
+                        "code": "TSF"
+                    },
+                    "amount": 10.0,
+                    "lines": [
+                        {
+                            "id": "78",
+                            "transactionCode": {
+                                "code": "TSF"
+                            },
+                            "description": "MZ NFC payment received for Pavlo Slyvka ref(test3)",
+                            "amount": 8.0
+                        },
+                        {
+                            "id": "80",
+                            "transactionCode": {
+                                "code": "TSF"
+                            },
+                            "description": "MZ NFC payment received for Pavlo Slyvka ref(test3)",
+                            "amount": 2.0
+                        }
+                    ],
+                    "metaData": {
+                        "deviceCode": "FX2R",
+                        "requestBalanceAccountTypes": []
+                    }
+                },
+                {
+                    "id": "50",
+                    "createdDate": "2021-09-08 12:30:00",
+                    "statementDate": "2023-06-21 05:10:12",
+                    "transactionCodeId": "36",
+                    "transactionCode": {
+                        "code": "TSF"
+                    },
+                    "amount": 10.0,
+                    "lines": [
+                        {
+                            "id": "150",
+                            "transactionCode": {
+                                "code": "TSF"
+                            },
+                            "description": "MZ NFC payment received for Pavlo Slyvka ref(test4)",
+                            "amount": 8.0
+                        },
+                        {
+                            "id": "152",
+                            "transactionCode": {
+                                "code": "TSF"
+                            },
+                            "description": "MZ NFC payment received for Pavlo Slyvka ref(test4)",
+                            "amount": 2.0
+                        }
+                    ],
+                    "metaData": {
+                        "deviceCode": "FX2R",
+                        "requestBalanceAccountTypes": []
+                    }
+                },
+                {
+                    "id": "51",
+                    "createdDate": "2021-09-08 12:30:00",
+                    "statementDate": "2023-06-21 05:28:00",
+                    "transactionCodeId": "36",
+                    "transactionCode": {
+                        "code": "TSF"
+                    },
+                    "amount": 10.0,
+                    "lines": [
+                        {
+                            "id": "154",
+                            "transactionCode": {
+                                "code": "TSF"
+                            },
+                            "description": "MZ NFC payment received for Pavlo Slyvka ref(test5)",
+                            "amount": 8.0
+                        },
+                        {
+                            "id": "156",
+                            "transactionCode": {
+                                "code": "TSF"
+                            },
+                            "description": "MZ NFC payment received for Pavlo Slyvka ref(test5)",
+                            "amount": 2.0
+                        }
+                    ],
+                    "metaData": {
+                        "deviceCode": "FX2R",
+                        "requestBalanceAccountTypes": []
+                    }
+                },
+                {
+                    "id": "52",
+                    "createdDate": "2021-09-08 12:30:00",
+                    "statementDate": "2023-06-21 05:36:35",
+                    "transactionCodeId": "36",
+                    "transactionCode": {
+                        "code": "TSF"
+                    },
+                    "amount": 10.0,
+                    "lines": [
+                        {
+                            "id": "158",
+                            "transactionCode": {
+                                "code": "TSF"
+                            },
+                            "description": "MZ NFC payment received for Pavlo Slyvka ref(test6)",
+                            "amount": 8.0
+                        },
+                        {
+                            "id": "160",
+                            "transactionCode": {
+                                "code": "TSF"
+                            },
+                            "description": "MZ NFC payment received for Pavlo Slyvka ref(test6)",
+                            "amount": 2.0
+                        }
+                    ],
+                    "metaData": {
+                        "deviceCode": "FX2R",
+                        "requestBalanceAccountTypes": []
+                    }
+                },
+                {
+                    "id": "55",
+                    "createdDate": "2021-09-08 12:30:00",
+                    "statementDate": "2023-06-22 18:00:02",
+                    "transactionCodeId": "36",
+                    "transactionCode": {
+                        "code": "TSF"
+                    },
+                    "amount": 10.0,
+                    "lines": [
+                        {
+                            "id": "166",
+                            "transactionCode": {
+                                "code": "TSF"
+                            },
+                            "description": "MZ NFC payment received for Pavlo Slyvka ref(ltest5)",
+                            "amount": 8.0
+                        },
+                        {
+                            "id": "168",
+                            "transactionCode": {
+                                "code": "TSF"
+                            },
+                            "description": "MZ NFC payment received for Pavlo Slyvka ref(ltest5)",
+                            "amount": 2.0
+                        }
+                    ],
+                    "metaData": {
+                        "deviceCode": "FX2R",
+                        "requestBalanceAccountTypes": []
+                    }
+                },
+                {
+                    "id": "56",
+                    "createdDate": "2021-09-08 12:30:00",
+                    "statementDate": "2023-06-23 16:24:58",
+                    "transactionCodeId": "36",
+                    "transactionCode": {
+                        "code": "TSF"
+                    },
+                    "amount": 10.0,
+                    "lines": [
+                        {
+                            "id": "170",
+                            "transactionCode": {
+                                "code": "TSF"
+                            },
+                            "description": "MZ NFC payment received for Pavlo Slyvka ref(test7)",
+                            "amount": 8.0
+                        },
+                        {
+                            "id": "172",
+                            "transactionCode": {
+                                "code": "TSF"
+                            },
+                            "description": "MZ NFC payment received for Pavlo Slyvka ref(test7)",
+                            "amount": 2.0
+                        }
+                    ],
+                    "metaData": {
+                        "deviceCode": "FX2R",
+                        "requestBalanceAccountTypes": []
+                    }
+                },
+                {
+                    "id": "57",
+                    "createdDate": "2021-09-08 12:30:00",
+                    "statementDate": "2023-06-30 02:21:41",
+                    "transactionCodeId": "38",
+                    "transactionCode": {
+                        "code": "MPO"
+                    },
+                    "amount": -10.0,
+                    "lines": [
+                        {
+                            "id": "173",
+                            "transactionCode": {
+                                "code": "MPO"
+                            },
+                            "description": "MPESA outbound payments done by Pavlo Slyvka ref(mtest20)",
+                            "amount": -10.0
+                        }
+                    ],
+                    "metaData": {
+                        "accountNumber": "32350812197"
+                    }
+                },
+                {
+                    "id": "58",
+                    "createdDate": "2021-09-08 12:30:00",
+                    "statementDate": "2023-06-30 05:11:31",
+                    "transactionCodeId": "38",
+                    "transactionCode": {
+                        "code": "MPO"
+                    },
+                    "amount": -10.0,
+                    "lines": [
+                        {
+                            "id": "175",
+                            "transactionCode": {
+                                "code": "MPO"
+                            },
+                            "description": "MPESA outbound payments done by Pavlo Slyvka ref(mtest27)",
+                            "amount": -10.0
+                        }
+                    ],
+                    "metaData": {
+                        "accountNumber": "32350812197"
+                    }
+                },
+                {
+                    "id": "59",
+                    "createdDate": "2021-09-08 12:30:00",
+                    "statementDate": "2023-06-30 05:32:53",
+                    "transactionCodeId": "38",
+                    "transactionCode": {
+                        "code": "MPO"
+                    },
+                    "amount": -10.0,
+                    "lines": [
+                        {
+                            "id": "177",
+                            "transactionCode": {
+                                "code": "MPO"
+                            },
+                            "description": "MPESA outbound payments done by Pavlo Slyvka ref(mtest28)",
+                            "amount": -10.0
+                        }
+                    ],
+                    "metaData": {
+                        "accountNumber": "32350812197"
+                    }
+                },
+                {
+                    "id": "60",
+                    "createdDate": "2021-09-08 12:30:00",
+                    "statementDate": "2023-07-12 21:51:51",
+                    "transactionCodeId": "36",
+                    "transactionCode": {
+                        "code": "TSF"
+                    },
+                    "amount": 10.0,
+                    "lines": [
+                        {
+                            "id": "180",
+                            "transactionCode": {
+                                "code": "TSF"
+                            },
+                            "description": "MZ NFC payment received for Pavlo Slyvka ref(t1est6)",
+                            "amount": 8.0
+                        },
+                        {
+                            "id": "182",
+                            "transactionCode": {
+                                "code": "TSF"
+                            },
+                            "description": "MZ NFC payment received for Pavlo Slyvka ref(t1est6)",
+                            "amount": 2.0
+                        }
+                    ],
+                    "metaData": {
+                        "deviceCode": "FX2R",
+                        "requestBalanceAccountTypes": []
+                    }
+                },
+                {
+                    "id": "61",
+                    "createdDate": "2021-09-08 12:30:00",
+                    "statementDate": "2023-07-12 21:52:11",
+                    "transactionCodeId": "36",
+                    "transactionCode": {
+                        "code": "TSF"
+                    },
+                    "amount": 10.0,
+                    "lines": [
+                        {
+                            "id": "184",
+                            "transactionCode": {
+                                "code": "TSF"
+                            },
+                            "description": "MZ NFC payment received for Pavlo Slyvka ref(t2est6)",
+                            "amount": 8.0
+                        },
+                        {
+                            "id": "186",
+                            "transactionCode": {
+                                "code": "TSF"
+                            },
+                            "description": "MZ NFC payment received for Pavlo Slyvka ref(t2est6)",
+                            "amount": 2.0
+                        }
+                    ],
+                    "metaData": {
+                        "deviceCode": "FX2R",
+                        "requestBalanceAccountTypes": []
+                    }
+                },
+                {
+                    "id": "62",
+                    "createdDate": "2021-09-08 12:30:00",
+                    "statementDate": "2023-07-12 21:57:24",
+                    "transactionCodeId": "36",
+                    "transactionCode": {
+                        "code": "TSF"
+                    },
+                    "amount": 10.0,
+                    "lines": [
+                        {
+                            "id": "188",
+                            "transactionCode": {
+                                "code": "TSF"
+                            },
+                            "description": "MZ NFC payment received for Pavlo Slyvka ref(t3est6)",
+                            "amount": 8.0
+                        },
+                        {
+                            "id": "190",
+                            "transactionCode": {
+                                "code": "TSF"
+                            },
+                            "description": "MZ NFC payment received for Pavlo Slyvka ref(t3est6)",
+                            "amount": 2.0
+                        }
+                    ],
+                    "metaData": {
+                        "deviceCode": "FX2R",
+                        "requestBalanceAccountTypes": []
+                    }
+                },
+                {
+                    "id": "63",
+                    "createdDate": "2021-09-08 12:30:00",
+                    "statementDate": "2023-07-12 21:58:19",
+                    "transactionCodeId": "36",
+                    "transactionCode": {
+                        "code": "TSF"
+                    },
+                    "amount": 10.0,
+                    "lines": [
+                        {
+                            "id": "192",
+                            "transactionCode": {
+                                "code": "TSF"
+                            },
+                            "description": "MZ NFC payment received for Pavlo Slyvka ref(t4est6)",
+                            "amount": 8.0
+                        },
+                        {
+                            "id": "194",
+                            "transactionCode": {
+                                "code": "TSF"
+                            },
+                            "description": "MZ NFC payment received for Pavlo Slyvka ref(t4est6)",
+                            "amount": 2.0
+                        }
+                    ],
+                    "metaData": {
+                        "deviceCode": "FX2R",
+                        "requestBalanceAccountTypes": []
+                    }
+                },
+                {
+                    "id": "64",
+                    "createdDate": "2021-09-08 12:30:00",
+                    "statementDate": "2023-07-12 22:01:26",
+                    "transactionCodeId": "36",
+                    "transactionCode": {
+                        "code": "TSF"
+                    },
+                    "amount": 10.0,
+                    "lines": [
+                        {
+                            "id": "196",
+                            "transactionCode": {
+                                "code": "TSF"
+                            },
+                            "description": "MZ NFC payment received for Pavlo Slyvka ref(t5est6)",
+                            "amount": 8.0
+                        },
+                        {
+                            "id": "198",
+                            "transactionCode": {
+                                "code": "TSF"
+                            },
+                            "description": "MZ NFC payment received for Pavlo Slyvka ref(t5est6)",
+                            "amount": 2.0
+                        }
+                    ],
+                    "metaData": {
+                        "deviceCode": "FX2R",
+                        "requestBalanceAccountTypes": []
+                    }
+                },
+                {
+                    "id": "65",
+                    "createdDate": "2021-09-08 12:30:00",
+                    "statementDate": "2023-07-12 22:16:28",
+                    "transactionCodeId": "36",
+                    "transactionCode": {
+                        "code": "TSF"
+                    },
+                    "amount": 10.0,
+                    "lines": [
+                        {
+                            "id": "200",
+                            "transactionCode": {
+                                "code": "TSF"
+                            },
+                            "description": "MZ NFC payment received for Pavlo Slyvka ref(t6est6)",
+                            "amount": 8.0
+                        },
+                        {
+                            "id": "202",
+                            "transactionCode": {
+                                "code": "TSF"
+                            },
+                            "description": "MZ NFC payment received for Pavlo Slyvka ref(t6est6)",
+                            "amount": 2.0
+                        }
+                    ],
+                    "metaData": {
+                        "deviceCode": "FX2R",
+                        "requestBalanceAccountTypes": []
+                    }
+                }
+            ]
+        }
+    }
+}
+----
+
+
+[[entities_search]]
+=== Search entities
+`"*searchEntities*"` `Query` endpoint is a search for entities based on certain criteria. Additionally, the "exactMatch" parameter controls whether to return only exact search results or to also perform an imprecise search and return its results along with the exact search results. The following criteria can be selected to make entities search:
+
+* Search by Entity ID
+* Search by Account Number
+* Search by First Name and Last Name (separated by space)
+* Search by Initiator Number
+* Search by ID Number
+* Search by Mobile Number
+
+By default, backoffice users with the highest match appear first in search result, and those with the least match appear last.
+
+NOTE: postman examples:   "ICE Cash Payments > GraphQL > Management > Entities >
+    Search by entityID/Account/Names/Initiator/ID number/Mobile"
+
+.+Parameters:+
+|===
+    |Name|Type|Values|Required|Description
+
+    |`+searchBy+` |`+Enum+` |ENTITY_ID +
+                            ACCOUNT_NUMBER +
+                            NAMES +
+                            INITIATOR_NUMBER +
+                            ID_NUMBER +
+                            MOBILE_NUMBER |yes |Search Criterion
+    |`+searchInput+` |`+String+` |any string |yes |Search value
+    |`+exactMatch+` |`+Boolean+` |true +
+                                    false| |"true" - returns only the result of an exact match. "false" - exact match is the first item, then less exact results.
+    |`+page+` |`+Integer+` |Valid number, by defult = 0 | |Page number
+    |`+size+` |`+Integer+` |Valid number, by defult = 30 | |Page size
+    |`+sort+` |`+SortInput+` |One of: +
+                            "asc": array of fields +
+                            "desc": array of fields +
+                            "by": array of SortProperty | |If specified, performs results sorting by certain criteria
+
+|===
+
+.Request example:
+[source,graphql,options="nowrap"]
+----
+query {
+    searchEntities(
+        searchBy: NAMES,
+        searchInput: "Pavlo Slyvka",
+        exactMatch: true
+    ) {
+        total
+        content {
+            id
+            status
+            firstName
+            lastName
+            accounts {
+                accountNumber
+            }
+        }
+    }
+}
+----
+.Response example:
+[source,json,options="nowrap"]
+----
+{
+    "data": {
+        "searchEntities": {
+            "total": 1,
+            "content": [
+                {
+                    "id": "53",
+                    "firstName": "Pavlo",
+                    "lastName": "Slyvka",
+                    "accounts": [
+                        {
+                            "accountNumber": "34958881434"
+                        },
+                        {
+                            "accountNumber": "34922410112"
+                        },
+                        {
+                            "accountNumber": "35298550332"
+                        }
+                    ]
+                }
+            ]
+        }
+    }
+}
+----
+

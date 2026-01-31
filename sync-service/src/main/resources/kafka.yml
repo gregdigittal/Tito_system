@@ -1,0 +1,53 @@
+spring:
+  kafka:
+    bootstrap-servers: ${kafka.bootstrap-servers}
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+    consumer:
+      auto-offset-reset: earliest
+      key-deserializer: org.springframework.kafka.support.serializer.ErrorHandlingDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.ErrorHandlingDeserializer
+      properties:
+        spring.deserializer.key.delegate.class: org.apache.kafka.common.serialization.StringDeserializer
+        spring.deserializer.value.delegate.class: org.springframework.kafka.support.serializer.JsonDeserializer
+        spring.json.trusted.packages: "cash.ice.common.dto,cash.ice.common.dto.fee,cash.ice.zim.api.dto,cash.ice.sync.dto"
+ice:
+  cash:
+    kafka:
+      retry-policy:
+        back-off-type: exponentialWithMaxRetries           # exponentialWithMaxRetries(attempts,interval-ms,multiplier,max-interval-ms) / exponential(interval-ms,multiplier,max-interval-ms,max-elapsed-time-ms) / fixed(interval-ms,attempts)
+        interval-ms: 300
+        multiplier: 2.0
+        attempts: 10
+    update:
+      group: ice.cash.payment.SyncServiceListener
+      topic:
+        entity: ice.cash.payment.update.EntityTopic
+        account: ice.cash.payment.update.AccountTopic
+        account-relationship: ice.cash.payment.update.AccountRelationshipTopic
+        security-group: ice.cash.payment.update.SecurityGroupTopic
+        security-right: ice.cash.payment.update.SecurityRightTopic
+        initiator: ice.cash.payment.update.InitiatorTopic
+        channel: ice.cash.payment.update.ChannelTopic
+        tax-declaration: ice.cash.payment.update.TaxDeclarationTopic
+        tax-reason: ice.cash.payment.update.TaxReasonTopic
+        payment-method: ice.cash.payment.update.PaymentMethodTopic
+        bank: ice.cash.payment.update.BankTopic
+        currency: ice.cash.payment.update.CurrencyTopic
+        wallet: ice.cash.payment.update.WalletTopic
+        entity-type-group: ice.cash.payment.update.EntityTypeGroupTopic
+        entity-type: ice.cash.payment.update.EntityTypeTopic
+        initiator-category: ice.cash.payment.update.InitiatorCategoryTopic
+        initiator-status: ice.cash.payment.update.InitiatorStatusTopic
+        document-type: ice.cash.payment.update.DocumentTypeTopic
+---
+spring.config.activate.on-profile: local,local-perf
+kafka:
+  bootstrap-servers: 127.0.0.1:29092
+ice.cash.kafka-retry.attempts: 1
+---
+spring.config.activate.on-profile: local-docker
+kafka:
+  bootstrap-servers: kafka:29592
+ice.cash.kafka-retry.attempts: 1

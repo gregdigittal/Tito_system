@@ -1,0 +1,29 @@
+
+type Dictionary {
+    id: ID
+    lookupKey: String
+    environment: String
+    languageId: ID
+    section: String
+    value: String
+}
+
+input DictionaryInput {
+    lookupKey: String!
+    environment: String!
+    languageId: ID!
+    section: String!
+    value: String!
+}
+
+type Language {
+    id: ID
+    name: String
+    languageKey: String
+    dictionarySections: JSON
+}
+
+input LanguageInput {
+    name: String
+    languageKey: String
+}

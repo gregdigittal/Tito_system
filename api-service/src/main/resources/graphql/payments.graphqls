@@ -1,0 +1,199 @@
+
+type PaymentRequest {
+    vendorRef: ID
+    apiVersion: String
+    partnerId: String
+    date: DateTime
+    tx: String
+    amount: Float
+    initiator: String
+    initiatorType: String
+    initiatorPVV: String
+    initiatorTrack2: String
+    initiatorIccData: String
+    deviceId: String
+    deviceUser: String
+    currency: String
+    additionalParameters: String
+    tourismLevyInd: Int
+    result: Int
+    message: String
+    transactionId: Int
+    balance: Float
+    metaData: JSON
+}
+
+input PaymentRequestInput {
+    vendorRef: ID!
+    tx: String!
+    initiatorType: String!
+    initiator: String!
+    currency: String!
+    amount: Float!
+    date: DateTime
+    partnerId: String
+    apiVersion: String
+    initiatorPVV: String
+    initiatorTrack2: String
+    initiatorIccData: String
+    deviceId: String
+    deviceUser: String
+    additionalParameters: String
+    tourismLevyInd: Int
+    result: Int
+    message: String
+    transactionId: Int
+    balance: Float
+    metaData: JSON
+}
+
+type PaymentResponse {
+    vendorRef: ID
+    date: DateTime
+    status: ResponseStatus
+    errorCode: String
+    message: String
+    payload: JSON
+    transactionId: String
+    balance: Float
+}
+
+enum ResponseStatus {
+    PROCESSING, SUCCESS, ERROR
+}
+
+type PendingPayment {
+    id: ID
+    accountId: ID
+    accountSide: AccountSide
+    status: PaymentStatus
+    description: String
+    count: Int
+    total: Float
+    taxDeclarationId: ID
+    taxReasonId: ID
+    paymentCollectionId: ID
+    createdDate: DateTime
+    paymentLines: [PaymentLine]
+    metaData: JSON
+}
+
+type PaymentLine {
+    id: ID
+    accountId: ID
+    details: String
+    amount: Float
+    currency: String
+    transactionCode: String
+    transactionId: Int
+    metaData: JSON
+}
+
+input PendingPaymentInput {
+    accountId: ID
+    accountSide: AccountSide
+    description: String
+    taxDeclarationId: ID
+    taxReasonId: ID
+    paymentLines: [PaymentLineInput]
+    metaData: JSON
+}
+
+input PaymentLineInput {
+    id: ID
+    accountId: ID
+    details: String
+    amount: Float
+    currency: String
+    transactionCode: String
+    metaData: JSON
+}
+
+type TransactionLimitsPageable {
+    total: Int
+    content: [TransactionLimit]
+}
+
+type TransactionLimit {
+    id: ID
+    currencyId: ID
+    currency: String
+    transactionCodeId: ID
+    transactionCode: String
+    kycStatusId: Int
+    entityTypeId: ID
+    entityType: String
+    accountTypeId: ID
+    accountType: String
+    initiatorTypeId: ID
+    initiatorType: String
+    tier: TransactionLimitTier
+    authorisationType: AuthorisationType
+    direction: PaymentDirection
+    active: Boolean
+    transactionMinLimit: Float
+    transactionMaxLimit: Float
+    dailyLimit: Float
+    weeklyLimit: Float
+    monthlyLimit: Float
+    createdDate: DateTime
+}
+
+input TransactionLimitInput {
+    currency: String!
+    transactionCode: String
+    kycStatusId: Int
+    entityType: String
+    accountType: String
+    initiatorType: String
+    tier: TransactionLimitTier
+    authorisationType: AuthorisationType
+    direction: PaymentDirection
+    active: Boolean = true
+    transactionMinLimit: Float
+    transactionMaxLimit: Float
+    dailyLimit: Float
+    weeklyLimit: Float
+    monthlyLimit: Float
+}
+
+input TransactionLimitFilterInput {
+    currency: String!
+    transactionCode: String
+    kycStatusId: Int
+    entityType: String
+    accountType: String
+    initiatorType: String
+    tier: TransactionLimitTier
+    authorisationType: AuthorisationType
+    direction: PaymentDirection
+}
+
+enum PaymentDirection {
+    Debit, Credit
+}
+
+enum AccountSide {
+    DR, CR
+}
+
+enum PaymentStatus {
+    PENDING, APPROVED, REJECTED, PROCESSING
+}
+
+type PendingPaymentCollection {
+    id: ID
+    sessionId: ID
+    paymentMethodId: ID
+    channel: String
+    createdDate: DateTime
+    paymentsIds: [ID]
+    payments: [PendingPayment]
+}
+
+input PendingPaymentCollectionInput {
+    sessionId: ID
+    paymentMethodId: ID
+    channel: String
+    paymentsIds: [ID]
+}

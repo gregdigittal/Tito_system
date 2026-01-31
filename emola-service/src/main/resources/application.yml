@@ -1,0 +1,25 @@
+server:
+  port: 8290
+  shutdown: graceful
+management:
+  endpoint:
+    health:
+      show-details: always
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+spring:
+  lifecycle:
+    timeout-per-shutdown-phase: 1m
+  devtools:
+    livereload:
+      enabled: false
+ice:
+  cash:
+    emola:
+      group: ${kafka.prefix}.emola-service
+      payment-url: http://localhost:8387/web
+      partner-code: code1
+      inbound-sms-content: sms content
+      private-key: privateKey

@@ -1,0 +1,40 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: payments-onemoney-service
+  name: payments-onemoney-service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: payments-onemoney-service
+  strategy: {}
+  template:
+    metadata:
+      labels:
+        app: payments-onemoney-service
+    spec:
+      containers:
+        - env:
+            - name: SPRING_PROFILES_ACTIVE
+              value: uat-k8s
+          envFrom:
+            - configMapRef:
+                name: payments-config-map
+            - secretRef:
+                name: payments-secret
+          image: dockerrepo.icecash.mobi:5000/payments/onemoney-service:0.1.0.21
+          name: payments-onemoney-service
+          ports:
+            - containerPort: 8287
+          resources:
+            limits:
+              cpu: '1'
+              memory: 1G
+            requests:
+              cpu: 100m
+              memory: 512Mi
+      restartPolicy: Always
+      imagePullSecrets:
+        - name: dockerreg

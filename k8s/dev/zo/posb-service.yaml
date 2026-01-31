@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: payments-posb-service
+  name: payments-posb-service
+spec:
+  ports:
+    - name: "8293"
+      port: 8293
+      targetPort: 8293
+  selector:
+    app: payments-posb-service
+  type: ClusterIP

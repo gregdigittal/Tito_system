@@ -1,0 +1,14 @@
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: payments-ledger-service
+  labels:
+    app: payments-ledger-service
+    release: prometheus-operator
+spec:
+  selector:
+    matchLabels:
+      app: payments-ledger-service
+  endpoints:
+    - port: "8584"
+      path: "/actuator/prometheus"

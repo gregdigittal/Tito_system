@@ -1,0 +1,168 @@
+
+input RegisterEntityInput {
+    status: EntityStatus
+    loginStatus: LoginStatus
+    entityType: String!
+    firstName: String!
+    lastName: String
+    idTypeId: ID!
+    idNumber: String!
+    kycStatus: KycStatus!
+    contactName: String!
+    mobile: String!
+    altContactName: String
+    altMobile: String
+    email: String
+    gender: Gender
+    authorisationType: AuthorisationType!
+    corporateFee: Boolean!
+    transactionLimitTier: TransactionLimitTier
+    citizenshipCountryId: ID!
+    address: AddressInput!
+    company: String
+    card: String
+    locale: String = "en"
+}
+
+input AddressInput {
+    countryId: ID!
+    city: String!
+    postalCode: String!
+    address1: String!
+    address2: String
+    notes: String
+}
+
+type EntityTypeGroup {
+    id: ID!
+    description: String
+    entityTypes: [EntityType]
+}
+
+type EntityType {
+    id: ID!
+    description: String
+    entityTypeGroupId: ID
+    entityTypeGroup: EntityTypeGroup
+    entities: [Entity]
+}
+
+type Entity {
+    id: ID
+    entityTypeId: ID
+    entityType: EntityType
+    accounts: [Account]
+    firstName: String
+    lastName: String
+    idTypeId: ID
+    idType: EntityIdType
+    idNumber: String
+    internalId: String
+    pvv: String
+    gender: Gender
+    status: EntityStatus
+    birthDate: Date
+    citizenshipCountryId: ID
+    citizenshipCountry: Country
+    kycStatusId: Int
+    email: String
+    msisdn: [Msisdn]
+    address: [Address]
+    relationships: [AccountRelationship]
+    loginStatus: LoginStatus
+    mfaType: MfaType
+    mfaBackupCodes: [String]
+    locale: String
+    keycloakId: String
+    legacyAccountId: Int
+    mfaQrCode: String
+    metaData: JSON
+    createdDate: DateTime
+}
+
+type EntitiesPageable {
+    total: Int
+    content: [Entity]
+}
+
+type AccountRelationship {
+    id: ID
+    entityId: ID
+    entity: Entity
+    partnerAccountId: ID
+    partnerAccount: Account
+    createdDate: DateTime
+    securityGroups: JSON
+    securityGroupMoz: [SecurityGroup]
+    metaData: JSON
+}
+
+input EntityUpdate {
+    entityTypeId: ID!
+    firstName: String
+    lastName: String
+    idType: ID
+    idNumber: String
+    gender: Gender
+    status: EntityStatus!
+    birthDate: Date
+    citizenshipCountryId: ID
+    email: String
+    mfaType: MfaType
+    locale: String
+}
+
+enum Gender {
+    MALE, FEMALE
+}
+
+enum EntityStatus {
+    ACTIVE, FROZEN
+}
+
+type EntityIdType {
+    id: ID
+    description: String
+}
+
+type Msisdn {
+    id: ID
+    entityId: ID
+    msisdn: String
+    description: String
+    msisdnType: MsisdnType
+    createdDate: DateTime
+}
+
+enum MsisdnType {
+    PRIMARY, SECONDARY
+}
+
+type Address {
+    id: ID
+    entityId: ID
+    countryId: ID
+    country: Country
+    city: String
+    addressType: AddressType
+    postalCode: String
+    address1: String
+    address2: String
+    notes: String
+}
+
+enum AddressType {
+    PRIMARY, POSTAL, BUSINESS, ADDITIONAL
+}
+
+enum LoginStatus {
+    ACTIVE, INACTIVE, LOCKED
+}
+
+enum KycStatus {
+    NONE, PARTIAL, FULL
+}
+
+enum TransactionLimitTier {
+    Tier1, Tier2
+}

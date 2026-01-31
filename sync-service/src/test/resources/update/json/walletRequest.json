@@ -1,0 +1,12 @@
+{
+  "action": "UPDATE",
+  "identifier": "200",
+  "data": {
+    "Active": true,
+    "Name": "Test Account Type",
+    "Description": "AccountTypeDescription",
+    "Currency": "ZWL",
+    "AuditTransactionInterval": 10,
+    "AuditTransactionValue": 1000.0
+  }
+}

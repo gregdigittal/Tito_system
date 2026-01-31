@@ -1,0 +1,46 @@
+server:
+  port: 8292
+  shutdown: graceful
+management:
+  endpoint:
+    health:
+      show-details: always
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+spring:
+  lifecycle:
+    timeout-per-shutdown-phase: 1m
+  main:
+    allow-circular-references: true
+
+ice:
+  cash:
+    zim:
+      mongodb:
+        request-collection: ZimPaymentRequest
+        response-collection: ZimPaymentResponse
+      api:
+        kafka-group: ${kafka.prefix}.zim-api-service
+        allowed-banks: POSB, FBC, FCB, mpesa, ecocash
+        payment-timeout: 90s
+        check-successful-payment-timeout-before-sp: true
+        check-successful-payment-timeout-after-sp: true
+        sp-polling-enabled: true
+        sp-max-tries: 3
+        sp-tries-interval: 3s
+        sp-poll-scheduler-ms: 5000
+        api-key-check: true
+        api-key: fd836ed0521558b8c18d1bff976b41d3985e12b51078b53e4ddcaac1e16547cc
+        api-key-internal: nttzhxmyjarfegtvznkarjxvhgfmxhgsizdvtvegiviceieddfdkfekvwyqtaqdf
+        reversal-url: http://%s/api/v1/transaction/refund/%s
+        status-url: http://%s/api/v1/transaction/status/%s
+        name-info-url: http://%s/api/v1/name/%s
+        debug-info-url: http://%s/api/v1/debug/%s
+        props-url: http://%s/api/v1/debug/props
+        actuator-health-url: http://%s/actuator/health
+        service-host:
+          mpesa: localhost:8289
+          posb: localhost:8293
+          ecocash: localhost:8286

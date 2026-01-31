@@ -1,0 +1,40 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: payments-ecocash-service
+  name: payments-ecocash-service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: payments-ecocash-service
+  strategy: {}
+  template:
+    metadata:
+      labels:
+        app: payments-ecocash-service
+    spec:
+      containers:
+        - env:
+            - name: SPRING_PROFILES_ACTIVE
+              value: dev-k8s
+          envFrom:
+            - configMapRef:
+                name: payments-config-map
+            - secretRef:
+                name: payments-secret
+          image: dockerrepo.icecash.mobi:5000/payments/ecocash-service:0.1.0.21
+          name: payments-ecocash-service
+          ports:
+            - containerPort: 8286
+          resources:
+            limits:
+              cpu: '1'
+              memory: 1G
+            requests:
+              cpu: 100m
+              memory: 512Mi
+      restartPolicy: Always
+      imagePullSecrets:
+        - name: dockerreg

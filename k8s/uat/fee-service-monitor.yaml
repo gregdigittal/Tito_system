@@ -1,0 +1,14 @@
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: payments-fee-service
+  labels:
+    app: payments-fee-service
+    release: prometheus-operator
+spec:
+  selector:
+    matchLabels:
+      app: payments-fee-service
+  endpoints:
+    - port: "8583"
+      path: "/actuator/prometheus"

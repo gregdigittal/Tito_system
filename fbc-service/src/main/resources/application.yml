@@ -1,0 +1,63 @@
+server:
+  port: 8288
+  shutdown: graceful
+management:
+  endpoint:
+    health:
+      show-details: always
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+spring:
+  lifecycle:
+    timeout-per-shutdown-phase: 1m
+  devtools:
+    livereload:
+      enabled: false
+  cache:
+    redis:
+      custom-ttl:
+        fbcPoolBalance: 5m
+ice:
+  cash:
+    fbc:
+      group: ${kafka.prefix}.fbc-service
+      login-url: /login
+      account-verification-url: /onlinepayments/v2/onus/account/details
+      generate-otp-url: /onlinepayments/v2/onus/generate/otp/
+      verify-otp-url: /onlinepayments/v2/onus/verify/otp
+      transfer-submission-url: /onlinepayments/v2/onus/submit/onus/transfer
+      query-status-url: /onlinepayments/v2/onus/query/status
+      initiator-id: ICECASH
+      payment-details: FEES
+    flexcube:
+      url: http://172.16.53.130:7701
+      user: ${flexcube.user}
+      password: ${flexcube.password}
+      product: ISTC
+      by-order-of: ICECASH
+      remarks: OK
+      transaction-endpoint: /FTTransactions
+      poll-transaction-endpoint: /icecash/check
+      get-balance-endpoint: /GetBalance
+      connect-timeout: 15s
+      read-timeout: 30s
+      status-poll-ms: 10000
+      status-poll-init-delay: 180
+      balance-warning-email:
+        from: balance.alert@ice.cash
+        subject: "*** TEST FBC Pool account balance is small ***"
+        body: "<html><p>FBC Pool account balance is small enough!</p><p>Account: %s</p><p>Branch: %s</p><p>Balance: %s</p></html>"
+        recipients: Pavlo <pavlo@ice.cash>
+---
+spring.config.activate.on-profile: local
+ice:
+  cash:
+    fbc:
+      host: http://localhost:8288/api/v1/zim/fbc/server
+      username: icecash
+      password: icecash123*
+flexcube:
+  user: icecash
+  password: password

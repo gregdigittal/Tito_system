@@ -1,0 +1,14 @@
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: payments-onemoney-service
+  labels:
+    app: payments-onemoney-service
+    release: prometheus-operator
+spec:
+  selector:
+    matchLabels:
+      app: payments-onemoney-service
+  endpoints:
+    - port: "8587"
+      path: "/actuator/prometheus"

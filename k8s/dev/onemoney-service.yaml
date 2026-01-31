@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: payments-onemoney-service
+  name: payments-onemoney-service
+spec:
+  ports:
+    - name: "8587"
+      port: 8587
+      targetPort: 8287
+  selector:
+    app: payments-onemoney-service
+  type: ClusterIP

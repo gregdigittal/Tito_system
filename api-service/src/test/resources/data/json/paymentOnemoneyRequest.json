@@ -1,0 +1,11 @@
+{
+  "vendorRef": "testone_1",
+  "tx": "OPAYG",
+  "initiatorType": "netone",
+  "currency": "ZWL",
+  "amount": "0.04",
+  "partnerId": "1",
+  "apiVersion": "1",
+  "date": "2020-11-02T09:00",
+  "initiator": "263718733835"
+}

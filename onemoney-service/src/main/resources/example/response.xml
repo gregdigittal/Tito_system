@@ -1,0 +1,18 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/">
+    <soapenv:Body>
+        <api:Response xmlns:api="http://cps.huawei.com/cpsinterface/api_requestmgr"
+                      xmlns:res="http://cps.huawei.com/cpsinterface/response">
+            <res:Header>
+                <res:Version>1.0</res:Version>
+                <res:OriginatorConversationID>S_X2013012921006</res:OriginatorConversationID>
+                <res:ConversationID>AG_20171201_00006c0aa5a6da7715e0</res:ConversationID>
+            </res:Header>
+            <res:Body>
+                <res:ResponseCode>0</res:ResponseCode>
+                <res:ResponseDesc>Accept the service request successfully.</res:ResponseDesc>
+                <res:ServiceStatus>0</res:ServiceStatus>
+            </res:Body>
+        </api:Response>
+    </soapenv:Body>
+</soapenv:Envelope>

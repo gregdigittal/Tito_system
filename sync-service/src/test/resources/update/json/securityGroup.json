@@ -1,0 +1,14 @@
+{
+  "action": "UPDATE",
+  "identifier": "500",
+  "type": "online",
+  "data": {
+    "Name": "SomeGroup",
+    "Description": "SomeGroup description",
+    "Active": true,
+    "Rights": {
+      "SOME_ROLE": "ADD",
+      "RELEASE_A": "DELETE"
+    }
+  }
+}

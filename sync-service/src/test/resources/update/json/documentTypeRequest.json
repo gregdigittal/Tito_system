@@ -1,0 +1,9 @@
+{
+  "action": "UPDATE",
+  "documentTypeId": "1",
+  "accountTypeId": "1",
+  "data": {
+    "Required": true,
+    "DocumentType": "Proof of Address"
+  }
+}

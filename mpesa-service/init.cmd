@@ -1,0 +1,1 @@
+mvn install:install-file -Dfile=${project.basedir}/lib/portal-sdk.jar -DgroupId=mz.co.vm.mpesa.vodacom -DartifactId=portal-sdk -Dversion=0.3 -Dpackaging=jar

@@ -1,0 +1,14 @@
+{
+  "properties": [
+    {
+      "name": "ice.cash.ledger.group",
+      "type": "java.lang.String",
+      "description": "Ledger listener Group ID."
+    },
+    {
+      "name": "ice.cash.ledger.balance-audit-asynchronous",
+      "type": "java.lang.Boolean",
+      "description": "Whether make audit balance asynchronously (via kafka) or immediately."
+    }
+  ]
+}

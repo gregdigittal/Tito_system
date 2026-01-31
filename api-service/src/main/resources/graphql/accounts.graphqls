@@ -1,0 +1,119 @@
+
+type Account {
+    id: ID
+    entityId: ID
+    entity: Entity
+    accountTypeId: ID
+    accountType: AccountType
+    accountNumber: String
+    accountStatus: AccountStatus
+    balance: Float
+    dailyLimit: Float
+    overdraftLimit: Float
+    balanceMinimum: Float
+    balanceWarning: Float
+    balanceMinimumEnforce: Boolean
+    notificationEnabled: Boolean
+    autoDebit: Boolean
+    authorisationType: AuthorisationType
+    initiators: [Initiator]
+    payments: [PendingPayment]
+    createdDate: DateTime
+}
+
+input AccountInput {
+    entityId: ID!
+    accountTypeId: ID
+    accountNumber: String
+    accountStatus: AccountStatus
+    dailyLimit: Float
+    overdraftLimit: Float
+    balanceMinimum: Float
+    balanceWarning: Float
+    balanceMinimumEnforce: Boolean
+    notificationEnabled: Boolean
+    autoDebit: Boolean
+    authorisationType: AuthorisationType
+}
+
+type AccountBalance {
+    id: ID!
+    accountId: ID
+    account: Account
+    balance: Float
+    version: Int
+}
+
+type AccountType {
+    id: ID!
+    currencyId: ID
+    currency: Currency
+    name: String
+    description: String
+    auditTransactionInterval: Int
+    auditTransactionValue: Float
+    legacyWalletId: String
+    active: Boolean
+}
+
+input AccountTypeInput {
+    currencyId: ID
+    name: String
+    description: String
+    auditTransactionInterval: Int
+    auditTransactionValue: Float
+    legacyWalletId: String
+    active: Boolean
+}
+
+enum AccountStatus {
+    ACTIVE, FROZEN
+}
+
+enum AuthorisationType {
+    SINGLE, DUAL_OR, DUAL_AND
+}
+
+type InitiatorsPageable {
+    total: Int
+    content: [Initiator]
+}
+
+type Initiator {
+    id: ID
+    accountId: ID
+    initiatorTypeId: ID
+    initiatorType: InitiatorType
+    identifier: String
+    initiatorCategoryId: ID
+    initiatorCategory: InitiatorCategory
+    initiatorStatusId: ID
+    initiatorStatus: InitiatorStatus
+    pvv: String
+    notes: String
+    createdDate: DateTime
+    startDate: Date
+    expiryDate: Date
+    metaData: JSON
+    configuration: JSON
+}
+
+type InitiatorType {
+    id: ID
+    description: String
+    active: Boolean
+    entityId: ID
+    entity: Entity
+}
+
+type InitiatorCategory {
+    id: ID
+    category: String
+}
+
+type InitiatorStatus {
+    id: ID
+    name: String
+    permitTransaction: Boolean
+    active: Boolean
+}

@@ -1,0 +1,8 @@
+{
+  "action": "UPDATE",
+  "identifier": "NewStatus",
+  "data": {
+    "Active": true,
+    "PermitTransaction": true
+  }
+}

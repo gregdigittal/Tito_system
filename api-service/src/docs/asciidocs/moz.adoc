@@ -1,0 +1,3702 @@
+= Mozambique Transport Payment Solution API Guide
+Pavlo Slyvka<pavlo@ice.cash>
+v1.0, 2023-12-01
+:toc: right
+:toclevels: 4
+:sectnums:
+
+Api for Mozambique Transport Solution.
+
+[[user_api]]
+== User API
+
+[[account_type]]
+[discrete]
+=== Account Type
+Some endpoints require `accountType` parameter which is enum and represents combination of the user's account type and a category.
+
+.+Available account types:+
+|===
+    ^.^|Account type name ^.^|Account type category ^.^|Сorresponding enum value
+
+    .2+^.^|Agent            ^|Regular        |`+AgentRegular+`
+                            ^|Fematro        |`+AgentFematro+`
+    .2+^.^|Transport Owner  ^|Private        |`+TransportOwnerPrivate+`
+                            ^|Public         |`+TransportOwnerPublic+`
+    .5+^.^|Commuter         ^|Regular        |`+CommuterRegular+`
+                            ^|Elders         |`+CommuterElders+`
+                            ^|Disabled       |`+CommuterDisabled+`
+                            ^|Student        |`+CommuterStudent+`
+                            ^|War Veteran    |`+CommuterWarVeteran+`
+    ^.^|Taxi Driver         ^|               |`+TaxiDriver+`
+    ^.^|Fare Collector      ^|               |`+FareCollector+`
+
+|===
+
+ In fact account type represents the security group of permission roles granted to the user. When registering a new user, we explicitly specify one account type, which determines the role of this user and his access rights when operating this API. But in fact, any user can have several groups of roles and be, for example, a transport owner, agent and a computer at the same time. By default, regardless of the account type specified during registration, the user is also given the “Computer” role group.
+
+.+Account type roles mapping:+
+|===
+    ^.^|Account type name ^.^|Security Group Name ^.^|Security Roles
+
+    ^.^|Agent            ^.^|Moz Regular Agent +
+                           Moz Fematro Agent
+                            |`MOZ_REG_USER` (Registering new users) +
+                             `MOZ_KYC_UPLOAD` (Upload KYC documents) +
+                             `MOZ_LINK_TAG` (Link tags to account) +
+                             `MOZ_LINK_POS` (Link POS devices to account) +
+                             `MOZ_TOPUP` (Top up accounts)
+    ^.^|Commuter         ^.^|Moz Commuter        |`MOZ_TOPUP` (Top up accounts) +
+                                                  `MOZ_TAG_MANAGEMENT` (Tag management) +
+                                                  `MOZ_STATEMENT` (View statement) +
+                                                  `MOZ_PROFILE` (Profile access)
+    ^.^|Transport Owner  ^.^|Moz Transport Owner    |`MOZ_TOPUP` (Top up accounts) +
+                                                     `MOZ_TAG_MANAGEMENT` (Tag management) +
+                                                     `MOZ_STATEMENT` (View statement) +
+                                                     `MOZ_PROFILE` (Profile access) +
+                                                     `MOZ_VRN_MANAGEMENT` (VRN management) +
+                                                     `MOZ_POS_MANAGEMENT` (POS device management) +
+    ^.^|Taxi Driver         ^.^|Moz Taxi Driver     |`MOZ_POS_LOGIN` (POS login) +
+    ^.^|Fare Collector      ^.^|Moz Fare Collector  |`MOZ_POS_LOGIN` (POS login) +
+
+|===
+
+[[user_registration]]
+=== User registration
+
+Sequence of calling GraphQL endpoints for registering a new user::
+    . <<agreements, userRegistrationAgreement>> (optional)
+    . <<otp_msisdn, sendOtp>> (otpType: MOZ_REG_USER)
+    . <<reg_documents, POST /moz/user/documents/upload>> (REST endpoint)
+    . <<reg_individual, registerIndividualUserMoz>> or <<reg_corporate, registerCorporateUserMoz>>
+
+User registration endpoints are public, but the agent can also perform new user registration. In this case, the corresponding record of who created the user will be saved in the database.
+
+[[agreements]]
+==== Registration agreements
+`"*userRegistrationAgreement*"` `Query` returns agreements text for specified locale and account type.
+
+NOTE: postman example:   "ICE Cash Payments > Mozambique > GET Registration agreement"
+
+.+Parameters:+
+|===
+    |Name|Type|Values|Required|Description
+
+    |`+locale+`
+    |`+String+`
+    |   "en" +
+        "pt"
+    |
+    |Language of agreement
+
+    |`+accountType+`
+    |`+Enum+`
+    |<<account_type,see details>>
+    |yes
+    |Account type
+
+|===
+
+.Request example:
+[source,graphql,options="nowrap"]
+----
+query {
+    userRegistrationAgreement(
+        locale: "en",
+        accountType: AgentFematro
+    ) {
+        value
+    }
+}
+
+----
+.Response example:
+[source,json,options="nowrap"]
+----
+{
+    "data": {
+        "userRegistrationAgreement": {
+            "value": "<p>Agent Fematro agreement...</p>"
+        }
+    }
+}
+----
+
+[[reg_documents]]
+==== Upload Registration Documents
+
+`POST` `/api/v1/moz/user/documents/upload` REST endpoint is used to upload registration documents. All documents required to register a new user such as ID, NUIT, NUEL must be uploaded before calling the actual registration endpoint. One call is required for each document. Endpoint returns `documentId` that is required for the user registration.
+
+NOTE: postman example:   "ICE Cash Payments > Mozambique > Upload document"
+
+.+Request parameters:+
+|===
+    |Name|Type|Values|Required|Description
+
+    |`+file+` |`+File+` |file of any type |yes |Document file of any type
+    |`+documentTypeId+` |`+Integer+` |<<document_types,see details>> |yes |Document type
+
+|===
+
+.Request example:
+[source,http,options="nowrap"]
+----
+POST /api/v1/moz/user/documents/upload HTTP/1.1
+Content-Type: multipart/form-data; boundary=--------------------------310770539861385987558169
+
+----------------------------310770539861385987558169
+Content-Disposition: form-data; name="file"; filename="document1.txt"
+Content-Type: application/octet-stream
+
+content
+----------------------------310770539861385987558169
+Content-Disposition: form-data; name="documentTypeId"
+1
+----------------------------310770539861385987558169--
+
+----
+.Response example:
+[source,json,options="nowrap"]
+----
+{
+    "status": "SUCCESS",
+    "documentId": 30
+}
+----
+
+[[reg_individual]]
+==== Register individual account
+
+`"*registerIndividualUserMoz*"` `Mutation` creates a new individual user. Entity type of new user is "Private". Also creates 3 accounts related to the entity: "Primary", "Prepaid", "Subsidy", all accounts bound to MZN currency. Upon successful user registration, an SMS message with the “Prepaid” account number is sent to the Primary MSISDN in the specified language ("user.locale" parameter).
+
+NOTE: postman example:   "ICE Cash Payments > Mozambique > Vehicle > Register individual account"
+
+.+Parameters:+
+|===
+    |Name|Type|Values|Required|Description
+
+    |`+otp+` |`+String+` |valid OTP, (string consisting of 4-14 digits) |yes |OTP sent on <<otp_msisdn, seconds step>>
+    |`+user.accountType+` |`+Enum+` |<<account_type,see details>> |yes |Account Type
+    |`+user.firstName+` |`+String+` |any string |yes |User First Name
+    |`+user.lastName+` |`+String+` |any string |yes |User Last Name
+    |`+user.idType+` |`+Enum+` |ID +
+                                DIRE +
+                                Passport |yes |ID type (DIRE - Mozambican Residency Card)
+    |`+user.idNumber+` |`+String+` |any unique string |yes |ID number (ID number + ID type must be unique)
+    |`+user.idUploadDocumentId+` |`+Integer+` |valid Document ID | |Document ID of the document uploaded on <<reg_documents, previous step>>
+    |`+user.nuit+` |`+String+` |any string | |NUIT (Taxpayer Single Identification Number)
+    |`+user.nuitUploadDocumentId+` |`+Integer+` |valid Document ID | |Document ID of the NUIT document uploaded on <<reg_documents, previous step>>
+    |`+user.mobile+` |`+String+` |valid unique mobile |yes |Primary mobile number (MSISDN)
+    |`+user.email+` |`+String+` |valid unique email | |E-mail
+    |`+user.pin+` |`+String+` |string consisting of 4 digits | |Password (if absent, will be generated by server)
+    |`+user.locale+` |`+String+` |en (default) +
+                                  pt | |User Language
+    |`+removeDocumentsOnFail+` |`+Boolean+` |true +
+                                             false (default) |yes |Whether remove previously uploaded documents if user registration fails or not
+
+|===
+
+.Request example:
+[source,graphql,options="nowrap"]
+----
+mutation {
+    registerIndividualUserMoz(
+        otp: "0000",
+        user: {
+            accountType: CommuterRegular,
+            firstName: "Pavlo",
+            lastName: "Slyvka",
+            idType: ID,
+            idNumber: "12345678901",
+            idUploadDocumentId: 1,
+            nuit: "12345678",
+            nuitUploadDocumentId: 1,
+            mobile: "000000000000",
+            email: "pavlo@ice.cash",
+            pin: "1234",
+            locale: "en"
+        }
+    ) {
+        id
+        firstName
+        lastName
+        email
+        msisdn {
+            msisdn
+        }
+        idNumber
+        idTypeId
+        idType {
+            description
+        }
+        accounts {
+            id
+            accountNumber
+            accountType {
+                name
+                currencyId
+            }
+            createdDate
+        }
+        entityTypeId
+        entityType {
+            description
+        }
+        relationships {
+            partnerAccountId
+            securityGroupMoz {
+                id
+                name
+                active
+                rightsList
+            }
+        }
+        status
+        loginStatus
+        locale
+        createdDate
+    }
+}
+
+----
+.Response example:
+[source,json,options="nowrap"]
+----
+{
+    "data": {
+        "registerIndividualUserMoz": {
+            "id": "511",
+            "firstName": "Pavlo",
+            "lastName": "Slyvka",
+            "email": "pavlo@ice.cash",
+            "msisdn": [
+                {
+                    "msisdn": "000000000000"
+                }
+            ],
+            "idNumber": "12345678901",
+            "idTypeId": "4",
+            "idType": {
+                "description": "Mozambican National ID"
+            },
+            "accounts": [
+                {
+                    "id": "1295",
+                    "accountNumber": "37866803655",
+                    "accountType": {
+                        "name": "Primary",
+                        "currencyId": "4"
+                    },
+                    "createdDate": "2023-12-05 05:59:28"
+                },
+                {
+                    "id": "1296",
+                    "accountNumber": "38869125815",
+                    "accountType": {
+                        "name": "Subsidy",
+                        "currencyId": "4"
+                    },
+                    "createdDate": "2023-12-05 05:59:28"
+                },
+                {
+                    "id": "1297",
+                    "accountNumber": "33199410045",
+                    "accountType": {
+                        "name": "Prepaid",
+                        "currencyId": "4"
+                    },
+                    "createdDate": "2023-12-05 05:59:28"
+                }
+            ],
+            "entityTypeId": "10",
+            "entityType": {
+                "description": "Private"
+            },
+            "relationships": [
+                {
+                    "partnerAccountId": "1295",
+                    "securityGroupMoz": [
+                        {
+                            "id": "1013",
+                            "name": "Moz Commuter",
+                            "active": true,
+                            "rightsList": [
+                                "MOZ_TOPUP",
+                                "MOZ_PROFILE",
+                                "MOZ_TAG_MANAGEMENT",
+                                "MOZ_STATEMENT"
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "partnerAccountId": "1296",
+                    "securityGroupMoz": [
+                        {
+                            "id": "1013",
+                            "name": "Moz Commuter",
+                            "active": true,
+                            "rightsList": [
+                                "MOZ_TOPUP",
+                                "MOZ_PROFILE",
+                                "MOZ_TAG_MANAGEMENT",
+                                "MOZ_STATEMENT"
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "partnerAccountId": "1297",
+                    "securityGroupMoz": [
+                        {
+                            "id": "1013",
+                            "name": "Moz Commuter",
+                            "active": true,
+                            "rightsList": [
+                                "MOZ_TOPUP",
+                                "MOZ_PROFILE",
+                                "MOZ_TAG_MANAGEMENT",
+                                "MOZ_STATEMENT"
+                            ]
+                        }
+                    ]
+                }
+            ],
+            "status": "ACTIVE",
+            "loginStatus": "ACTIVE",
+            "locale": "en",
+            "createdDate": "2023-12-01 15:59:27"
+        }
+    }
+}
+
+----
+
+[[reg_corporate]]
+==== Register corporate account
+
+`"*registerCorporateUserMoz*"` `Mutation` creates a new corporate user. Entity type of new user is "Business". Also creates 3 accounts related to the entity: "Primary", "Prepaid", "Subsidy", all accounts bound to MZN currency. Upon successful user registration, an SMS message with the “Prepaid” account number is sent to the Primary (Company) MSISDN in the specified language ("user.locale" parameter).
+
+NOTE: postman example:   "ICE Cash Payments > Mozambique > Vehicle > Register corporate account"
+
+.+Parameters:+
+|===
+    |Name|Type|Values|Required|Description
+
+    |`+otp+` |`+String+` |valid OTP, (string consisting of 4-14 digits) |yes |OTP sent on <<otp_msisdn, seconds step>>
+    |`+company.name+` |`+String+` |any unique string |yes |Company name
+    |`+company.nuel+` |`+String+` |any unique string |yes |Company NUEL (Proof of the existence of the company)
+    |`+company.idUploadDocumentId+` |`+Integer+` |valid Document ID | |Document ID of the NUEL document uploaded on <<reg_documents, previous step>>
+    |`+company.nuit+` |`+String+` |any string |yes |Company NUIT
+    |`+company.nuitUploadDocumentId+` |`+Integer+` |valid Document ID | |Document ID of the NUIT document uploaded on <<reg_documents, previous step>>
+    |`+company.mobile+` |`+String+` |valid unique mobile |yes |Company (Primary) Mobile number (MSISDN)
+    |`+company.email+` |`+String+` |valid unique email |yes |Company E-mail
+    |`+company.address.countryId+` |`+Integer+` |Valid country ID value |yes |Company Country ID <<countries, see details>>
+    |`+company.address.city+` |`+String+` |any string |yes |Company City
+    |`+company.address.postalCode+` |`+String+` |string consisting of 5 digits |yes |Company Postal Code
+    |`+company.address.address1+` |`+String+` |any string |yes |Company Address 1
+    |`+company.address.address2+` |`+String+` |any string | |Company Address 2
+    |`+company.address.notes+` |`+String+` |any string | |Notes
+    |`+representative.accountType+` |`+Enum+` |<<account_type,see details>> |yes |Account Type
+    |`+representative.firstName+` |`+String+` |any string |yes |User First Name
+    |`+representative.lastName+` |`+String+` |any string |yes |User Last Name
+    |`+representative.idType+` |`+Enum+` |ID +
+                                DIRE +
+                                Passport |yes |ID type (DIRE - Mozambican Residency Card)
+    |`+representative.idNumber+` |`+String+` |any unique string |yes |ID number (ID number + ID type must be unique)
+    |`+representative.idUploadDocumentId+` |`+Integer+` |valid Document ID | |Document ID of the document uploaded on <<reg_documents, previous step>>
+    |`+representative.nuit+` |`+String+` |any string | |NUIT (Taxpayer Single Identification Number)
+    |`+representative.nuitUploadDocumentId+` |`+Integer+` |valid Document ID | |Document ID of the NUIT document uploaded on <<reg_documents, previous step>>
+    |`+representative.mobile+` |`+String+` |valid unique mobile |yes |Secondary mobile number (MSISDN)
+    |`+representative.email+` |`+String+` |valid unique email | |E-mail
+    |`+representative.pin+` |`+String+` |string consisting of 4 digits | |Password (if absent, will be generated by server)
+    |`+representative.locale+` |`+String+` |en (default) +
+                                  pt | |User Language
+    |`+removeDocumentsOnFail+` |`+Boolean+` |true +
+                                             false (default) |yes |Whether remove previously uploaded documents if user registration fails or not
+
+|===
+
+.Request example:
+[source,graphql,options="nowrap"]
+----
+mutation {
+    registerCorporateUserMoz(
+        otp: "1234",
+        company: {
+            name: "ICEcash",
+            nuel: "1234567",
+            nuelUploadDocumentId: 2,
+            nuit: "12345678",
+            nuitUploadDocumentId: 3,
+            mobile: "000000000000",
+            email: "pavlo@ice.cash",
+            address: {
+                countryId: 205,
+                city: "Maputo",
+                postalCode: "12345",
+                address1: "address1",
+                address2: "address2",
+                notes: "some notes"
+            }
+        },
+        representative: {
+            accountType: CommuterRegular,
+            firstName: "Pavlo",
+            lastName: "Slyvka",
+            idType: ID,
+            idNumber: "1234567890",
+            idUploadDocumentId: 2,
+            nuit: "12345678",
+            nuitUploadDocumentId: 2,
+            mobile: "000000000000",
+            email: "pavlo@ice.cash",
+            pin: "1234",
+            locale: "en"
+        }
+    ) {
+        id
+        firstName
+        lastName
+        email
+        msisdn {
+            msisdn
+        }
+        idNumber
+        idTypeId
+        idType {
+            description
+        }
+        accounts {
+            id
+            accountNumber
+            accountType {
+                name
+                currencyId
+            }
+            createdDate
+        }
+        entityTypeId
+        entityType {
+            description
+        }
+        relationships {
+            partnerAccountId
+            securityGroupMoz {
+                id
+                name
+                active
+                rightsList
+            }
+        }
+        status
+        loginStatus
+        locale
+        createdDate
+    }
+}
+
+----
+.Response example:
+[source,json,options="nowrap"]
+----
+{
+    "data": {
+        "registerCorporateUserMoz": {
+            "id": "512",
+            "firstName": "ICEcash",
+            "lastName": null,
+            "email": "pavlo@ice.cash",
+            "msisdn": [
+                {
+                    "msisdn": "000000000000"
+                },
+                {
+                    "msisdn": "000000000000"
+                }
+            ],
+            "idNumber": "1234567",
+            "idTypeId": "7",
+            "idType": {
+                "description": "Mozambican NUEL"
+            },
+            "accounts": [
+                {
+                    "id": "1298",
+                    "accountNumber": "39875117002",
+                    "accountType": {
+                        "name": "Primary",
+                        "currencyId": "4"
+                    },
+                    "createdDate": "2023-12-05 06:03:59"
+                },
+                {
+                    "id": "1299",
+                    "accountNumber": "37055786182",
+                    "accountType": {
+                        "name": "Subsidy",
+                        "currencyId": "4"
+                    },
+                    "createdDate": "2023-12-05 06:03:59"
+                },
+                {
+                    "id": "1300",
+                    "accountNumber": "32516110650",
+                    "accountType": {
+                        "name": "Prepaid",
+                        "currencyId": "4"
+                    },
+                    "createdDate": "2023-12-05 06:03:59"
+                }
+            ],
+            "entityTypeId": "2",
+            "entityType": {
+                "description": "Business"
+            },
+            "relationships": [
+                {
+                    "partnerAccountId": "1298",
+                    "securityGroupMoz": [
+                        {
+                            "id": "1013",
+                            "name": "Moz Commuter",
+                            "active": true,
+                            "rightsList": [
+                                "MOZ_TOPUP",
+                                "MOZ_PROFILE",
+                                "MOZ_TAG_MANAGEMENT",
+                                "MOZ_STATEMENT"
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "partnerAccountId": "1299",
+                    "securityGroupMoz": [
+                        {
+                            "id": "1013",
+                            "name": "Moz Commuter",
+                            "active": true,
+                            "rightsList": [
+                                "MOZ_TOPUP",
+                                "MOZ_PROFILE",
+                                "MOZ_TAG_MANAGEMENT",
+                                "MOZ_STATEMENT"
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "partnerAccountId": "1300",
+                    "securityGroupMoz": [
+                        {
+                            "id": "1013",
+                            "name": "Moz Commuter",
+                            "active": true,
+                            "rightsList": [
+                                "MOZ_TOPUP",
+                                "MOZ_PROFILE",
+                                "MOZ_TAG_MANAGEMENT",
+                                "MOZ_STATEMENT"
+                            ]
+                        }
+                    ]
+                }
+            ],
+            "status": "ACTIVE",
+            "loginStatus": "ACTIVE",
+            "locale": "en",
+            "createdDate": "2023-12-01 16:03:59"
+        }
+    }
+}
+----
+
+[[kyc_documents]]
+=== Upload KYC Documents
+
+`POST` `/api/v1/moz/user/kyc/documents/upload` REST endpoint is used to upload KYC documents. One call is required for each document.
+
+IMPORTANT: Endpoint requires access token of any account type.
+
+NOTE: postman example:   "ICE Cash Payments > Mozambique > Upload KYC document"
+
+.+Request parameters:+
+|===
+    |Name|Type|Values|Required|Description
+
+    |`+file+` |`+File+` |file of any type |yes |Document file of any type
+    |`+entityId+` |`+Integer+` |<<lookup_entities,see details>> |yes |Entity ID for which the document needs to be uploaded
+    |`+documentTypeId+` |`+Integer+` |<<document_types,see details>> |yes |Document type
+    |`+idType+` |`+Enum+` |ID +
+                           Passport +
+                           DIRE +
+                           NUEL | |ID type
+    |`+idNumber+` |`+String+` |any string | |ID number
+
+|===
+
+.Request example:
+[source,http,options="nowrap"]
+----
+POST /api/v1/moz/user/kyc/documents/upload HTTP/1.1
+Content-Type: multipart/form-data; boundary=--------------------------208515456378266355524523
+
+----------------------------208515456378266355524523
+Content-Disposition: form-data; name="file"; filename="document1.txt"
+<document1.txt>
+----------------------------208515456378266355524523
+Content-Disposition: form-data; name="entityId"
+930
+----------------------------208515456378266355524523
+Content-Disposition: form-data; name="documentTypeId"
+1
+----------------------------208515456378266355524523
+Content-Disposition: form-data; name="idType"
+Passport
+----------------------------208515456378266355524523
+Content-Disposition: form-data; name="idNumber"
+1234567890
+----------------------------208515456378266355524523--
+
+----
+.Response example:
+[source,json,options="nowrap"]
+----
+{
+    "status": "SUCCESS",
+    "documentId": 31
+}
+----
+
+[[msisdn_update]]
+=== Update Phone number (MSISDN)
+Sequence of method calls::
+    . <<otp_msisdn, sendOtpToAccount>> (otpType: `MOZ_MSISDN_UPDATE`)
+    . addOrUpdateMsisdnMoz
+
+'''
+
+`"*addOrUpdateMsisdnMoz*"` `Mutation` Adds or Updated (if exists) phone number (MSISDN).
+
+IMPORTANT: Endpoint requires access token of any account type.
+
+NOTE: postman example:   "ICE Cash Payments > Mozambique > Update mobile"
+
+.+Parameters:+
+|===
+    |Name|Type|Values|Required|Description
+
+    |`+type+` |`+Enum+` |PRIMARY +
+                         SECONDARY |yes |Phone type
+    |`+msisdn+` |`+String+` |valid phone number |yes |New phone number
+    |`+oldMsisdn+` |`+String+` |valid phone number | |Old replacement phone number (only applicable for SECONDARY phone)
+    |`+description+` |`+String+` |any string | |Phone description
+    |`+otp+` |`+String+` |valid OTP, (string consisting of 4-14 digits) |yes |OTP sent on <<tag_link, first step>>
+
+|===
+
+.Request example:
+[source,graphql,options="nowrap"]
+----
+mutation {
+    addOrUpdateMsisdnMoz(
+        type: SECONDARY
+        msisdn: "000000000000"
+        oldMsisdn: "263111111111"
+        description: "my new phone"
+        otp: "0000"
+    ) {
+        id
+        firstName
+        lastName
+        msisdn {
+            msisdnType
+            msisdn
+            description
+        }
+    }
+}
+
+----
+.Response example:
+[source,json,options="nowrap"]
+----
+{
+    "data": {
+        "addOrUpdateMsisdnMoz": {
+            "id": "53",
+            "firstName": "Pavlo",
+            "lastName": "Slyvka",
+            "msisdn": [
+                {
+                    "msisdnType": "PRIMARY",
+                    "msisdn": "263222222222",
+                    "description": "primary phone"
+                },
+                {
+                    "msisdnType": "SECONDARY",
+                    "msisdn": "000000000000",
+                    "description": "my new phone"
+                }
+            ]
+        }
+    }
+}
+----
+
+[[user_details]]
+=== Get User Details
+
+`"*userMoz*"` `Query` returns details of current user.
+
+IMPORTANT: Endpoint requires access token of any account type.
+
+NOTE: postman example:   "ICE Cash Payments > Mozambique > GET details"
+
+.Request example:
+[source,graphql,options="nowrap"]
+----
+query {
+    userMoz {
+        id
+        firstName
+        lastName
+        email
+        msisdn {
+            msisdn
+        }
+        idNumber
+        idTypeId
+        idType {
+            description
+        }
+        accounts {
+            id
+            accountNumber
+            accountType {
+                name
+                currencyId
+            }
+            balance
+            createdDate
+        }
+        entityTypeId
+        entityType {
+            description
+        }
+        relationships {
+            partnerAccountId
+            securityGroups
+            securityGroupMoz {
+                id
+                name
+                active
+                rightsList
+            }
+        }
+        status
+        loginStatus
+        locale
+        createdDate
+    }
+}
+
+----
+.Response example:
+[source,json,options="nowrap"]
+----
+{
+    "data": {
+        "userMoz": {
+            "id": "53",
+            "firstName": "Pavlo",
+            "lastName": "Slyvka",
+            "email": "pavlo@ice.cash",
+            "msisdn": [
+                {
+                    "msisdn": "000000000000"
+                },
+                {
+                    "msisdn": "000000000000"
+                }
+            ],
+            "idNumber": "1234567890",
+            "idTypeId": "4",
+            "idType": {
+                "description": "Mozambican National ID"
+            },
+            "accounts": [
+                {
+                    "id": "58",
+                    "accountNumber": "34958881434",
+                    "accountType": {
+                        "name": "Primary",
+                        "currencyId": "4"
+                    },
+                    "balance": 356.0,
+                    "createdDate": "2023-05-25 19:55:32"
+                },
+                {
+                    "id": "59",
+                    "accountNumber": "34922410112",
+                    "accountType": {
+                        "name": "Subsidy",
+                        "currencyId": "4"
+                    },
+                    "balance": 9917.6,
+                    "createdDate": "2023-05-25 19:55:33"
+                },
+                {
+                    "id": "60",
+                    "accountNumber": "35298550332",
+                    "accountType": {
+                        "name": "Prepaid",
+                        "currencyId": "4"
+                    },
+                    "balance": 101690.4,
+                    "createdDate": "2023-05-25 19:55:33"
+                }
+            ],
+            "entityTypeId": "10",
+            "entityType": {
+                "description": "Private"
+            },
+            "relationships": [
+                {
+                    "partnerAccountId": "58",
+                    "securityGroups": {
+                        "MOZ": [
+                            1000,
+                            1013,
+                            1014
+                        ]
+                    },
+                    "securityGroupMoz": [
+                        {
+                            "id": "1000",
+                            "name": "Moz default",
+                            "active": true,
+                            "rightsList": [
+                                "POS_TAXI",
+                                "ACC_STATEMENT_L2",
+                                "INITIATOR_VIEW",
+                                "INITIATOR_MG",
+                                "ACC_STATEMENT_L1"
+                            ]
+                        },
+                        {
+                            "id": "1013",
+                            "name": "Moz Commuter",
+                            "active": true,
+                            "rightsList": [
+                                "MOZ_TOPUP",
+                                "MOZ_PROFILE",
+                                "MOZ_TAG_MANAGEMENT",
+                                "MOZ_STATEMENT"
+                            ]
+                        },
+                        {
+                            "id": "1014",
+                            "name": "Moz Transport Owner",
+                            "active": true,
+                            "rightsList": [
+                                "MOZ_TOPUP",
+                                "MOZ_POS_MANAGEMENT",
+                                "MOZ_PROFILE",
+                                "MOZ_VRN_MANAGEMENT",
+                                "MOZ_TAG_MANAGEMENT",
+                                "MOZ_STATEMENT"
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "partnerAccountId": "59",
+                    "securityGroups": {
+                        "MOZ": 1000
+                    },
+                    "securityGroupMoz": [
+                        {
+                            "id": "1000",
+                            "name": "Moz default",
+                            "active": true,
+                            "rightsList": [
+                                "POS_TAXI",
+                                "ACC_STATEMENT_L2",
+                                "INITIATOR_VIEW",
+                                "INITIATOR_MG",
+                                "ACC_STATEMENT_L1"
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "partnerAccountId": "60",
+                    "securityGroups": {
+                        "MOZ": 1000
+                    },
+                    "securityGroupMoz": [
+                        {
+                            "id": "1000",
+                            "name": "Moz default",
+                            "active": true,
+                            "rightsList": [
+                                "POS_TAXI",
+                                "ACC_STATEMENT_L2",
+                                "INITIATOR_VIEW",
+                                "INITIATOR_MG",
+                                "ACC_STATEMENT_L1"
+                            ]
+                        }
+                    ]
+                }
+            ],
+            "status": "ACTIVE",
+            "loginStatus": "ACTIVE",
+            "locale": "en",
+            "createdDate": "2023-05-25 19:55:32"
+        }
+    }
+}
+----
+
+[[auth]]
+== Authentication API
+
+=== Login User
+`"*loginUserMoz*"` `Mutation` logs user in and returns access token. Login status of entity must be in `"ACTIVE"` status
+
+NOTE: postman example:   "ICE Cash Payments > Mozambique > Login"
+
+.+Parameters:+
+|===
+    |Name|Type|Values|Required|Description
+
+    |`+request.username+` |`+String+` |valid Entity ID, +
+                                       or valid Account number, +
+                                       or valid ID number |yes |Username
+    |`+request.password+` |`+String+` |string consisting of 4 digits |yes |Password
+
+|===
+
+.Request example (login by account number):
+[source,graphql,options="nowrap"]
+----
+mutation {
+    loginUserMoz(request: {
+        username: "35298550332"
+        password: "1234"
+    }) {
+        status
+        mfaType
+        locale
+        accessToken {
+            tokenType
+            token
+            expiresIn
+            refreshToken
+            refreshExpiresIn
+            error
+            errorDescription
+        }
+    }
+}
+
+----
+.Response example:
+[source,json,options="nowrap"]
+----
+{
+    "data": {
+        "loginUserMoz": {
+            "status": "SUCCESS",
+            "mfaType": null,
+            "locale": "en",
+            "accessToken": {
+                "tokenType": "Bearer",
+                "token": "eyJhbGciOiJSUzI1NiIsInR5cCIgOiAiSldUIiwia2lkIiA6ICJPVGt3cnZHdkx2aF8ybVhXTW93MW94czctYVAtY2JOaXZoZElseWZ3aG5ZIn0.eyJleHAiOjE3MDE3NTI3MzgsImlhdCI6MTcwMTc0OTEzOCwianRpIjoiOGIwMjkxN2QtY2UyOC00MWZiLTgxMWUtNDllNjk1MTVhMDQwIiwiaXNzIjoiaHR0cDovL2xvY2FsaG9zdDo4MTgwL2F1dGgvcmVhbG1zL3BheW1lbnRzLWxvY2FsIiwiYXVkIjoiYWNjb3VudCIsInN1YiI6IjBiOWMzYjc1LWI5MmQtNDg0Ny05Y2VhLWZkZTU0ZTIwMDRlOCIsInR5cCI6IkJlYXJlciIsImF6cCI6ImljZWNhc2giLCJzZXNzaW9uX3N0YXRlIjoiMDI2ZmIxNDEtM2UxZS00NGYxLTlkN2EtMjczZDY0OTA3ZGViIiwiYWNyIjoiMSIsImFsbG93ZWQtb3JpZ2lucyI6WyJodHRwOi8vbG9jYWxob3N0OjgyODEiXSwicmVhbG1fYWNjZXNzIjp7InJvbGVzIjpbIlBBWU1FTlQiLCJvZmZsaW5lX2FjY2VzcyIsInVtYV9hdXRob3JpemF0aW9uIiwiZGVmYXVsdC1yb2xlcy1wYXltZW50cy1sb2NhbCJdfSwicmVzb3VyY2VfYWNjZXNzIjp7ImFjY291bnQiOnsicm9sZXMiOlsibWFuYWdlLWFjY291bnQiLCJtYW5hZ2UtYWNjb3VudC1saW5rcyIsInZpZXctcHJvZmlsZSJdfX0sInNjb3BlIjoiZW1haWwgcHJvZmlsZSIsInNpZCI6IjAyNmZiMTQxLTNlMWUtNDRmMS05ZDdhLTI3M2Q2NDkwN2RlYiIsImVtYWlsX3ZlcmlmaWVkIjpmYWxzZSwibmFtZSI6IlBhdmxvIFNseXZrYSIsInByZWZlcnJlZF91c2VybmFtZSI6ImVudGl0eV8zMDAwMDA1MyIsImdpdmVuX25hbWUiOiJQYXZsbyIsImZhbWlseV9uYW1lIjoiU2x5dmthIiwiZW1haWwiOiJwYXZsb0BpY2UuY2FzaCJ9.DCuFE3jalhNITePVmJYSO8RPac0aReM_UxyBw5gNSQv4lMDaq9EU1J5MZM4F8B7cCbzepRxCmfeJN1i4s8x_wLEDWFL14fdEua1kiSo9GuFKiTThccrFhFGp6tHRs9Lb4Doj6Jre5m7pyfZeQyi_6SQ0Rd4dcOy5CRWaO1qTAMoW3yqDzaqy1v2tiPO8IRNe99FJSphsg3YVKmIw0svnXv5b-zVSLiMS5Ie58ACEAd6QmRf_M8HMpqqMk07SYeRc6OX_KAVt4MlKSwCdvw0Qhk4SnqYE3vk_A_SsK3NEEoj0vmekwvFpjYZIXNTdfOxHGPcZrDjy8oERLHd1ryI3Pw",
+                "expiresIn": 3600,
+                "refreshToken": "eyJhbGciOiJIUzI1NiIsInR5cCIgOiAiSldUIiwia2lkIiA6ICIxOTlhNWE0Yi1kMzdjLTQ5ZTMtOWJkZS03MDExMDQxNWE4MTAifQ.eyJleHAiOjE3MDE3NTA5MzgsImlhdCI6MTcwMTc0OTEzOCwianRpIjoiYjEwYTRiZjItYzU1Mi00MGNmLWFhYjgtMmFmZmYyM2M2YzcxIiwiaXNzIjoiaHR0cDovL2xvY2FsaG9zdDo4MTgwL2F1dGgvcmVhbG1zL3BheW1lbnRzLWxvY2FsIiwiYXVkIjoiaHR0cDovL2xvY2FsaG9zdDo4MTgwL2F1dGgvcmVhbG1zL3BheW1lbnRzLWxvY2FsIiwic3ViIjoiMGI5YzNiNzUtYjkyZC00ODQ3LTljZWEtZmRlNTRlMjAwNGU4IiwidHlwIjoiUmVmcmVzaCIsImF6cCI6ImljZWNhc2giLCJzZXNzaW9uX3N0YXRlIjoiMDI2ZmIxNDEtM2UxZS00NGYxLTlkN2EtMjczZDY0OTA3ZGViIiwic2NvcGUiOiJlbWFpbCBwcm9maWxlIiwic2lkIjoiMDI2ZmIxNDEtM2UxZS00NGYxLTlkN2EtMjczZDY0OTA3ZGViIn0.lI8jwGHosuuy-RvQjZFZZGnC8gsYKgreNYCoEZBfc5g",
+                "refreshExpiresIn": 1800,
+                "error": null,
+                "errorDescription": null
+            }
+        }
+    }
+}
+----
+
+=== Login POS Device
+`"*loginPosDeviceMoz*"` `Mutation` logs POS device in and returns access token. POS Device must be linked to vehicle. Authenticating Entity ID must be owned by Transport Owner, Driver or Collector. Login status of entity must be in `"ACTIVE"` status
+
+NOTE: postman example:   "ICE Cash Payments > Mozambique > Login POS device"
+
+.+Parameters:+
+|===
+    |Name|Type|Values|Required|Description
+
+    |`+device+` |`+String+` |valid device serial |yes |POS Device Serial number
+    |`+username+` |`+String+` |valid Entity ID, +
+                                       or valid Account number, +
+                                       or valid ID number |yes |Username
+    |`+password+` |`+String+` |string consisting of 4 digits |yes |Password
+
+|===
+
+.Request example (login by account number):
+[source,graphql,options="nowrap"]
+----
+mutation {
+    loginPosDeviceMoz(
+        device: "Q29900067375"
+        username: "35298550332"
+        password: "1234"
+    ) {
+        status
+        mfaType
+        locale
+        accessToken {
+            tokenType
+            token
+            expiresIn
+            refreshToken
+            refreshExpiresIn
+            error
+            errorDescription
+        }
+    }
+}
+
+----
+.Response example:
+[source,json,options="nowrap"]
+----
+{
+    "data": {
+        "loginPosDeviceMoz": {
+            "status": "SUCCESS",
+            "mfaType": null,
+            "locale": "en",
+            "accessToken": {
+                "tokenType": "Bearer",
+                "token": "eyJhbGciOiJSUzI1NiIsInR5cCIgOiAiSldUIiwia2lkIiA6ICJPVGt3cnZHdkx2aF8ybVhXTW93MW94czctYVAtY2JOaXZoZElseWZ3aG5ZIn0.eyJleHAiOjE3MDE3NTI3MzgsImlhdCI6MTcwMTc0OTEzOCwianRpIjoiOGIwMjkxN2QtY2UyOC00MWZiLTgxMWUtNDllNjk1MTVhMDQwIiwiaXNzIjoiaHR0cDovL2xvY2FsaG9zdDo4MTgwL2F1dGgvcmVhbG1zL3BheW1lbnRzLWxvY2FsIiwiYXVkIjoiYWNjb3VudCIsInN1YiI6IjBiOWMzYjc1LWI5MmQtNDg0Ny05Y2VhLWZkZTU0ZTIwMDRlOCIsInR5cCI6IkJlYXJlciIsImF6cCI6ImljZWNhc2giLCJzZXNzaW9uX3N0YXRlIjoiMDI2ZmIxNDEtM2UxZS00NGYxLTlkN2EtMjczZDY0OTA3ZGViIiwiYWNyIjoiMSIsImFsbG93ZWQtb3JpZ2lucyI6WyJodHRwOi8vbG9jYWxob3N0OjgyODEiXSwicmVhbG1fYWNjZXNzIjp7InJvbGVzIjpbIlBBWU1FTlQiLCJvZmZsaW5lX2FjY2VzcyIsInVtYV9hdXRob3JpemF0aW9uIiwiZGVmYXVsdC1yb2xlcy1wYXltZW50cy1sb2NhbCJdfSwicmVzb3VyY2VfYWNjZXNzIjp7ImFjY291bnQiOnsicm9sZXMiOlsibWFuYWdlLWFjY291bnQiLCJtYW5hZ2UtYWNjb3VudC1saW5rcyIsInZpZXctcHJvZmlsZSJdfX0sInNjb3BlIjoiZW1haWwgcHJvZmlsZSIsInNpZCI6IjAyNmZiMTQxLTNlMWUtNDRmMS05ZDdhLTI3M2Q2NDkwN2RlYiIsImVtYWlsX3ZlcmlmaWVkIjpmYWxzZSwibmFtZSI6IlBhdmxvIFNseXZrYSIsInByZWZlcnJlZF91c2VybmFtZSI6ImVudGl0eV8zMDAwMDA1MyIsImdpdmVuX25hbWUiOiJQYXZsbyIsImZhbWlseV9uYW1lIjoiU2x5dmthIiwiZW1haWwiOiJwYXZsb0BpY2UuY2FzaCJ9.DCuFE3jalhNITePVmJYSO8RPac0aReM_UxyBw5gNSQv4lMDaq9EU1J5MZM4F8B7cCbzepRxCmfeJN1i4s8x_wLEDWFL14fdEua1kiSo9GuFKiTThccrFhFGp6tHRs9Lb4Doj6Jre5m7pyfZeQyi_6SQ0Rd4dcOy5CRWaO1qTAMoW3yqDzaqy1v2tiPO8IRNe99FJSphsg3YVKmIw0svnXv5b-zVSLiMS5Ie58ACEAd6QmRf_M8HMpqqMk07SYeRc6OX_KAVt4MlKSwCdvw0Qhk4SnqYE3vk_A_SsK3NEEoj0vmekwvFpjYZIXNTdfOxHGPcZrDjy8oERLHd1ryI3Pw",
+                "expiresIn": 3600,
+                "refreshToken": "eyJhbGciOiJIUzI1NiIsInR5cCIgOiAiSldUIiwia2lkIiA6ICIxOTlhNWE0Yi1kMzdjLTQ5ZTMtOWJkZS03MDExMDQxNWE4MTAifQ.eyJleHAiOjE3MDE3NTA5MzgsImlhdCI6MTcwMTc0OTEzOCwianRpIjoiYjEwYTRiZjItYzU1Mi00MGNmLWFhYjgtMmFmZmYyM2M2YzcxIiwiaXNzIjoiaHR0cDovL2xvY2FsaG9zdDo4MTgwL2F1dGgvcmVhbG1zL3BheW1lbnRzLWxvY2FsIiwiYXVkIjoiaHR0cDovL2xvY2FsaG9zdDo4MTgwL2F1dGgvcmVhbG1zL3BheW1lbnRzLWxvY2FsIiwic3ViIjoiMGI5YzNiNzUtYjkyZC00ODQ3LTljZWEtZmRlNTRlMjAwNGU4IiwidHlwIjoiUmVmcmVzaCIsImF6cCI6ImljZWNhc2giLCJzZXNzaW9uX3N0YXRlIjoiMDI2ZmIxNDEtM2UxZS00NGYxLTlkN2EtMjczZDY0OTA3ZGViIiwic2NvcGUiOiJlbWFpbCBwcm9maWxlIiwic2lkIjoiMDI2ZmIxNDEtM2UxZS00NGYxLTlkN2EtMjczZDY0OTA3ZGViIn0.lI8jwGHosuuy-RvQjZFZZGnC8gsYKgreNYCoEZBfc5g",
+                "refreshExpiresIn": 1800,
+                "error": null,
+                "errorDescription": null
+            }
+        }
+    }
+}
+----
+
+=== Refresh Access Token
+`"*refreshAccessToken*"` `Mutation` refreshes expired access token. It is preferred way of updating stale access token. The refresh token is usually supplied along with the access token as the `"refreshToken"` parameter and has longer time to live.
+
+NOTE: postman example:   "ICE Cash Payments > Mozambique > Refresh access token"
+
+.+Parameters:+
+|===
+    |Name|Type|Values|Required|Description
+
+    |`+refreshToken+` |`+String+` |valid refresh token |yes |Refresh token
+
+|===
+
+.Request example (login by account number):
+[source,graphql,options="nowrap"]
+----
+mutation {
+    refreshAccessToken(refreshToken: "eyJhbGciOiJIUzI1NiIsInR5cCIgOiAiSldUIiwia2lkIiA6ICJiNDdmZjZhMy1kNWYwLTRiNmQtYTlkMS0wNTIzMDg1OTAwZTUifQ.eyJleHAiOjE2NzUyNzczMDEsImlhdCI6MTY3NTI3MzcwMSwianRpIjoiNzY0OTkwODgtOTNkMC00MzQ0LWFjMzQtMDFjNjkxYjQ2ZDM1IiwiaXNzIjoiaHR0cDovL2xvY2FsaG9zdDo4MTgwL2F1dGgvcmVhbG1zL3BheW1lbnRzLWxvY2FsIiwiYXVkIjoiaHR0cDovL2xvY2FsaG9zdDo4MTgwL2F1dGgvcmVhbG1zL3BheW1lbnRzLWxvY2FsIiwic3ViIjoiZmJhNzg0ODctN2MwMy00ZWM4LTkwOGEtN2Y3NmFkMzE2NjU2IiwidHlwIjoiUmVmcmVzaCIsImF6cCI6ImljZWNhc2giLCJzZXNzaW9uX3N0YXRlIjoiMDFiNWJiZjgtNjFiYS00ZGNhLThjZTUtZjkyMGE5ZGE0YTQyIiwic2NvcGUiOiJlbWFpbCBwcm9maWxlIiwic2lkIjoiMDFiNWJiZjgtNjFiYS00ZGNhLThjZTUtZjkyMGE5ZGE0YTQyIn0.t5r41BPtO0tbHAq8cwh8zCO--ZsJ4nz3iSvqmiimxXU") {
+        status
+        mfaType
+        accessToken {
+            tokenType
+            token
+            expiresIn
+            refreshToken
+            refreshExpiresIn
+            error
+            errorDescription
+        }
+    }
+}
+
+----
+.Response example:
+[source,json,options="nowrap"]
+----
+{
+    "data": {
+        "refreshAccessToken": {
+            "status": "SUCCESS",
+            "mfaType": null,
+            "accessToken": {
+                "tokenType": "Bearer",
+                "token": "eyJhbGciOiJSUzI1NiIsInR5cCIgOiAiSldUIiwia2lkIiA6ICJPVGt3cnZHdkx2aF8ybVhXTW93MW94czctYVAtY2JOaXZoZElseWZ3aG5ZIn0.eyJleHAiOjE3MDE3NTMxODksImlhdCI6MTcwMTc0OTU4OSwianRpIjoiYzhlZjgxY2EtOTJkZS00NmZmLTk1N2YtMzk5ZDU1NjEyYjg3IiwiaXNzIjoiaHR0cDovL2xvY2FsaG9zdDo4MTgwL2F1dGgvcmVhbG1zL3BheW1lbnRzLWxvY2FsIiwiYXVkIjoiYWNjb3VudCIsInN1YiI6IjBiOWMzYjc1LWI5MmQtNDg0Ny05Y2VhLWZkZTU0ZTIwMDRlOCIsInR5cCI6IkJlYXJlciIsImF6cCI6ImljZWNhc2giLCJzZXNzaW9uX3N0YXRlIjoiMDI2ZmIxNDEtM2UxZS00NGYxLTlkN2EtMjczZDY0OTA3ZGViIiwiYWNyIjoiMSIsImFsbG93ZWQtb3JpZ2lucyI6WyJodHRwOi8vbG9jYWxob3N0OjgyODEiXSwicmVhbG1fYWNjZXNzIjp7InJvbGVzIjpbIlBBWU1FTlQiLCJvZmZsaW5lX2FjY2VzcyIsInVtYV9hdXRob3JpemF0aW9uIiwiZGVmYXVsdC1yb2xlcy1wYXltZW50cy1sb2NhbCJdfSwicmVzb3VyY2VfYWNjZXNzIjp7ImFjY291bnQiOnsicm9sZXMiOlsibWFuYWdlLWFjY291bnQiLCJtYW5hZ2UtYWNjb3VudC1saW5rcyIsInZpZXctcHJvZmlsZSJdfX0sInNjb3BlIjoiZW1haWwgcHJvZmlsZSIsInNpZCI6IjAyNmZiMTQxLTNlMWUtNDRmMS05ZDdhLTI3M2Q2NDkwN2RlYiIsImVtYWlsX3ZlcmlmaWVkIjpmYWxzZSwibmFtZSI6IlBhdmxvIFNseXZrYSIsInByZWZlcnJlZF91c2VybmFtZSI6ImVudGl0eV8zMDAwMDA1MyIsImdpdmVuX25hbWUiOiJQYXZsbyIsImZhbWlseV9uYW1lIjoiU2x5dmthIiwiZW1haWwiOiJwYXZsb0BpY2UuY2FzaCJ9.KhqFGI-CwK8wbjMrLTwLo7-dEMLdngRNDwLlAZwZC1hKifSFw0vw3-j_L6q63m8r07vlIVFbgCMPk9flf77ILSy8RnWHHHq5lfAkyOeyOblb7NtVz9AUuzbHl9NGTq4N3oXIwslUM4eOXj-5xf5d1pomJxqZFdxnMDKLMzAu6Y6UylBNd81EVH4g_HR2ySlPVGKFBjes64_Cgq9f4q4bjEE2uRsfb0Kh9rSHlZyPWMfS3ldFQ7KOKpWyyn-NEDjhWIYjkLEXGx2zhazpSdhPd6quxWPEOQ2pIlEWoiqBgolH7EGYzLumwZVFP5dDX9YtjlSTHkmlIf97a537a3A-zA",
+                "expiresIn": 3600,
+                "refreshToken": "eyJhbGciOiJIUzI1NiIsInR5cCIgOiAiSldUIiwia2lkIiA6ICIxOTlhNWE0Yi1kMzdjLTQ5ZTMtOWJkZS03MDExMDQxNWE4MTAifQ.eyJleHAiOjE3MDE3NTEzODksImlhdCI6MTcwMTc0OTU4OSwianRpIjoiOTI2NzYwOWMtYWY2NS00NzI3LWI1NmMtNTU4NjIwNjc5MjE5IiwiaXNzIjoiaHR0cDovL2xvY2FsaG9zdDo4MTgwL2F1dGgvcmVhbG1zL3BheW1lbnRzLWxvY2FsIiwiYXVkIjoiaHR0cDovL2xvY2FsaG9zdDo4MTgwL2F1dGgvcmVhbG1zL3BheW1lbnRzLWxvY2FsIiwic3ViIjoiMGI5YzNiNzUtYjkyZC00ODQ3LTljZWEtZmRlNTRlMjAwNGU4IiwidHlwIjoiUmVmcmVzaCIsImF6cCI6ImljZWNhc2giLCJzZXNzaW9uX3N0YXRlIjoiMDI2ZmIxNDEtM2UxZS00NGYxLTlkN2EtMjczZDY0OTA3ZGViIiwic2NvcGUiOiJlbWFpbCBwcm9maWxlIiwic2lkIjoiMDI2ZmIxNDEtM2UxZS00NGYxLTlkN2EtMjczZDY0OTA3ZGViIn0.QfsCzXXL3brY1Vu1oq3N8IYL1hYpWWCRvPDwXCXMPAk",
+                "refreshExpiresIn": 1800,
+                "error": null,
+                "errorDescription": null
+            }
+        }
+    }
+}
+----
+
+=== Invalidate Refresh Token
+`"*invalidateRefreshToken*"` `Mutation` invalidates refresh token. Since access token is impossible to invalidate, invalidating refresh token is preferred way to log user out.
+
+NOTE: postman example:   "ICE Cash Payments > Mozambique > Invalidate refresh token"
+
+.+Parameters:+
+|===
+    |Name|Type|Values|Required|Description
+
+    |`+refreshToken+` |`+String+` |valid refresh token |yes |Refresh token
+
+|===
+
+.Request example (login by account number):
+[source,graphql,options="nowrap"]
+----
+mutation {
+    invalidateRefreshToken(refreshToken: "eyJhbGciOiJIUzI1NiIsInR5cCIgOiAiSldUIiwia2lkIiA6ICJiNDdmZjZhMy1kNWYwLTRiNmQtYTlkMS0wNTIzMDg1OTAwZTUifQ.eyJleHAiOjE2NzUyNzczMjksImlhdCI6MTY3NTI3MzcyOSwianRpIjoiZWEyZDQ0NWUtZTQ3NC00ZGE4LWE1YmMtNTM1NTFiNjdjMDYxIiwiaXNzIjoiaHR0cDovL2xvY2FsaG9zdDo4MTgwL2F1dGgvcmVhbG1zL3BheW1lbnRzLWxvY2FsIiwiYXVkIjoiaHR0cDovL2xvY2FsaG9zdDo4MTgwL2F1dGgvcmVhbG1zL3BheW1lbnRzLWxvY2FsIiwic3ViIjoiZmJhNzg0ODctN2MwMy00ZWM4LTkwOGEtN2Y3NmFkMzE2NjU2IiwidHlwIjoiUmVmcmVzaCIsImF6cCI6ImljZWNhc2giLCJzZXNzaW9uX3N0YXRlIjoiMDFiNWJiZjgtNjFiYS00ZGNhLThjZTUtZjkyMGE5ZGE0YTQyIiwic2NvcGUiOiJlbWFpbCBwcm9maWxlIiwic2lkIjoiMDFiNWJiZjgtNjFiYS00ZGNhLThjZTUtZjkyMGE5ZGE0YTQyIn0.8YYuL_Hjv9KnDOPlrgq45Ps_Bn5WxypBgVGRBsxgHLM") {
+        status
+        mfaType
+        accessToken {
+            tokenType
+            token
+            expiresIn
+            refreshToken
+            refreshExpiresIn
+            error
+            errorDescription
+        }
+    }
+}
+
+----
+.Response example:
+[source,json,options="nowrap"]
+----
+{
+    "data": {
+        "invalidateRefreshToken": {
+            "status": "SUCCESS",
+            "mfaType": null,
+            "accessToken": null
+        }
+    }
+}
+----
+
+
+[[vehicles]]
+== Vehicle API
+
+=== Create Vehicle
+`"*createVehicle*"` `Mutation` creates a new vehicle for a specific transport owner.
+
+IMPORTANT: Endpoint requires access token of Transport Owner account type.
+
+NOTE: postman example:   "ICE Cash Payments > Mozambique > Vehicle > Create vehicle"
+
+.+Parameters:+
+|===
+    |Name|Type|Values|Required|Description
+
+    |`+vehicle.vrn+` |`+String+` |any string |yes |VRN
+    |`+vehicle.make+` |`+String+` |any string |yes |Vehicle Make
+    |`+vehicle.model+` |`+String+` |any string |yes |Vehicle Model
+    |`+vehicle.vehicleType+` |`+Enum+` |TAXI |yes |Vehicle Type
+    |`+vehicle.routeId+` |`+Integer+` |Valid route ID | |Route ID <<routes, see details>>
+    |`+vehicle.driverEntityId+` |`+Integer+` |Valid entity ID | |Entity ID <<lookup_entities, see details>>
+    |`+vehicle.collectorEntityId+` |`+Integer+` |Valid entity ID | |Entity ID <<lookup_entities, see details>>
+
+|===
+
+.Request example:
+[source,graphql,options="nowrap"]
+----
+mutation {
+    createVehicle(vehicle: {
+        vrn: "vrn1",
+        make: "make",
+        model: "BMW",
+        vehicleType: TAXI,
+        routeId: 4,
+        driverEntityId: 884,
+        collectorEntityId: 884
+    }) {
+        id
+    }
+}
+----
+.Response example:
+[source,json,options="nowrap"]
+----
+{
+    "data": {
+        "createVehicle": {
+            "id": "64"
+        }
+    }
+}
+----
+
+=== Update Vehicle
+`"*updateVehicle*"` `Mutation` updates vehicle details identified by `ID`.
+
+IMPORTANT: Endpoint requires access token of Transport Owner account type.
+
+NOTE: postman example:   "ICE Cash Payments > Mozambique > Vehicle > Update vehicle"
+
+.+Parameters:+
+|===
+    |Name|Type|Values|Required|Description
+
+    |`+id+` |`+Integer+` |Valid vehicle ID |yes |Vehicle ID
+    |`+vehicle.vrn+` |`+String+` |any string |yes |VRN
+    |`+vehicle.make+` |`+String+` |any string |yes |Vehicle Make
+    |`+vehicle.model+` |`+String+` |any string |yes |Vehicle Model
+    |`+vehicle.vehicleType+` |`+Enum+` |TAXI |yes |Vehicle Type
+    |`+vehicle.routeId+` |`+Integer+` |Valid route ID | |Route ID <<routes, see details>>
+    |`+vehicle.driverEntityId+` |`+Integer+` |Valid entity ID | |Entity ID <<lookup_entities, see details>>
+    |`+vehicle.collectorEntityId+` |`+Integer+` |Valid entity ID | |Entity ID <<lookup_entities, see details>>
+
+|===
+
+.Request example:
+[source,graphql,options="nowrap"]
+----
+mutation {
+    updateVehicle(id: 64, vehicleDetails: {
+        vrn: "vrn1",
+        make: "make",
+        model: "BMW",
+        vehicleType: TAXI,
+        routeId: 1,
+        driverEntityId: 884,
+        collectorEntityId: 884
+    }) {
+        id
+    }
+}
+----
+.Response example:
+[source,json,options="nowrap"]
+----
+{
+    "data": {
+        "updateVehicle": {
+            "id": "64"
+        }
+    }
+}
+----
+
+=== Delete Vehicle
+`"*deleteVehicle*"` `Mutation` deletes vehicle identified by `ID`.
+
+IMPORTANT: Endpoint requires access token of Transport Owner account type.
+
+NOTE: postman example:   "ICE Cash Payments > Mozambique > Vehicle > Delete vehicle"
+
+.+Parameters:+
+|===
+    |Name|Type|Values|Required|Description
+
+    |`+id+` |`+Integer+` |Valid vehicle ID |yes |Vehicle ID
+
+|===
+
+.Request example:
+[source,graphql,options="nowrap"]
+----
+mutation {
+    deleteVehicle(id: 64) {
+        id
+    }
+}
+----
+.Response example:
+[source,json,options="nowrap"]
+----
+{
+    "data": {
+        "deleteVehicle": {
+            "id": "64"
+        }
+    }
+}
+----
+
+=== Get Vehicles
+`"*vehicles*"` `Query` returns all vehicles of specific transport owner.
+
+IMPORTANT: Endpoint requires access token of any account type.
+
+NOTE: postman example:   "ICE Cash Payments > Mozambique > Vehicle > GET vehicles"
+
+.+Parameters:+
+|===
+    |Name|Type|Values|Required|Description
+
+    |`+page+`
+    |`+Integer+`
+    |Valid number, by defult = 0
+    |
+    |Page number
+
+    |`+size+`
+    |`+Integer+`
+    |Valid number, by defult = 30
+    |
+    |Page size
+
+    |`+sort+`
+    |`+SortInput+`
+    |One of: +
+    "asc": array of fields +
+    "desc": array of fields +
+    "by": array of SortProperty
+    |
+    |If specified, performs results sorting by certain criteria
+
+|===
+
+.Request example:
+[source,graphql,options="nowrap"]
+----
+query {
+    vehicles {
+        total
+        content {
+            id
+            vrn
+            make
+            model
+            vehicleType
+            status
+            routeId
+            route {
+                name
+            }
+            driverEntityId
+            driverEntity {
+                firstName
+                lastName
+            }
+            collectorEntityId
+            collectorEntity {
+                firstName
+                lastName
+            }
+            accountId
+            account {
+                accountNumber
+            }
+        }
+    }
+}
+----
+.Request example (paging):
+[source,graphql,options="nowrap"]
+----
+query {
+     vehicles(page: 0, size: 30, sort: {asc: "vrn"}) {
+        total
+        content {
+            id
+            vrn
+            make
+            model
+            vehicleType
+            status
+            routeId
+            route {
+                name
+            }
+            driverEntityId
+            driverEntity {
+                firstName
+                lastName
+            }
+            collectorEntityId
+            collectorEntity {
+                firstName
+                lastName
+            }
+            accountId
+            account {
+                accountNumber
+            }
+        }
+    }
+}
+----
+.Response example:
+[source,json,options="nowrap"]
+----
+{
+    "data": {
+        "vehicles": {
+            "total": 1,
+            "content": [
+                {
+                    "id": "64",
+                    "vrn": "vrn1",
+                    "make": "make",
+                    "model": "BMW",
+                    "vehicleType": "TAXI",
+                    "status": "ACTIVE",
+                    "routeId": "4",
+                    "route": {
+                        "name": "CBD – MOMBASA ROAD CORRIDOR"
+                    },
+                    "driverEntityId": "53",
+                    "driverEntity": {
+                        "firstName": "Pavlo",
+                        "lastName": "Slyvka"
+                    },
+                    "collectorEntityId": "53",
+                    "collectorEntity": {
+                        "firstName": "Pavlo",
+                        "lastName": "Slyvka"
+                    },
+                    "accountId": "58",
+                    "account": {
+                        "accountNumber": "34958881434"
+                    }
+                }
+            ]
+        }
+    }
+}
+----
+
+
+== POS Device API
+
+[[pos_register]]
+=== Register POS Device
+`"*registerDeviceMoz*"` `Mutation` registers POS device by serial number. If device with provided serial number already exists, ignores the call. Also it generates and returns device code. New device is created with `INACTIVE` status, and is not linked to any account nor vehicle.
+
+NOTE: postman example:   "ICE Cash Payments > Mozambique > Register POS Device"
+
+.+Parameters:+
+|===
+    |Name|Type|Values|Required|Description
+
+    |`+serialNumber+` |`+String+` |any string |yes |POS device serial number
+    |`+productNumber+` |`+String+` |any string | |Product number
+    |`+model+` |`+String+` |any string | |Model
+    |`+bootVersion+` |`+String+` |any string | |Boot Version
+    |`+cpuType+` |`+String+` |any string | |CPU Type
+    |`+rfidVersion+` |`+String+` |any string | |RFID Version
+    |`+osVersion+` |`+String+` |any string | |OS Version
+    |`+imei+` |`+String+` |any string | |IMEI
+    |`+imsi+` |`+String+` |any string | |IMSI
+
+|===
+
+.Request example:
+[source,graphql,options="nowrap"]
+----
+mutation {
+    registerDeviceMoz(request: {
+        serialNumber: "Q29900067375",
+        metaData: {
+            productNumber: "Q2G-CB7FBE5128",
+            model: "ME60",
+            bootVersion: "01.00_00_000020",
+            cpuType: "mdm9x07",
+            rfidVersion: "V1.1.0",
+            osVersion: "1.1.1.0_20220524",
+			imei: "test-imei",
+			imsi: "test-imsi"
+        },
+    })
+}
+
+----
+.Response example:
+[source,json,options="nowrap"]
+----
+{
+    "data": {
+        "registerDeviceMoz": "SGIG"
+    }
+}
+----
+
+[[pos_link]]
+=== Link POS Device
+Sequence of method calls::
+    . <<otp_entity, sendOtpToEntity>> (otpType: `MOZ_POS_LINK`)
+    . <<pos_link_account, linkPosDeviceMoz>>
+    . <<pos_link_vehicle, linkVehicleToPosDeviceMoz>>
+
+[[pos_link_account]]
+[discrete]
+=== Link POS Device to Transport Owner
+`"*linkPosDeviceMoz*"` `Mutation` Links POS device to Primary MZN account of `Transport Owner` entity.
+
+IMPORTANT: Endpoint requires access token of Agent Fematro account type.
+
+NOTE: postman example:   "ICE Cash Payments > Mozambique > Link POS Device (agent)"
+
+.+Parameters:+
+|===
+    |Name|Type|Values|Required|Description
+
+    |`+posDeviceSerial+` |`+String+` |valid serial |yes |POS device serial number
+    |`+entityId+` |`+Integer+` |valid Entity ID |yes |Entity ID of active Transport Owner, <<lookup_entities, lookup example>>
+    |`+otp+` |`+String+` |valid OTP, (string consisting of 4-14 digits) |yes |OTP sent on <<otp_entity, first step>>
+
+|===
+
+.Request example:
+[source,graphql,options="nowrap"]
+----
+mutation {
+    linkPosDeviceMoz(
+        posDeviceSerial: "tQ29900067375",
+        entityId: 53,
+        otp: "0000"
+    ) {
+        id
+        serial
+        status
+        account {
+            entity {
+                id
+                firstName
+                lastName
+            }
+        }
+    }
+}
+
+----
+.Response example:
+[source,json,options="nowrap"]
+----
+{
+    "data": {
+        "linkPosDeviceMoz": {
+            "id": "141",
+            "serial": "tQ29900067375",
+            "status": "INACTIVE",
+            "account": {
+                "entity": {
+                    "id": "53",
+                    "firstName": "Pavlo",
+                    "lastName": "Slyvka"
+                }
+            },
+            "vehicle": null
+        }
+    }
+}
+----
+
+[[pos_link_vehicle]]
+[discrete]
+=== Link Vehicle to POS Device
+`"*linkVehicleToPosDeviceMoz*"` `Mutation` Links existing Vehicle to POS device, and switches POS device to `ACTIVE` status.
+
+IMPORTANT: Endpoint requires access token of any account type.
+
+IMPORTANT: The vehicle must be owned by the user calling the endpoint.
+
+NOTE: postman example:   "ICE Cash Payments > Mozambique > Link POS Device (owner)"
+
+.+Parameters:+
+|===
+    |Name|Type|Values|Required|Description
+
+    |`+posDeviceSerial+` |`+String+` |valid serial |yes |POS device serial number
+    |`+vehicleId+` |`+Integer+` |valid Vehicle ID |yes |Vehicle ID, <<vehicles, see details>>
+
+|===
+
+.Request example:
+[source,graphql,options="nowrap"]
+----
+mutation {
+    linkVehicleToPosDeviceMoz(
+        posDeviceSerial: "tQ29900067375",
+        vehicleId: 1
+    ) {
+        id
+        serial
+        status
+        vehicle {
+            id
+            vrn
+            vehicleType
+            routeId
+            route {
+                name
+            }
+            driverEntityId
+            driverEntity {
+                firstName
+                lastName
+            }
+            collectorEntityId
+            collectorEntity {
+                firstName
+                lastName
+            }
+        }
+    }
+}
+
+----
+.Response example:
+[source,json,options="nowrap"]
+----
+{
+    "data": {
+        "linkVehicleToPosDeviceMoz": {
+            "id": "141",
+            "serial": "tQ29900067375",
+            "status": "ACTIVE",
+            "account": {
+                "entity": {
+                    "id": "53",
+                    "firstName": "Pavlo",
+                    "lastName": "Slyvka"
+                }
+            },
+            "vehicle": {
+                "id": "64",
+                "vrn": "vrn1",
+                "vehicleType": "TAXI",
+                "routeId": "4",
+                "route": {
+                    "name": "CBD – MOMBASA ROAD CORRIDOR"
+                },
+                "driverEntityId": "53",
+                "driverEntity": {
+                    "firstName": "Pavlo",
+                    "lastName": "Slyvka"
+                },
+                "collectorEntityId": "53",
+                "collectorEntity": {
+                    "firstName": "Pavlo",
+                    "lastName": "Slyvka"
+                }
+            }
+        }
+    }
+}
+----
+
+[[pos_get]]
+=== Get POS Devices
+`"*userPosDevicesMoz*"` `Query` returns POS devices that are owned by the user calling the endpoint.
+
+IMPORTANT: Endpoint requires access token of any account type.
+
+NOTE: postman example:   "ICE Cash Payments > Mozambique > GET POS Devices"
+
+.+Parameters:+
+|===
+    |Name|Type|Values|Required|Description
+
+    |`+linkedToVehicle+`
+    |`+Boolean+`
+    |true +
+     false (default)
+    |
+    |if "true" returns only linked devices to vehicle +
+     if "false" returns only not linked devices to vehicle
+
+    |`+page+`
+    |`+Integer+`
+    |Valid number, by defult = 0
+    |
+    |Page number
+
+    |`+size+`
+    |`+Integer+`
+    |Valid number, by defult = 30
+    |
+    |Page size
+
+    |`+sort+`
+    |`+SortInput+`
+    |One of: +
+    "asc": array of fields +
+    "desc": array of fields +
+    "by": array of SortProperty
+    |
+    |If specified, performs results sorting by certain criteria
+
+|===
+
+.Request example:
+[source,graphql,options="nowrap"]
+----
+query {
+    userPosDevicesMoz(linkedToVehicle: true) {
+        total
+        content {
+            id
+            code
+            serial
+            status
+            account {
+                accountNumber
+            }
+            metaData
+            createdDate
+        }
+    }
+}
+
+----
+.Request example (paging):
+[source,graphql,options="nowrap"]
+----
+query {
+     userPosDevicesMoz(page: 0, size: 30, sort: {asc: ["serial"]}) {
+        total
+        content {
+            id
+            code
+            serial
+            status
+            account {
+                accountNumber
+            }
+            metaData
+            createdDate
+        }
+    }
+}
+
+----
+.Response example:
+[source,json,options="nowrap"]
+----
+{
+    "data": {
+        "userPosDevicesMoz": {
+            "total": 1,
+            "content": [
+                {
+                    "id": "141",
+                    "code": "SGIG",
+                    "serial": "tQ29900067375",
+                    "status": "ACTIVE",
+                    "account": {
+                        "accountNumber": "34958881434"
+                    },
+                    "metaData": {
+                        "model": "ME60",
+                        "cpuType": "mdm9x07",
+                        "osVersion": "1.1.1.0_20220524",
+                        "bootVersion": "01.00_00_000020",
+                        "rfidVersion": "V1.1.0",
+                        "productNumber": "Q2G-CB7FBE5128"
+                    },
+                    "createdDate": "2023-12-04 14:11:53"
+                }
+            ]
+        }
+    }
+}
+----
+
+[[pos_simple_info]]
+=== Simple POS Device Account info
+
+`"*userSimpleAccountInfoMoz*"` `Query` returns simple POS device linked account information.
+
+NOTE: POS Device must be linked to a Transport Owner account and have ACTIVE status.
+
+NOTE: postman example:   "ICE Cash Payments > Mozambique > GET simple account info"
+
+.+Parameters:+
+|===
+    |Name|Type|Values|Required|Description
+
+    |`+device+`
+    |`+String+`
+    |valid device code or serial number
+    |yes
+    |Device code or serial number
+
+|===
+
+.Request example:
+[source,graphql,options="nowrap"]
+----
+query {
+    userSimpleAccountInfoMoz(device: "SGIG") {
+        accountId
+        accountNumber
+        accountType
+        firstName
+        lastName
+        deviceCode
+        deviceStatus
+        route {
+            id
+            name
+            active
+            details {
+                operatorType
+                minDistance
+                minFare
+                farePerKm
+                maxFare
+                maxDistance
+            }
+        }
+    }
+}
+
+----
+.Response example:
+[source,json,options="nowrap"]
+----
+{
+    "data": {
+        "userSimpleAccountInfoMoz": {
+            "accountId": "58",
+            "accountNumber": "34958881434",
+            "accountType": "MZN Primary Wallet",
+            "firstName": "Pavlo",
+            "lastName": "Slyvka",
+            "deviceCode": "SGIG",
+            "deviceStatus": "ACTIVE",
+            "route": {
+                "id": "15",
+                "name": "BAIXA-BOANE",
+                "active": true,
+                "details": [
+                    {
+                        "operatorType": "PRIVATE",
+                        "minDistance": 15.0,
+                        "minFare": 15.0,
+                        "farePerKm": 0.65,
+                        "maxFare": 27.0,
+                        "maxDistance": 33.4
+                    },
+                    {
+                        "operatorType": "PUBLIC",
+                        "minDistance": 15.0,
+                        "minFare": 12.0,
+                        "farePerKm": 0.65,
+                        "maxFare": 24.0,
+                        "maxDistance": 33.4
+                    }
+                ]
+            }
+        }
+    }
+}
+----
+
+
+== NFC Tag API
+
+[[tag_link]]
+=== Link Tag
+Sequence of method calls::
+    . <<otp_account, sendOtpToAccount>> (otpType: `MOZ_TAG_LINK`)
+    . linkNfcTagMoz
+
+'''
+
+`"*linkNfcTagMoz*"` `Mutation` Links NFC Tag to account and switches it to `"Active"` status. It returns "Prepaid" and "Subsidy" account balances and base info of the entity, which account was linked to the tag.
+
+NOTE: Tag must exist in the database with `"Unassigned"` status and must not be linked to any account.
+
+NOTE: postman example:   "ICE Cash Payments > Mozambique > Link Tag"
+
+.+Parameters:+
+|===
+    |Name|Type|Values|Required|Description
+
+    |`+otp+` |`+String+` |valid OTP, (string consisting of 4-14 digits) |yes |OTP sent on <<tag_link, first step>>
+    |`+nfcTag.device+` |`+String+` |valid device code or serial |yes |POS device code or serial number with ACTIVE status
+    |`+nfcTag.accountNumber+` |`+String+` |valid account number |yes |Number of existing account
+    |`+nfcTag.tagNumber+` |`+String+` |valid tag identifier |yes |Identifier of existing tag (initiator)
+    |`+nfcTag.dateTime+` |`+String+` |valid serial | |Date and Time of tag link in ISO format
+
+|===
+
+.Request example:
+[source,graphql,options="nowrap"]
+----
+mutation {
+    linkNfcTagMoz(
+        otp: "0000",
+        nfcTag: {
+            device: "SGIG",
+            accountNumber: "35298550332",
+            tagNumber: "tag1",
+            dateTime: "2023-12-01 12:30:10"
+        }
+    ) {
+        status
+        firstName
+        lastName
+        accountNumber
+        prepaidBalance
+        subsidyBalance
+    }
+}
+
+----
+.Response example:
+[source,json,options="nowrap"]
+----
+{
+    "data": {
+        "linkNfcTagMoz": {
+            "status": "Active",
+            "firstName": "Pavlo",
+            "lastName": "Slyvka",
+            "accountNumber": "35298550332",
+            "prepaidBalance": 101690.4,
+            "subsidyBalance": 9917.6
+        }
+    }
+}
+----
+
+[[tag_info]]
+=== Get Tag info
+
+`"*tagInfoMoz*"` `Query` returns tag info and simple account information that is linked to the tag identified by its number. The information includes tag status, "Prepaid" and "Subsidy" account balances, first and last entity names.
+
+NOTE: postman example:   "ICE Cash Payments > Mozambique > GET Tag info"
+
+.+Parameters:+
+|===
+    |Name|Type|Values|Required|Description
+
+    |`+tagNumber+`
+    |`+String+`
+    |valid tag number
+    |yes
+    |Number of the existing tag
+
+|===
+
+.Request example:
+[source,graphql,options="nowrap"]
+----
+query {
+    tagInfoMoz(tagNumber: "tag1") {
+        prepaidBalance
+        subsidyBalance
+        firstName
+        lastName
+        accountNumber
+        status
+    }
+}
+
+----
+.Response example:
+[source,json,options="nowrap"]
+----
+{
+    "data": {
+        "linkNfcTagMoz": {
+            "status": "Active",
+            "firstName": "Pavlo",
+            "lastName": "Slyvka",
+            "accountNumber": "35298550332",
+            "prepaidBalance": 101690.4,
+            "subsidyBalance": 9917.6
+        }
+    }
+}
+----
+
+[[tag_payment_devices]]
+=== Get Payment devices
+`"*userPaymentDevicesMoz*"` `Query` returns all tags linked to `"Prepaid"` account of the entity that performs method call.
+
+IMPORTANT: Endpoint requires access token of any account type.
+
+NOTE: postman example:   "ICE Cash Payments > Mozambique > GET Payment Devices"
+
+.+Parameters:+
+|===
+    |Name|Type|Values|Required|Description
+
+    |`+page+`
+    |`+Integer+`
+    |Valid number, by defult = 0
+    |
+    |Page number
+
+    |`+size+`
+    |`+Integer+`
+    |Valid number, by defult = 30
+    |
+    |Page size
+
+    |`+sort+`
+    |`+SortInput+`
+    |One of: +
+    "asc": array of fields +
+    "desc": array of fields +
+    "by": array of SortProperty
+    |
+    |If specified, performs results sorting by certain criteria
+
+|===
+
+.Request example:
+[source,graphql,options="nowrap"]
+----
+query {
+    userPaymentDevicesMoz {
+        total
+        content {
+            initiatorType {
+                description
+            }
+            initiatorCategory {
+                category
+            }
+            identifier
+            initiatorStatus {
+                name
+            }
+        }
+    }
+}
+
+----
+.Request example (paging):
+[source,graphql,options="nowrap"]
+----
+query {
+     userPaymentDevicesMoz(page: 0, size: 30, sort: {asc: ["identifier"]}) {
+        total
+        content {
+            initiatorType {
+                description
+            }
+            initiatorCategory {
+                category
+            }
+            identifier
+            initiatorStatus {
+                name
+            }
+        }
+    }
+}
+
+----
+.Response example:
+[source,json,options="nowrap"]
+----
+{
+    "data": {
+        "userPaymentDevicesMoz": {
+            "total": 3,
+            "content": [
+                {
+                    "initiatorType": {
+                        "description": "tag"
+                    },
+                    "initiatorCategory": {
+                        "category": "MZ Transport"
+                    },
+                    "identifier": "tag1",
+                    "initiatorStatus": {
+                        "name": "Active"
+                    }
+                },
+                {
+                    "initiatorType": {
+                        "description": "tag"
+                    },
+                    "initiatorCategory": {
+                        "category": "MZ Transport"
+                    },
+                    "identifier": "tag2",
+                    "initiatorStatus": {
+                        "name": "Active"
+                    }
+                }
+            ]
+        }
+    }
+}
+----
+
+
+[[payment]]
+== Payment API
+
+[[payment_topup]]
+=== Top up Account
+`"*topupAccountMoz*"` `Mutation` tops up account.
+
+IMPORTANT: Endpoint requires access token of any account type.
+
+NOTE: Currently, this endpoint simulates a payment transaction instead of making real calls to the payment processor.
+
+NOTE: postman example:   "ICE Cash Payments > Mozambique > TopUp Account"
+
+.+Parameters:+
+|===
+    |Name|Type|Values|Required|Description
+
+    |`+accountNumber+`
+    |`+String+`
+    |valid account number
+    |yes
+    |Account number that needs to be topped up
+
+    |`+provider+`
+    |`+Enum+`
+    |MPESA +
+     EMOLA
+    |yes
+    |Mozambique payment processor provider
+
+    |`+mobile+`
+    |`+String+`
+    |valid Mobile number (MSISDN)
+    |
+    |Mobile number (MSISDN) used to identify a source account by payment processor
+
+|===
+
+.Request example:
+[source,graphql,options="nowrap"]
+----
+mutation {
+    topupAccountMoz(
+        accountNumber: "35298550332"
+        provider: MPESA
+        mobile: "000000000000"
+        amount: 10.0
+    )  {
+        vendorRef
+        status
+        message
+        transactionId
+    }
+}
+
+----
+.Response example:
+[source,json,options="nowrap"]
+----
+{
+    "data": {
+        "topupAccountMoz": {
+            "vendorRef": "6D1J6J5WM1C6JR07HTTB",
+            "status": "SUCCESS",
+            "message": "Transaction processed successfully",
+            "transactionId": "411"
+        }
+    }
+}
+----
+
+[[payment_make]]
+=== Make Payment
+
+`"*makePaymentMoz*"` `Mutation` makes payment transaction. Usually transport payment uses `"TSF"` transaction code, `"tag"` initiator type and works only with `MZN` currency.
+
+NOTE: `"vendorRef"` of the transaction must be unique, otherwise the payment call will be ignored and the result of the previous call with the same "vendorRef" will be returned.
+
+NOTE: postman example:   "ICE Cash Payments > Mozambique > Payment"
+
+[[payment_params]]
+.+Parameters:+
+|===
+    |Name|Type|Values|Required|Description
+
+    |`+vendorRef+` |`+String+` |any unique string |yes |Unique identifier of the transaction
+    |`+tx+` |`+String+` |TSF |yes |Transaction code
+    |`+initiatorType+` |`+String+` |tag |yes |Initiator type
+    |`+initiator+` |`+String+` |valid tag (initiator) |yes |NFC Tag (Initiator) that is linked to the account which is need to be charged
+    |`+currency+` |`+String+` |MZN |yes |Currency of the transaction
+    |`+amount+` |`+Float+` |valid number |yes |Amount that need to be charged
+    |`+metaData.deviceCode+` |`+String+` |valid device code |yes |Device code of the device that is linked to the account that receives the money
+    |`+date+` |`+String+` |valid date and time | |Date and Time of the transaction
+    |`+partnerId+` |`+String+` | | |Partner ID
+    |`+apiVersion+` |`+String+` | | |API version
+
+|===
+
+.Request example:
+[source,graphql,options="nowrap"]
+----
+mutation {
+    makePaymentMoz(paymentRequest: {
+        vendorRef: "test1",
+        tx: "TSF",
+        initiatorType: "tag",
+        initiator: "tag1"
+        currency: "MZN",
+        amount: 10,
+        partnerId: "1",
+        apiVersion: "2",
+        date: "2021-09-08 12:30:00",
+        metaData: {
+            deviceCode: "FX2R"
+        }
+    }) {
+        vendorRef
+        status
+        message
+        transactionId
+    }
+}
+
+----
+.Response example:
+[source,json,options="nowrap"]
+----
+{
+    "data": {
+        "makePaymentMoz": {
+            "vendorRef": "test1",
+            "status": "SUCCESS",
+            "message": "Transaction processed successfully",
+            "transactionId": "79"
+        }
+    }
+}
+----
+
+[[payment_bulk_make]]
+=== Make Bulk Payment
+
+`"*makeBulkPaymentMoz*"` `Mutation` makes several payments in one call. This endpoint always returns `"SUCCESS"` payment status. For all failed payments a new ticket is created which is then handled by the backoffice user manually.
+
+NOTE: `"vendorRef"` of all transactions must be unique, otherwise the payment with non-unique "vendorRef" will be ignored.
+
+NOTE: postman example:   "ICE Cash Payments > Mozambique > Payment (bulk)"
+
+.+Parameters:+
+<<payment_params, see details>>
+
+.Request example:
+[source,graphql,options="nowrap"]
+----
+mutation {
+    makeBulkPaymentMoz(payments: [
+    {
+        vendorRef: "moz1",
+        tx: "TSF",
+        initiatorType: "tag",
+        initiator: "tag1",
+        currency: "MZN",
+        amount: 10,
+        partnerId: "1",
+        apiVersion: "1",
+        date: "2021-09-08 12:30:00",
+        metaData: {
+            deviceCode: "FX2R"
+        }
+    },
+    {
+        vendorRef: "moz2",
+        tx: "TSF",
+        initiatorType: "tag",
+        initiator: "tag1",
+        currency: "MZN",
+        amount: 20,
+        partnerId: "1",
+        apiVersion: "1",
+        date: "2021-09-08 12:30:00",
+        metaData: {
+            deviceCode: "DHFI"
+        }
+    }
+    ]) {
+        vendorRef
+        status
+        message
+        errorCode
+        transactionId
+        balance
+    }
+}
+
+----
+.Response example:
+[source,json,options="nowrap"]
+----
+{
+    "data": {
+        "makeBulkPaymentMoz": {
+            "vendorRef": null,
+            "status": "SUCCESS",
+            "message": "Transaction offload completed",
+            "errorCode": null,
+            "transactionId": null,
+            "balance": 101714.4
+        }
+    }
+}
+----
+
+[[payment_request]]
+=== Payment Request
+
+`"*paymentRequest*"` `Query` returns existing payment request by `"vendorRef"`.
+
+NOTE: postman example:   "ICE Cash Payments > GraphQL > Payment > GET request"
+
+.+Parameters:+
+|===
+    |Name|Type|Values|Required|Description
+
+    |`+vendorRef+`
+    |`+String+`
+    |valid payment "vendorRef"
+    |yes
+    |"vendorRef" (unique transaction identifier) of existing payment
+
+|===
+
+.Request example:
+[source,graphql,options="nowrap"]
+----
+query {
+    paymentRequest(vendorRef: "moz1") {
+        vendorRef
+        partnerId
+        date
+        tx
+        amount
+        initiator
+        initiatorType
+        currency
+        metaData
+    }
+}
+
+----
+.Response example:
+[source,json,options="nowrap"]
+----
+{
+    "data": {
+        "paymentRequest": {
+            "vendorRef": "moz1",
+            "partnerId": "1",
+            "date": "2021-09-08 12:30:00",
+            "tx": "TSF",
+            "amount": 10.0,
+            "initiator": "tag1",
+            "initiatorType": "tag",
+            "currency": "MZN",
+            "metaData": {
+                "deviceCode": "FX2R"
+            }
+        }
+    }
+}
+----
+
+[[payment_response]]
+=== Payment Response
+
+`"*paymentResponse*"` `Query` returns existing payment response by `"vendorRef"`.
+
+NOTE: postman example:   "ICE Cash Payments > GraphQL > Payment > GET response"
+
+.+Parameters:+
+|===
+    |Name|Type|Values|Required|Description
+
+    |`+vendorRef+`
+    |`+String+`
+    |valid payment "vendorRef"
+    |yes
+    |"vendorRef" (unique transaction identifier) of existing payment
+
+|===
+
+.Request example:
+[source,graphql,options="nowrap"]
+----
+query {
+    paymentResponse(vendorRef: "moz1") {
+        vendorRef
+        date
+        status
+        payload
+        errorCode
+        message
+        transactionId
+        balance
+    }
+}
+
+----
+.Response example:
+[source,json,options="nowrap"]
+----
+{
+    "data": {
+        "paymentResponse": {
+            "vendorRef": "moz1",
+            "date": "2023-09-20 17:18:06",
+            "status": "SUCCESS",
+            "payload": null,
+            "errorCode": null,
+            "message": "Transaction processed successfully",
+            "transactionId": "79",
+            "balance": 101714.4
+        }
+    }
+}
+----
+
+[[statement]]
+=== Statement
+`"*userStatementMoz*"` `Query` returns account statement (all transactions). Optional parameters: "vrnId", "tagId", "transactionCode", "description", can be used in various combinations and can even be omitted.
+
+IMPORTANT: Endpoint requires access token of any account type.
+
+NOTE: postman example:   "ICE Cash Payments > Mozambique > GET Statement"
+
+.+Parameters:+
+|===
+    |Name|Type|Values|Required|Description
+
+    |`+accountType+`
+    |`+String+`
+    |Primary +
+     Prepaid +
+     Subsidy
+    |yes
+    |Type of the account
+
+    |`+currency+`
+    |`+String+`
+    |MZN (default)
+    |yes
+    |Currency of the transactions
+
+    |`+vrnId+`
+    |`+Integer+`
+    |valid Vehicle ID
+    |
+    |Vehicle ID
+
+    |`+tagId+`
+    |`+Integer+`
+    |valid tag
+    |
+    |Initiator ID (tag)
+
+    |`+transactionCode+`
+    |`+String+`
+    |TSF +
+     MPI (mpesa inbound) +
+     MPO (mpesa outbound) +
+     EMI (e-mola inbound) +
+     EMO (e-mola outbound)
+    |
+    |Transaction code
+
+    |`+description+`
+    |`+String+`
+    |any string
+    |
+    |part of the transaction description
+
+    |`+page+`
+    |`+Integer+`
+    |Valid number, by defult = 0
+    |
+    |Page number
+
+    |`+size+`
+    |`+Integer+`
+    |Valid number, by defult = 30
+    |
+    |Page size
+
+    |`+sort+`
+    |`+SortInput+`
+    |One of: +
+    "asc": array of fields +
+    "desc": array of fields +
+    "by": array of SortProperty
+    |
+    |If specified, performs results sorting by certain criteria
+
+|===
+
+.Request example:
+[source,graphql,options="nowrap"]
+----
+query {
+    userStatementMoz(
+        accountType: "Primary"
+        transactionCode: "TSF"
+    ) {
+        total
+        content {
+            id
+            statementDate
+            transactionCodeId
+            transactionCode {
+                code
+            }
+            amount
+            initiator {
+                identifier
+            }
+            initiatorType {
+                description
+            }
+            lines {
+                id
+                transactionCode {
+                    code
+                }
+                description
+                amount
+            },
+            metaData
+        }
+    }
+}
+
+----
+.Request example (paging):
+[source,graphql,options="nowrap"]
+----
+query {
+    userStatementMoz(
+        accountType: "Prepaid"
+        vrnId: 1
+        tagId: 2
+        page: 0, size: 30, sort: {desc: ["statementDate"]}
+    ) {
+        total
+        content {
+            id
+            statementDate
+            transactionCodeId
+            transactionCode {
+                code
+            }
+            amount
+            initiator {
+                identifier
+            }
+            initiatorType {
+                description
+            }
+            lines {
+                id
+                transactionCode {
+                    code
+                }
+                description
+                amount
+            },
+            metaData
+        }
+    }
+}
+
+----
+.Response example:
+[source,json,options="nowrap"]
+----
+{
+    "data": {
+        "userStatementMoz": {
+            "total": 2,
+            "content": [
+                {
+                    "id": "6",
+                    "statementDate": "2023-02-28 11:30:00",
+                    "transactionCodeId": "36",
+                    "transactionCode": {
+                        "code": "TSF"
+                    },
+                    "amount": 15.0,
+                    "initiator": null,
+                    "initiatorType": {
+                        "description": "tag"
+                    },
+                    "lines": [
+                        {
+                            "id": "26",
+                            "transactionCode": {
+                                "code": "TSF"
+                            },
+                            "description": "MZ NFC payment received for Pavlo Slyvka ref(moz8)",
+                            "amount": 12.0
+                        },
+                        {
+                            "id": "28",
+                            "transactionCode": {
+                                "code": "TSF"
+                            },
+                            "description": "MZ NFC payment received for Pavlo Slyvka ref(moz8)",
+                            "amount": 3.0
+                        }
+                    ],
+                    "metaData": {
+                        "deviceCode": "FX2R",
+                        "requestBalanceAccountTypes": []
+                    }
+                },
+                {
+                    "id": "7",
+                    "statementDate": "2023-03-15 12:30:00",
+                    "transactionCodeId": "36",
+                    "transactionCode": {
+                        "code": "TSF"
+                    },
+                    "amount": 20.0,
+                    "initiator": null,
+                    "initiatorType": {
+                        "description": "tag"
+                    },
+                    "lines": [
+                        {
+                            "id": "30",
+                            "transactionCode": {
+                                "code": "TSF"
+                            },
+                            "description": "MZ NFC payment received for Pavlo Slyvka ref(moz9)",
+                            "amount": 16.0
+                        },
+                        {
+                            "id": "32",
+                            "transactionCode": {
+                                "code": "TSF"
+                            },
+                            "description": "MZ NFC payment received for Pavlo Slyvka ref(moz9)",
+                            "amount": 4.0
+                        }
+                    ],
+                    "metaData": {
+                        "deviceCode": "FX2R",
+                        "requestBalanceAccountTypes": []
+                    }
+                }
+            ]
+        }
+    }
+}
+----
+
+[[statistics]]
+=== Transaction Statistics
+`"*transactionStatisticsMoz*"` `Query` returns income or expenses statistics for certain period of days.
+
+IMPORTANT: Endpoint requires access token of any account type.
+
+NOTE: postman example:   "ICE Cash Payments > Mozambique > GET Statistics"
+
+.+Parameters:+
+|===
+    |Name|Type|Values|Required|Description
+
+    |`+statisticsType+`
+    |`+Enum+`
+    |INCOME +
+     EXPENSES
+    |yes
+    |Type of statistics
+
+    |`+days+`
+    |`+Integer+`
+    |valid integer
+    |yes
+    |statistics days
+
+|===
+
+.Request example:
+[source,graphql,options="nowrap"]
+----
+query {
+    transactionStatisticsMoz(statisticsType: EXPENSES, days: 3) {
+        day
+        trips
+        income
+        prepaidExpenses
+        subsidyExpenses
+    }
+}
+
+----
+.Response example:
+[source,json,options="nowrap"]
+----
+{
+    "data": {
+        "transactionStatisticsMoz": [
+            {
+                "day": "2023-11-28",
+                "trips": 0,
+                "income": 0.0,
+                "prepaidExpenses": 0.0,
+                "subsidyExpenses": 0.0
+            },
+            {
+                "day": "2023-11-29",
+                "trips": 2,
+                "income": 0.0,
+                "prepaidExpenses": 16.0,
+                "subsidyExpenses": 4.0
+            },
+            {
+                "day": "2023-11-30",
+                "trips": 1,
+                "income": 0.0,
+                "prepaidExpenses": 8.0,
+                "subsidyExpenses": 2.0
+            }
+        ]
+    }
+}
+----
+
+
+[[helper_functions]]
+== Helper functions
+
+[[otp]]
+=== Send OTP
+
+Some endpoints require OTP before calling. OTP is generated and sent to real phone number (MSISDN), that is expected as a parameter to sending function, and is always assigned to otpType/MSISDN pair.
+
+[[otp_types]]
+.+Available OTP types:+
+|===
+    |OTP type |Preferable endpoint to send OTP |Required for endpoint
+
+    |`+MOZ_REG_USER+`          |sendOtp             |registerIndividualUserMoz +
+                                                     registerCorporateUserMoz
+    |`+MOZ_POS_LINK+`          |sendOtpToEntity     |linkPosDeviceMoz
+    |`+MOZ_TAG_LINK+`          |sendOtpToAccount    |linkNfcTagMoz
+    |`+MOZ_MSISDN_UPDATE+`     |sendOtp             |addOrUpdateMsisdnMoz
+
+|===
+
+Sometimes it is required that OTP is sent to MSISDN that is assigned to entity, for such cases we have additional convenient sending OTP methods that accept entity ID or account number (which belongs to entity) instead of MSISDN.
+
+[discrete]
+=== OTP endpoints:
+
+[[otp_msisdn]]
+`"*sendOtp*"` `Mutation` sends OTP to MSISDN.
+
+NOTE: postman example:   "ICE Cash Payments > Mozambique > Send OTP (mobile)"
+
+.+Parameters:+
+|===
+    |Name|Type|Values|Required|Description
+
+    |`+otpType+`
+    |`+Enum+`
+    |<<otp_types,see details>>
+    |yes
+    |OTP type
+
+    |`+msisdn+`
+    |`+String+`
+    |valid mobile number
+    |yes
+    |Mobile phone (MSISDN) to send OTP by SMS to
+
+    |`+resend+`
+    |`+Boolean+`
+    |false (default) +
+     true
+    |
+    |false - generate and send new OTP +
+     true - resend existing OTP
+
+|===
+
+.Request example:
+[source,graphql,options="nowrap"]
+----
+mutation {
+    sendOtp(
+        otpType: MOZ_REG_USER,
+        msisdn: "000000000000"
+    )
+}
+----
+.Response example:
+[source,json,options="nowrap"]
+----
+{
+    "data": {
+        "sendOtp": "SUCCESS"
+    }
+}
+----
+
+NOTE: On testing environment you can use `"000000000000"` mobile number to skip sending OTP
+
+All OTPs have a lifetime, by default they are expired in 5 minutes after creation.
+
+Everytime when sending OTP function is called again for the same otpType/MSISDN pair, a new OTP is generated replacing the old one. In case if resending already generated OTP is required, you need to set `"resend"` parameter of any OTP sending function to `true`.
+
+.Request example:
+[source,graphql,options="nowrap"]
+----
+mutation {
+    sendOtp(
+        otpType: MOZ_MSISDN_UPDATE,
+        msisdn: "000000000000"
+        resend: true
+    )
+}
+----
+.Response example:
+[source,json,options="nowrap"]
+----
+{
+    "data": {
+        "sendOtp": "SUCCESS"
+    }
+}
+----
+
+NOTE: If no OTP is saved for otpType/MSISDN pair, calling a function with the __resend: true__ param produces an error.
+
+'''
+
+[[otp_entity]]
+`"*sendOtpToEntity*"` `Mutation` sends OTP to MSISDN that is assigned to entity identified by `entityId`.
+
+NOTE: postman example:   "ICE Cash Payments > Mozambique > Send OTP (entity)"
+
+.+Parameters:+
+|===
+    |Name|Type|Values|Required|Description
+
+    |`+otpType+`
+    |`+Enum+`
+    |<<otp_types,see details>>
+    |yes
+    |OTP type
+
+    |`+entityId+`
+    |`+Integer+`
+    |valid entity ID
+    |yes
+    |Entity ID that identifies Entity, which PRIMARY Mobile phone (MSISDN) is used to send OTP by SMS to
+
+    |`+resend+`
+    |`+Boolean+`
+    |false (default) +
+     true
+    |
+    |false - generate and send new OTP +
+     true - resend existing OTP
+
+|===
+
+Request example:
+[source,graphql,options="nowrap"]
+----
+mutation {
+    sendOtpToEntity(
+        otpType: MOZ_POS_LINK,
+        entityId: 78
+    )
+}
+----
+.Response example:
+[source,json,options="nowrap"]
+----
+{
+    "data": {
+        "sendOtpToEntity": "SUCCESS"
+    }
+}
+----
+
+'''
+
+[[otp_account]]
+`"*sendOtpToAccount*"` `Mutation` sends OTP to MSISDN that is assigned to entity that owns the account number.
+
+NOTE: postman example:   "ICE Cash Payments > Mozambique > Send OTP (account num)"
+
+.+Parameters:+
+|===
+    |Name|Type|Values|Required|Description
+
+    |`+otpType+`
+    |`+Enum+`
+    |<<otp_types,see details>>
+    |yes
+    |OTP type
+
+    |`+accountNumber+`
+    |`+String+`
+    |valid account number
+    |yes
+    |Account number of the Account that belongs to Entity, which PRIMARY Mobile phone (MSISDN) is used to send OTP by SMS to
+
+    |`+resend+`
+    |`+Boolean+`
+    |false (default) +
+     true
+    |
+    |false - generate and send new OTP +
+     true - resend existing OTP
+
+|===
+
+.Request example:
+[source,graphql,options="nowrap"]
+----
+mutation {
+    sendOtpToAccount(
+        otpType: MOZ_TAG_LINK,
+        accountNumber: "35298550332"
+    )
+}
+----
+.Response example:
+[source,json,options="nowrap"]
+----
+{
+    "data": {
+        "sendOtpToAccount": "SUCCESS"
+    }
+}
+----
+
+[[lookup_entities]]
+=== Lookup Entities
+
+`"*lookupEntityMoz*"` `Query` is used to lookup entities by certain criteria.
+
+NOTE: postman example:   "ICE Cash Payments > Mozambique > Vehicle > Lookup entity"
+
+.+Parameters:+
+|===
+    |Name|Type|Values|Required|Description
+
+    |`+lookupBy+`
+    |`+Enum+`
+    |MSISDN +
+     ID +
+     ACCOUNT
+    |yes
+    |Lookup by either MSISDN, ID or account number
+
+    |`+idType+`
+    |`+Enum+`
+    |ID +
+     Passport +
+     DIRE
+    |required only if lookupBy=ID
+    |ID type
+
+    |`+value+`
+    |`+String+`
+    |valid value depending on lookupBy param
+    |yes
+    |Specific value of entity search criteria
+
+|===
+
+.Request example (lookup by MSISDN):
+[source,graphql,options="nowrap"]
+----
+query {
+     lookupEntityMoz(lookupBy: MSISDN, value: "000000000000") {
+        id
+        firstName
+        lastName
+    }
+}
+----
+.Request example (lookup by ID):
+[source,graphql,options="nowrap"]
+----
+query {
+     lookupEntityMoz(lookupBy: ID, idType: DIRE, value: "1234567890") {
+        id
+        firstName
+        lastName
+    }
+}
+----
+.Request example (lookup by ACCOUNT:
+[source,graphql,options="nowrap"]
+----
+query {
+    lookupEntityMoz(lookupBy: ACCOUNT, value: "35298550332") {
+        id
+        firstName
+        lastName
+    }
+}
+----
+.Response example:
+[source,json,options="nowrap"]
+----
+{
+    "data": {
+        "lookupEntityMoz": [
+            {
+                "id": "53",
+                "firstName": "Pavlo",
+                "lastName": "Slyvka"
+            }
+        ]
+    }
+}
+----
+
+[[routes]]
+=== Get Routes
+
+`"*routesMoz*"` `Query` returns all routes available for Mozambique transport project.
+
+NOTE: postman example:   "ICE Cash Payments > Mozambique > GET Routes"
+
+.Request example:
+[source,graphql,options="nowrap"]
+----
+query {
+    routesMoz {
+        id
+        name
+        active
+        details {
+            operatorType
+            minDistance
+            minFare
+            farePerKm
+            maxFare
+            maxDistance
+        }
+    }
+}
+----
+.Response example:
+[source,json,options="nowrap"]
+----
+{
+    "data": {
+        "routesMoz": [
+            {
+                "id": "15",
+                "name": "BAIXA-BOANE",
+                "active": true,
+                "details": [
+                    {
+                        "operatorType": "PRIVATE",
+                        "minDistance": 15.0,
+                        "minFare": 15.0,
+                        "farePerKm": 0.65,
+                        "maxFare": 27.0,
+                        "maxDistance": 33.4
+                    },
+                    {
+                        "operatorType": "PUBLIC",
+                        "minDistance": 15.0,
+                        "minFare": 12.0,
+                        "farePerKm": 0.65,
+                        "maxFare": 24.0,
+                        "maxDistance": 33.4
+                    }
+                ]
+            },
+            {
+                "id": "16",
+                "name": "BAIXA-MOZAL",
+                "active": true,
+                "details": [
+                    {
+                        "operatorType": "PRIVATE",
+                        "minDistance": 15.0,
+                        "minFare": 15.0,
+                        "farePerKm": 0.39,
+                        "maxFare": 21.0,
+                        "maxDistance": 30.2
+                    },
+                    {
+                        "operatorType": "PUBLIC",
+                        "minDistance": 15.0,
+                        "minFare": 12.0,
+                        "farePerKm": 0.39,
+                        "maxFare": 18.0,
+                        "maxDistance": 30.2
+                    }
+                ]
+            }
+        ]
+    }
+}
+----
+
+[[document_types]]
+=== Get Document Types
+
+`"*documentTypes*"` `Query` returns all document types for a specific country identified by `countryId`.
+
+NOTE: postman example:   "ICE Cash Payments > Mozambique > GET Document Types"
+
+.+Parameters:+
+|===
+    |Name|Type|Values|Required|Description
+
+    |`+countryId+`
+    |`+Integer+`
+    |Valid country ID value
+    |
+    |Country ID <<countries, see details>>
+
+|===
+
+.Request example:
+[source,graphql,options="nowrap"]
+----
+query {
+    documentTypes(countryId: 205) {
+        id
+        name
+    }
+}
+----
+.Response example:
+[source,json,options="nowrap"]
+----
+{
+    "data": {
+        "documentTypes": [
+            {
+                "id": "1",
+                "name": "ID"
+            },
+            {
+                "id": "2",
+                "name": "Passport"
+            }
+        ]
+    }
+}
+----
+
+[[countries]]
+=== Get Countries
+
+`"*allCountries*"` `Query` returns all countries available to the project.
+
+NOTE: postman example:   "ICE Cash Payments > Mozambique > GET Countries"
+
+.Request example:
+[source,graphql,options="nowrap"]
+----
+query {
+    allCountries {
+        id
+        isoCode
+        name
+    }
+}
+----
+.Response example:
+[source,json,options="nowrap"]
+----
+{
+    "data": {
+        "allCountries": [
+            {
+                "id": "157",
+                "isoCode": "RSA",
+                "name": "South Africa"
+            },
+            {
+                "id": "205",
+                "isoCode": "MOZ",
+                "name": "Mozambique"
+            }
+        ]
+    }
+}
+----
+
+[[currencies]]
+=== Get Currencies
+
+`"*allCurrencies*"` `Query` returns all currencies available to the project.
+
+NOTE: postman example:   "ICE Cash Payments > GraphQL > Management > GET Currencies"
+
+.Request example:
+[source,graphql,options="nowrap"]
+----
+query {
+    allCurrencies {
+        id
+        isoCode
+        active
+        postilionCode
+  }
+}
+----
+.Response example:
+[source,json,options="nowrap"]
+----
+{
+    "data": {
+        "allCurrencies": [
+            {
+                "id": "1",
+                "isoCode": "ZWL",
+                "active": true,
+                "postilionCode": null
+            },
+            {
+                "id": "2",
+                "isoCode": "USD",
+                "active": true,
+                "postilionCode": null
+            },
+            {
+                "id": "3",
+                "isoCode": "ZAR",
+                "active": true,
+                "postilionCode": null
+            },
+            {
+                "id": "4",
+                "isoCode": "MZN",
+                "active": true,
+                "postilionCode": null
+            }
+        ]
+    }
+}
+----
+
+[[transaction_codes]]
+=== Get Transaction Codes
+
+`"*transactionCodes*"` `Query` returns all transaction codes for the specific currency. `"additionalFees"` parameter contains all fees associated with the transaction code except the ORIGINAL fee. <<currencies, Get Currencies>> endpoint can be used to get all currencies available to the project.
+
+NOTE: postman example:   "ICE Cash Payments > GraphQL > Management > Backoffice > Journal > GET transaction codes"
+
+.Request example:
+[source,graphql,options="nowrap"]
+----
+query {
+    transactionCodes(
+        currencyId: 4
+    ) {
+        total
+        content {
+            id
+            code
+            description
+            active
+            additionalFees {
+                id
+                chargeType
+                currency {
+                    isoCode
+                }
+                processOrder
+                amount
+                drEntityAccount {
+                    id
+                }
+                crEntityAccount {
+                    id
+                }
+                active
+            }
+        }
+    }
+}
+----
+.Response example:
+[source,json,options="nowrap"]
+----
+{
+    "data": {
+        "transactionCodes": {
+            "total": 5,
+            "content": [
+                {
+                    "id": "38",
+                    "code": "MPO",
+                    "description": "MPESA outbound payments",
+                    "active": true,
+                    "additionalFees": null
+                },
+                {
+                    "id": "39",
+                    "code": "EMI",
+                    "description": "E-Mola inbound payments",
+                    "active": true,
+                    "additionalFees": null
+                },
+                {
+                    "id": "37",
+                    "code": "MPI",
+                    "description": "MPESA inbound payments",
+                    "active": true,
+                    "additionalFees": null
+                },
+                {
+                    "id": "36",
+                    "code": "TSF",
+                    "description": "MZ NFC payment",
+                    "active": true,
+                    "additionalFees": [
+                        {
+                            "id": "35",
+                            "chargeType": "PERCENT",
+                            "currency": {
+                                "isoCode": "MZN"
+                            },
+                            "processOrder": 2,
+                            "amount": 0.2,
+                            "drEntityAccount": null,
+                            "crEntityAccount": null,
+                            "active": true
+                        }
+                    ]
+                },
+                {
+                    "id": "40",
+                    "code": "EMO",
+                    "description": "E-Mola outbound payments",
+                    "active": true,
+                    "additionalFees": null
+                }
+            ]
+        }
+    }
+}
+----
+
+[[id_types]]
+=== Get ID Types
+
+`"*allIdTypes*"` `Query` returns all ID types available to the project.
+
+NOTE: postman example:   "ICE Cash Payments > GraphQL > Management > GET ID types"
+
+.Request example:
+[source,graphql,options="nowrap"]
+----
+query {
+    allIdTypes {
+        id
+        description
+    }
+}
+----
+.Response example:
+[source,json,options="nowrap"]
+----
+{
+    "data": {
+        "allIdTypes": [
+            {
+                "id": "1",
+                "description": "Zimbabwean National ID"
+            },
+            {
+                "id": "2",
+                "description": "South African National ID"
+            },
+            {
+                "id": "3",
+                "description": "Business Registration Number"
+            },
+            {
+                "id": "4",
+                "description": "Mozambican National ID"
+            },
+            {
+                "id": "5",
+                "description": "Mozambican Passport"
+            },
+            {
+                "id": "6",
+                "description": "Mozambican DIRE"
+            },
+            {
+                "id": "7",
+                "description": "Mozambican NUEL"
+            }
+        ]
+    }
+}
+----
+
+[[security_groups]]
+=== Get Security Groups
+
+`"*allSecurityGroups*"` `Query` returns all Security Groups available to the project.
+
+NOTE: postman example:   "ICE Cash Payments > GraphQL > Management > GET SecurityGroups"
+
+.Request example:
+[source,graphql,options="nowrap"]
+----
+query {
+    allSecurityGroups {
+        id
+        name
+        description
+        active
+        rightsList
+        rights {
+            name
+            description
+        }
+    }
+}
+----
+.Response example:
+[source,json,options="nowrap"]
+----
+{
+    "data": {
+        "allSecurityGroups": [
+            {
+                "id": "1000",
+                "name": "Moz default",
+                "description": "Mozambique default group",
+                "active": true,
+                "rightsList": [
+                    "POS_TAXI",
+                    "ACC_STATEMENT_L2",
+                    "INITIATOR_VIEW",
+                    "INITIATOR_MG",
+                    "ACC_STATEMENT_L1"
+                ],
+                "rights": [
+                    {
+                        "name": "POS_TAXI",
+                        "description": "Ability to perform TSF transactions via POS (Moz)"
+                    },
+                    {
+                        "name": "ACC_STATEMENT_L2",
+                        "description": "Ability to view transaction lines for a specific transaction (Moz)"
+                    },
+                    {
+                        "name": "INITIATOR_VIEW",
+                        "description": "View list of initiators associated with account (Moz)"
+                    },
+                    {
+                        "name": "INITIATOR_MG",
+                        "description": "Ability to change status of initiator (Moz)"
+                    },
+                    {
+                        "name": "ACC_STATEMENT_L1",
+                        "description": "View and export account statements (Moz)"
+                    }
+                ]
+            },
+            {
+                "id": "1011",
+                "name": "Moz Regular Agent",
+                "description": "Regular agent",
+                "active": true,
+                "rightsList": [
+                    "MOZ_TOPUP",
+                    "MOZ_LINK_TAG",
+                    "MOZ_KYC_UPLOAD",
+                    "MOZ_REG_USER",
+                    "MOZ_LINK_POS"
+                ],
+                "rights": [
+                    {
+                        "name": "MOZ_TOPUP",
+                        "description": "Top up accounts"
+                    },
+                    {
+                        "name": "MOZ_LINK_TAG",
+                        "description": "Link tags to account"
+                    },
+                    {
+                        "name": "MOZ_KYC_UPLOAD",
+                        "description": "Upload KYC documents"
+                    },
+                    {
+                        "name": "MOZ_REG_USER",
+                        "description": "Registering new users"
+                    },
+                    {
+                        "name": "MOZ_LINK_POS",
+                        "description": "Link POS devices to account"
+                    }
+                ]
+            },
+            {
+                "id": "1012",
+                "name": "Moz Fematro Agent",
+                "description": "Fematro agent",
+                "active": true,
+                "rightsList": [
+                    "MOZ_TOPUP",
+                    "MOZ_LINK_TAG",
+                    "MOZ_KYC_UPLOAD",
+                    "MOZ_REG_USER",
+                    "MOZ_LINK_POS"
+                ],
+                "rights": [
+                    {
+                        "name": "MOZ_TOPUP",
+                        "description": "Top up accounts"
+                    },
+                    {
+                        "name": "MOZ_LINK_TAG",
+                        "description": "Link tags to account"
+                    },
+                    {
+                        "name": "MOZ_KYC_UPLOAD",
+                        "description": "Upload KYC documents"
+                    },
+                    {
+                        "name": "MOZ_REG_USER",
+                        "description": "Registering new users"
+                    },
+                    {
+                        "name": "MOZ_LINK_POS",
+                        "description": "Link POS devices to account"
+                    }
+                ]
+            },
+            {
+                "id": "1013",
+                "name": "Moz Commuter",
+                "description": "Commuter",
+                "active": true,
+                "rightsList": [
+                    "MOZ_TOPUP",
+                    "MOZ_PROFILE",
+                    "MOZ_TAG_MANAGEMENT",
+                    "MOZ_STATEMENT"
+                ],
+                "rights": [
+                    {
+                        "name": "MOZ_TOPUP",
+                        "description": "Top up accounts"
+                    },
+                    {
+                        "name": "MOZ_PROFILE",
+                        "description": "Profile access"
+                    },
+                    {
+                        "name": "MOZ_TAG_MANAGEMENT",
+                        "description": "Tag management"
+                    },
+                    {
+                        "name": "MOZ_STATEMENT",
+                        "description": "View statement"
+                    }
+                ]
+            },
+            {
+                "id": "1014",
+                "name": "Moz Transport Owner",
+                "description": "Transport owner",
+                "active": true,
+                "rightsList": [
+                    "MOZ_TOPUP",
+                    "MOZ_POS_MANAGEMENT",
+                    "MOZ_PROFILE",
+                    "MOZ_VRN_MANAGEMENT",
+                    "MOZ_TAG_MANAGEMENT",
+                    "MOZ_STATEMENT"
+                ],
+                "rights": [
+                    {
+                        "name": "MOZ_TOPUP",
+                        "description": "Top up accounts"
+                    },
+                    {
+                        "name": "MOZ_POS_MANAGEMENT",
+                        "description": "POS device management"
+                    },
+                    {
+                        "name": "MOZ_PROFILE",
+                        "description": "Profile access"
+                    },
+                    {
+                        "name": "MOZ_VRN_MANAGEMENT",
+                        "description": "VRN management"
+                    },
+                    {
+                        "name": "MOZ_TAG_MANAGEMENT",
+                        "description": "Tag management"
+                    },
+                    {
+                        "name": "MOZ_STATEMENT",
+                        "description": "View statement"
+                    }
+                ]
+            },
+            {
+                "id": "1015",
+                "name": "Moz Taxi Driver",
+                "description": "Taxi driver",
+                "active": true,
+                "rightsList": [
+                    "MOZ_POS_LOGIN"
+                ],
+                "rights": [
+                    {
+                        "name": "MOZ_POS_LOGIN",
+                        "description": "POS login"
+                    }
+                ]
+            },
+            {
+                "id": "1016",
+                "name": "Moz Fare Collector",
+                "description": "Fare collector",
+                "active": true,
+                "rightsList": [
+                    "MOZ_POS_LOGIN"
+                ],
+                "rights": [
+                    {
+                        "name": "MOZ_POS_LOGIN",
+                        "description": "POS login"
+                    }
+                ]
+            }
+        ]
+    }
+}
+----
+

@@ -1,0 +1,14 @@
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: payments-mpesa-service
+  labels:
+    app: payments-mpesa-service
+    release: prometheus-operator
+spec:
+  selector:
+    matchLabels:
+      app: payments-mpesa-service
+  endpoints:
+    - port: "8589"
+      path: "/actuator/prometheus"

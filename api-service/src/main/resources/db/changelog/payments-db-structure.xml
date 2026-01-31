@@ -1,0 +1,1545 @@
+<?xml version="1.1" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.1.xsd">
+
+    <changeSet author="Pavlo.Slyvka" id="channel-create">
+        <createTable tableName="channel">
+            <column autoIncrement="true" name="id" type="INT">
+                <constraints nullable="false" primaryKey="true"/>
+            </column>
+            <column name="code" type="VARCHAR(255)">
+                <constraints nullable="false" unique="true"/>
+            </column>
+            <column name="language_key" type="VARCHAR(255)"/>
+            <column name="description" type="VARCHAR(255)"/>
+        </createTable>
+    </changeSet>
+
+    <changeSet author="Pavlo.Slyvka" id="currency-create">
+        <createTable tableName="currency">
+            <column autoIncrement="true" name="id" type="INT">
+                <constraints nullable="false" primaryKey="true"/>
+            </column>
+            <column name="iso_code" type="VARCHAR(255)">
+                <constraints nullable="false" unique="true"/>
+            </column>
+            <column name="active" type="BIT(1)" defaultValue="true">
+                <constraints nullable="false"/>
+            </column>
+            <column name="postilion_code" type="INT"/>
+        </createTable>
+    </changeSet>
+
+    <changeSet author="Pavlo.Slyvka" id="country-create">
+        <createTable tableName="country">
+            <column autoIncrement="true" name="id" type="INT">
+                <constraints nullable="false" primaryKey="true"/>
+            </column>
+            <column name="iso_code" type="VARCHAR(255)">
+                <constraints nullable="false" unique="true"/>
+            </column>
+            <column name="name" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+
+    <changeSet author="Pavlo.Slyvka" id="transaction_code-create">
+        <createTable tableName="transaction_code">
+            <column autoIncrement="true" name="id" type="INT">
+                <constraints nullable="false" primaryKey="true"/>
+            </column>
+            <column name="active" type="BIT(1)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="code" type="VARCHAR(255)">
+                <constraints nullable="false" unique="true"/>
+            </column>
+            <column name="description" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="kyc_required" type="BIT(1)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="charge_account_type" type="VARCHAR(255)"/>
+        </createTable>
+    </changeSet>
+
+    <changeSet author="Pavlo.Slyvka" id="account_type-create">
+        <createTable tableName="account_type">
+            <column autoIncrement="true" name="id" type="INT">
+                <constraints nullable="false" primaryKey="true"/>
+            </column>
+            <column name="currency_id" type="INT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="name" type="VARCHAR(255)"/>
+            <column name="description" type="VARCHAR(255)"/>
+            <column name="audit_transaction_interval" type="INT"/>
+            <column name="audit_transaction_value" type="DECIMAL(19, 2)"/>
+            <column name="legacy_wallet_id" type="VARCHAR(255)"/>
+            <column name="active" type="BIT(1)">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+    <changeSet author="Pavlo.Slyvka" id="account_type-fk_currency_id">
+        <addForeignKeyConstraint constraintName="fk_account_type_currency_id" baseTableName="account_type" baseColumnNames="currency_id" referencedTableName="currency" referencedColumnNames="id" validate="true" deferrable="false" initiallyDeferred="false" onDelete="CASCADE" onUpdate="RESTRICT"/>
+        <createIndex indexName="i_account_type_currency_id" tableName="account_type">
+            <column name="currency_id"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet author="Pavlo.Slyvka" id="entity_id_type-create">
+        <createTable tableName="entity_id_type">
+            <column autoIncrement="true" name="id" type="INT">
+                <constraints nullable="false" primaryKey="true"/>
+            </column>
+            <column name="description" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="country_id" type="INT"/>
+        </createTable>
+    </changeSet>
+    <changeSet author="Pavlo.Slyvka" id="entity_id_type-fk_country">
+        <addForeignKeyConstraint constraintName="fk_entity_id_type_country" baseTableName="entity_id_type" baseColumnNames="country_id" referencedTableName="country" referencedColumnNames="id" validate="true" deferrable="false" initiallyDeferred="false" onDelete="CASCADE" onUpdate="RESTRICT"/>
+        <createIndex indexName="i_entity_id_type_country" tableName="entity_id_type">
+            <column name="country_id"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet author="Pavlo.Slyvka" id="meta_data-create">
+        <createTable tableName="meta_data">
+            <column autoIncrement="true" name="id" type="INT">
+                <constraints nullable="false" primaryKey="true"/>
+            </column>
+            <column name="table_name" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="name" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="description" type="VARCHAR(255)"/>
+        </createTable>
+    </changeSet>
+
+    <changeSet author="Pavlo.Slyvka" id="entity_type_group-create">
+        <createTable tableName="entity_type_group">
+            <column autoIncrement="true" name="id" type="INT">
+                <constraints nullable="false" primaryKey="true"/>
+            </column>
+            <column name="description" type="VARCHAR(255)"/>
+        </createTable>
+    </changeSet>
+
+    <changeSet author="Pavlo.Slyvka" id="entity_type-create">
+        <createTable tableName="entity_type">
+            <column autoIncrement="true" name="id" type="INT">
+                <constraints nullable="false" primaryKey="true"/>
+            </column>
+            <column name="description" type="VARCHAR(255)"/>
+            <column name="entity_type_group_id" type="INT">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+    <changeSet author="Pavlo.Slyvka" id="entity_type-fk_entity_type_group_id">
+        <addForeignKeyConstraint constraintName="fk_entity_type_group_id" baseTableName="entity_type" baseColumnNames="entity_type_group_id" referencedTableName="entity_type_group" referencedColumnNames="id" deferrable="false" initiallyDeferred="false" onDelete="CASCADE" onUpdate="RESTRICT" validate="true"/>
+        <createIndex indexName="i_entity_type_group_id" tableName="entity_type">
+            <column name="entity_type_group_id"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet author="Pavlo.Slyvka" id="entity-create">
+        <createTable tableName="entity">
+            <column autoIncrement="true" name="id" type="INT">
+                <constraints nullable="false" primaryKey="true"/>
+            </column>
+            <column name="entity_type_id" type="INT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="first_name" type="VARCHAR(255)"/>
+            <column name="last_name" type="VARCHAR(255)"/>
+            <column name="id_number" type="VARCHAR(255)"/>
+            <column name="id_type" type="INT"/>
+            <column name="pin_key" type="VARCHAR(255)"/>
+            <column name="pvv" type="VARCHAR(255)"/>
+            <column name="gender" type="VARCHAR(255)"/>
+            <column name="status" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="birth_date" type="date"/>
+            <column name="citizenship" type="INT"/>
+            <column name="email" type="VARCHAR(255)"/>
+            <column name="login_status" type="VARCHAR(255)" defaultValue="ACTIVE">
+                <constraints nullable="false"/>
+            </column>
+            <column name="mfa_type" type="VARCHAR(255)"/>
+            <column name="mfa_secret_code" type="VARCHAR(255)"/>
+            <column name="mfa_backup_codes" type="VARCHAR(255)"/>
+            <column name="locale" type="VARCHAR(255)"/>
+            <column name="keycloak_id" type="VARCHAR(255)"/>
+            <column name="reg_by_entity_id" type="INT"/>
+            <column name="legacy_account_id" type="INT"/>
+            <column name="kyc_status_id" type="INT" defaultValue="0">
+                <constraints nullable="false"/>
+            </column>
+            <column name="meta_data" type="json"/>
+            <column name="created_date" type="timestamp" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+    <changeSet author="Pavlo.Slyvka" id="entity-fk_entity_type_id">
+        <addForeignKeyConstraint constraintName="fk_entity_type" baseTableName="entity" baseColumnNames="entity_type_id" referencedTableName="entity_type" referencedColumnNames="id" deferrable="false" initiallyDeferred="false" onDelete="CASCADE" onUpdate="RESTRICT" validate="true"/>
+        <createIndex indexName="i_entity_type" tableName="entity">
+            <column name="entity_type_id"/>
+        </createIndex>
+    </changeSet>
+    <changeSet author="Pavlo.Slyvka" id="entity-fk_id_type">
+        <addForeignKeyConstraint constraintName="fk_id_type" baseTableName="entity" baseColumnNames="id_type" referencedTableName="entity_id_type" referencedColumnNames="id" deferrable="false" initiallyDeferred="false" onDelete="CASCADE" onUpdate="RESTRICT" validate="true"/>
+        <createIndex indexName="i_id_type" tableName="entity">
+            <column name="id_type"/>
+        </createIndex>
+    </changeSet>
+    <changeSet author="Pavlo.Slyvka" id="entity-fk_citizenship">
+        <addForeignKeyConstraint constraintName="fk_citizenship" baseTableName="entity" baseColumnNames="citizenship" referencedTableName="country" referencedColumnNames="id" validate="true" deferrable="false" initiallyDeferred="false" onDelete="CASCADE" onUpdate="RESTRICT"/>
+        <createIndex indexName="i_citizenship" tableName="entity">
+            <column name="citizenship"/>
+        </createIndex>
+    </changeSet>
+    <changeSet author="Pavlo.Slyvka" id="entity-i-id_number">
+        <createIndex indexName="i_entity_id_number" tableName="entity">
+            <column name="id_number"/>
+        </createIndex>
+    </changeSet>
+    <changeSet author="Pavlo.Slyvka" id="entity-fk_reg_by_entity_id">
+        <addForeignKeyConstraint constraintName="fk_reg_by_entity" baseTableName="entity" baseColumnNames="reg_by_entity_id" referencedTableName="entity" referencedColumnNames="id" deferrable="false" initiallyDeferred="false" onDelete="CASCADE" onUpdate="RESTRICT" validate="true"/>
+        <createIndex indexName="i_reg_by_entity" tableName="entity">
+            <column name="reg_by_entity_id"/>
+        </createIndex>
+    </changeSet>
+<!--    <changeSet author="Pavlo.Slyvka" id="entity-u-id_number_id_type">-->
+<!--        <addUniqueConstraint columnNames="id_number, id_type" constraintName="fk_id_number_id_type" tableName="entity"/>-->
+<!--    </changeSet>-->
+
+    <changeSet author="Pavlo.Slyvka" id="entity_msisdn-create">
+        <createTable tableName="entity_msisdn">
+            <column autoIncrement="true" name="id" type="INT">
+                <constraints nullable="false" primaryKey="true"/>
+            </column>
+            <column name="entity_id" type="INT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="msisdn" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="type" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="description" type="VARCHAR(255)"/>
+            <column name="created_date" type="timestamp" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+    <changeSet author="Pavlo.Slyvka" id="entity_msisdn-fk_entity_id">
+        <addForeignKeyConstraint constraintName="fk_msisdn_entity_id" baseTableName="entity_msisdn" baseColumnNames="entity_id" referencedTableName="entity" referencedColumnNames="id" validate="true" deferrable="false" initiallyDeferred="false" onDelete="CASCADE" onUpdate="RESTRICT"/>
+        <createIndex indexName="i_msisdn_entity_id" tableName="entity_msisdn">
+            <column name="entity_id"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet author="Pavlo.Slyvka" id="address-create">
+        <createTable tableName="address">
+            <column autoIncrement="true" name="id" type="INT">
+                <constraints nullable="false" primaryKey="true"/>
+            </column>
+            <column name="entity_id" type="INT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="country_id" type="INT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="city" type="VARCHAR(255)"/>
+            <column name="address_type" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="postal_code" type="VARCHAR(255)"/>
+            <column name="address1" type="VARCHAR(255)"/>
+            <column name="address2" type="VARCHAR(255)"/>
+            <column name="notes" type="VARCHAR(255)"/>
+        </createTable>
+    </changeSet>
+    <changeSet author="Pavlo.Slyvka" id="address-fk_entity_id">
+        <addForeignKeyConstraint constraintName="fk_address_entity_id" baseTableName="address" baseColumnNames="entity_id" referencedTableName="entity" referencedColumnNames="id" validate="true" deferrable="false" initiallyDeferred="false" onDelete="CASCADE" onUpdate="RESTRICT"/>
+        <createIndex indexName="i_address_entity_id" tableName="address">
+            <column name="entity_id"/>
+        </createIndex>
+    </changeSet>
+    <changeSet author="Pavlo.Slyvka" id="address-fk_country_id">
+        <addForeignKeyConstraint constraintName="fk_address_country_id" baseTableName="address" baseColumnNames="country_id" referencedTableName="country" referencedColumnNames="id" validate="true" deferrable="false" initiallyDeferred="false" onDelete="CASCADE" onUpdate="RESTRICT"/>
+        <createIndex indexName="i_address_country_id" tableName="address">
+            <column name="country_id"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet author="Pavlo.Slyvka" id="account-create">
+        <createTable tableName="account">
+            <column autoIncrement="true" name="id" type="INT">
+                <constraints nullable="false" primaryKey="true"/>
+            </column>
+            <column name="entity_id" type="INT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="account_type_id" type="INT"/>
+            <column name="account_number" type="VARCHAR(255)">
+                <constraints nullable="false" unique="true"/>
+            </column>
+            <column name="account_status" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="daily_limit" type="DECIMAL(19, 2)"/>
+            <column name="overdraft_limit" type="DECIMAL(19, 2)"/>
+            <column name="balance_minimum" type="DECIMAL(19, 2)"/>
+            <column name="balance_warning" type="DECIMAL(19, 2)"/>
+            <column name="enforce_balance_limits" type="BIT(1)" defaultValue="false">
+                <constraints nullable="false"/>
+            </column>
+            <column name="notification_enabled" type="BIT(1)" defaultValue="false">
+                <constraints nullable="false"/>
+            </column>
+            <column name="auto_debit" type="BIT(1)" defaultValue="false">
+                <constraints nullable="false"/>
+            </column>
+            <column name="authorisation_type" type="VARCHAR(255)"/>
+            <column name="created_date" type="timestamp" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+    <changeSet author="Pavlo.Slyvka" id="account-fk_entity_id">
+        <addForeignKeyConstraint constraintName="fk_account_entity_id" baseTableName="account" baseColumnNames="entity_id" referencedTableName="entity" referencedColumnNames="id" validate="true" deferrable="false" initiallyDeferred="false" onDelete="CASCADE" onUpdate="RESTRICT"/>
+        <createIndex indexName="i_account_entity_id" tableName="account">
+            <column name="entity_id"/>
+        </createIndex>
+    </changeSet>
+    <changeSet author="Pavlo.Slyvka" id="account-fk_account_type_id">
+        <addForeignKeyConstraint constraintName="fk_account_account_type_id" baseTableName="account" baseColumnNames="account_type_id" referencedTableName="account_type" referencedColumnNames="id" validate="true" deferrable="false" initiallyDeferred="false" onDelete="CASCADE" onUpdate="RESTRICT"/>
+        <createIndex indexName="i_account_account_type_id" tableName="account">
+            <column name="account_type_id"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet author="Pavlo.Slyvka" id="account_balance-create">
+        <createTable tableName="account_balance">
+            <column autoIncrement="true" name="id" type="INT">
+                <constraints nullable="false" primaryKey="true"/>
+            </column>
+            <column name="account_id" type="INT">
+                <constraints nullable="false" unique="true"/>
+            </column>
+            <column name="balance" type="DECIMAL(19, 2)"/>
+            <column name="version" type="INT" defaultValue="0">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+    <changeSet author="Pavlo.Slyvka" id="account_balance-fk_account_id">
+        <addForeignKeyConstraint constraintName="fk_ab_account_id" baseTableName="account_balance" baseColumnNames="account_id" referencedTableName="account" referencedColumnNames="id" deferrable="false" initiallyDeferred="false" onDelete="RESTRICT" onUpdate="RESTRICT" validate="true"/>
+        <createIndex indexName="i_ab_account_id" tableName="account_balance">
+            <column name="account_id"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet author="Pavlo.Slyvka" id="bank-create">
+        <createTable tableName="bank">
+            <column autoIncrement="true" name="id" type="INT">
+                <constraints nullable="false" primaryKey="true"/>
+            </column>
+            <column name="name" type="VARCHAR(255)">
+                <constraints nullable="false" unique="true"/>
+            </column>
+            <column name="default_bin" type="VARCHAR(6)"/>
+        </createTable>
+    </changeSet>
+
+    <changeSet author="Pavlo.Slyvka" id="bank_branch-create">
+        <createTable tableName="bank_branch">
+            <column autoIncrement="true" name="id" type="INT">
+                <constraints nullable="false" primaryKey="true"/>
+            </column>
+            <column name="bank_id" type="INT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="name" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="branch_no" type="INT"/>
+            <column name="branch_no_fixed" type="INT"/>
+            <column name="flexcube_code" type="VARCHAR(3)"/>
+            <column name="swift_code" type="VARCHAR(20)"/>
+            <column name="icecash_account_number" type="VARCHAR(255)"/>
+            <column name="account_id" type="INT"/>
+            <column name="legacy_bank_id" type="INT"/>
+            <column name="visible" type="BIT(1)" defaultValue="false">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+    <changeSet author="Pavlo.Slyvka" id="bank-fk_bank">
+        <addForeignKeyConstraint constraintName="fk_b_bank" baseTableName="bank_branch" baseColumnNames="bank_id" referencedTableName="bank" referencedColumnNames="id" deferrable="false" initiallyDeferred="false" onDelete="RESTRICT" onUpdate="RESTRICT" validate="true"/>
+        <createIndex indexName="i_b_bank" tableName="bank_branch">
+            <column name="bank_id"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet author="Pavlo.Slyvka" id="security_right-create">
+        <createTable tableName="security_right">
+            <column autoIncrement="true" name="id" type="INT">
+                <constraints nullable="false" primaryKey="true"/>
+            </column>
+            <column name="name" type="VARCHAR(255)">
+                <constraints nullable="false" unique="true"/>
+            </column>
+            <column name="description" type="VARCHAR(255)"/>
+            <column name="right_type" type="VARCHAR(255)"/>
+        </createTable>
+    </changeSet>
+
+    <changeSet author="Pavlo.Slyvka" id="security_group-create">
+        <createTable tableName="security_group">
+            <column autoIncrement="true" name="id" type="INT">
+                <constraints nullable="false" primaryKey="true"/>
+            </column>
+            <column name="name" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="description" type="VARCHAR(255)"/>
+            <column name="active" type="BIT(1)" defaultValue="false">
+                <constraints nullable="false"/>
+            </column>
+            <column name="meta_data" type="json"/>
+            <column name="legacy_id" type="VARCHAR(255)"/>
+        </createTable>
+    </changeSet>
+
+    <changeSet author="Pavlo.Slyvka" id="security_group_right-create">
+        <createTable tableName="security_group_right">
+            <column name="security_group_id" type="INT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="security_right_id" type="INT">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <addPrimaryKey columnNames="security_group_id, security_right_id"
+                constraintName="pk_security_group_right"
+                tableName="security_group_right"/>
+    </changeSet>
+    <changeSet author="Pavlo.Slyvka" id="security_group_right-fk_security_group">
+        <addForeignKeyConstraint constraintName="fk_sgr_security_group" baseTableName="security_group_right" baseColumnNames="security_group_id" referencedTableName="security_group" referencedColumnNames="id" deferrable="false" initiallyDeferred="false" onDelete="RESTRICT" onUpdate="RESTRICT" validate="true"/>
+        <createIndex indexName="i_sgr_security_group" tableName="security_group_right">
+            <column name="security_group_id"/>
+        </createIndex>
+    </changeSet>
+    <changeSet author="Pavlo.Slyvka" id="security_group_right-fk_security_right">
+        <addForeignKeyConstraint constraintName="fk_sgr_security_right" baseTableName="security_group_right" baseColumnNames="security_right_id" referencedTableName="security_right" referencedColumnNames="id" deferrable="false" initiallyDeferred="false" onDelete="RESTRICT" onUpdate="RESTRICT" validate="true"/>
+        <createIndex indexName="i_sgr_security_right" tableName="security_group_right">
+            <column name="security_right_id"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet author="Pavlo.Slyvka" id="account_relationship-create">
+        <createTable tableName="account_relationship">
+            <column autoIncrement="true" name="id" type="INT">
+                <constraints nullable="false" primaryKey="true"/>
+            </column>
+            <column name="entity_id" type="INT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="partner_account_id" type="INT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="security_groups" type="json"/>
+            <column name="meta_data" type="json"/>
+            <column name="created_date" type="timestamp" defaultValueComputed="CURRENT_TIMESTAMP"/>
+        </createTable>
+    </changeSet>
+    <changeSet author="Pavlo.Slyvka" id="account_relationship-fk_entity_id">
+        <addForeignKeyConstraint constraintName="fk_ar_entity_id" baseTableName="account_relationship" baseColumnNames="entity_id" referencedTableName="entity" referencedColumnNames="id" deferrable="false" initiallyDeferred="false" onDelete="RESTRICT" onUpdate="RESTRICT" validate="true"/>
+        <createIndex indexName="i_ar_entity_id" tableName="account_relationship">
+            <column name="entity_id"/>
+        </createIndex>
+    </changeSet>
+    <changeSet author="Pavlo.Slyvka" id="account_relationship-fk_partner_account_id">
+        <addForeignKeyConstraint constraintName="fk_ar_partner_account_id" baseTableName="account_relationship" baseColumnNames="partner_account_id" referencedTableName="account" referencedColumnNames="id" deferrable="false" initiallyDeferred="false" onDelete="CASCADE" onUpdate="RESTRICT" validate="true"/>
+        <createIndex indexName="i_ar_partner_account_id" tableName="account_relationship">
+            <column name="partner_account_id"/>
+        </createIndex>
+    </changeSet>
+<!--    <changeSet author="Pavlo.Slyvka" id="account_relationship-u-user_account_id_partner_account_id">-->
+<!--        <addUniqueConstraint constraintName="fk_user_partner_account_id" tableName="account_relationship" columnNames="user_account_id, partner_account_id"/>-->
+<!--    </changeSet>-->
+
+    <changeSet author="Pavlo.Slyvka" id="fee-create">
+        <createTable tableName="fee">
+            <column autoIncrement="true" name="id" type="INT">
+                <constraints nullable="false" primaryKey="true"/>
+            </column>
+            <column name="charge_type" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="src_amount_fee_id" type="INT"/>
+            <column name="process_order" type="INT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="amount" type="DECIMAL(19, 2)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="max_charge" type="DECIMAL(19, 2)"/>
+            <column name="min_charge" type="DECIMAL(19, 2)"/>
+            <column name="transaction_code_id" type="INT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="currency_id" type="INT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="cr_entity_account_id" type="INT"/>
+            <column name="dr_entity_account_id" type="INT"/>
+            <column name="affordability_check" type="BIT(1)" defaultValue="false">
+                <constraints nullable="false"/>
+            </column>
+            <column name="active" type="BIT(1)">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+    <changeSet author="Pavlo.Slyvka" id="fee-fk_currency_id">
+        <addForeignKeyConstraint constraintName="fk_currency_id" baseTableName="fee" baseColumnNames="currency_id" referencedTableName="currency" referencedColumnNames="id" deferrable="false" initiallyDeferred="false" onDelete="CASCADE" onUpdate="RESTRICT" validate="true"/>
+        <createIndex indexName="i_currency_id" tableName="fee">
+            <column name="currency_id"/>
+        </createIndex>
+    </changeSet>
+    <changeSet author="Pavlo.Slyvka" id="fee-fk_src_amount_fee_id">
+        <addForeignKeyConstraint constraintName="fk_src_amount_fee_id" baseTableName="fee" baseColumnNames="src_amount_fee_id" referencedTableName="fee" referencedColumnNames="id" deferrable="false" initiallyDeferred="false" onDelete="CASCADE" onUpdate="RESTRICT" validate="true"/>
+        <createIndex indexName="i_src_amount_fee_id" tableName="fee">
+            <column name="src_amount_fee_id"/>
+        </createIndex>
+    </changeSet>
+    <changeSet author="Pavlo.Slyvka" id="fee-fk_transaction_code_id">
+        <addForeignKeyConstraint constraintName="fk_transaction_code_id" baseTableName="fee" baseColumnNames="transaction_code_id" referencedTableName="transaction_code" referencedColumnNames="id" deferrable="false" initiallyDeferred="false" onDelete="CASCADE" onUpdate="RESTRICT" validate="true"/>
+        <createIndex indexName="i_transaction_code_id" tableName="fee">
+            <column name="transaction_code_id"/>
+        </createIndex>
+    </changeSet>
+    <changeSet author="Pavlo.Slyvka" id="fee-fk_cr_entity_account_id">
+        <addForeignKeyConstraint constraintName="fk_fcr_entity_account_id" baseTableName="fee" baseColumnNames="cr_entity_account_id" referencedTableName="account" referencedColumnNames="id" deferrable="false" initiallyDeferred="false" onDelete="RESTRICT" onUpdate="RESTRICT" validate="true"/>
+        <createIndex indexName="i_cr_entity_account_id" tableName="fee">
+            <column name="cr_entity_account_id"/>
+        </createIndex>
+    </changeSet>
+    <changeSet author="Pavlo.Slyvka" id="fee-fk_dr_entity_account_id">
+        <addForeignKeyConstraint constraintName="fk_fdr_entity_account_id" baseTableName="fee" baseColumnNames="dr_entity_account_id" referencedTableName="account" referencedColumnNames="id" deferrable="false" initiallyDeferred="false" onDelete="RESTRICT" onUpdate="RESTRICT" validate="true"/>
+        <createIndex indexName="i_dr_entity_account_id" tableName="fee">
+            <column name="dr_entity_account_id"/>
+        </createIndex>
+    </changeSet>
+    <changeSet author="Pavlo.Slyvka" id="fee-u-transaction_code_id_currency_id_process_order">
+        <addUniqueConstraint constraintName="fk_process_order" tableName="fee" columnNames="transaction_code_id, currency_id, process_order"/>
+    </changeSet>
+
+    <changeSet author="Pavlo.Slyvka" id="initiator_type-create">
+        <createTable tableName="initiator_type">
+            <column autoIncrement="true" name="id" type="INT">
+                <constraints nullable="false" primaryKey="true"/>
+            </column>
+            <column name="active" type="BIT(1)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="description" type="VARCHAR(255)">
+                <constraints nullable="false" unique="true"/>
+            </column>
+            <column name="entity_id" type="INT"/>
+        </createTable>
+    </changeSet>
+    <changeSet author="Pavlo.Slyvka" id="initiator_type-fk_entity_id">
+        <addForeignKeyConstraint constraintName="fk_entity_id" baseTableName="initiator_type" baseColumnNames="entity_id" referencedTableName="entity" referencedColumnNames="id" deferrable="false" initiallyDeferred="false" onDelete="CASCADE" onUpdate="RESTRICT" validate="true"/>
+        <createIndex indexName="i_entity_id" tableName="initiator_type">
+            <column name="entity_id"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet author="Pavlo.Slyvka" id="initiator_category-create">
+        <createTable tableName="initiator_category">
+            <column autoIncrement="true" name="id" type="INT">
+                <constraints nullable="false" primaryKey="true"/>
+            </column>
+            <column name="category" type="VARCHAR(255)">
+                <constraints nullable="false" unique="true"/>
+            </column>
+            <column name="entity_id" type="INT"/>
+        </createTable>
+    </changeSet>
+
+    <changeSet author="Pavlo.Slyvka" id="initiator_status-create">
+        <createTable tableName="initiator_status">
+            <column autoIncrement="true" name="id" type="INT">
+                <constraints nullable="false" primaryKey="true"/>
+            </column>
+            <column name="name" type="VARCHAR(255)">
+                <constraints nullable="false" unique="true"/>
+            </column>
+            <column name="permit_transaction" type="BIT(1)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="active" type="BIT(1)">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+
+    <changeSet author="Pavlo.Slyvka" id="initiator-create">
+        <createTable tableName="initiator">
+            <column autoIncrement="true" name="id" type="INT">
+                <constraints nullable="false" primaryKey="true"/>
+            </column>
+            <column name="initiator_type_id" type="INT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="identifier" type="VARCHAR(255)"/>
+            <column name="account_id" type="INT"/>
+            <column name="initiator_category_id" type="INT"/>
+            <column name="initiator_status_id" type="INT"/>
+            <column name="pvv" type="VARCHAR(255)"/>
+            <column name="notes" type="VARCHAR(255)"/>
+            <column name="created_date" type="timestamp" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="start_date" type="date"/>
+            <column name="expiry_date" type="date"/>
+            <column name="meta_data" type="json"/>
+            <column name="configuration" type="json"/>
+        </createTable>
+    </changeSet>
+    <changeSet author="Pavlo.Slyvka" id="initiator-fk_initiator_type_id">
+        <addForeignKeyConstraint constraintName="fk_initiator_type_id" baseTableName="initiator" baseColumnNames="initiator_type_id" referencedTableName="initiator_type" referencedColumnNames="id" validate="true" deferrable="false" initiallyDeferred="false" onDelete="CASCADE" onUpdate="RESTRICT"/>
+        <createIndex indexName="i_initiator_type_id" tableName="initiator">
+            <column name="initiator_type_id"/>
+        </createIndex>
+    </changeSet>
+    <changeSet author="Pavlo.Slyvka" id="initiator-fk_initiator_category_id">
+        <addForeignKeyConstraint constraintName="fk_initiator_category_id" baseTableName="initiator" baseColumnNames="initiator_category_id" referencedTableName="initiator_category" referencedColumnNames="id" validate="true" deferrable="false" initiallyDeferred="false" onDelete="CASCADE" onUpdate="RESTRICT"/>
+        <createIndex indexName="i_initiator_category_id" tableName="initiator">
+            <column name="initiator_category_id"/>
+        </createIndex>
+    </changeSet>
+    <changeSet author="Pavlo.Slyvka" id="initiator-fk_initiator_status_id">
+        <addForeignKeyConstraint constraintName="fk_initiator_status_id" baseTableName="initiator" baseColumnNames="initiator_status_id" referencedTableName="initiator_status" referencedColumnNames="id" validate="true" deferrable="false" initiallyDeferred="false" onDelete="CASCADE" onUpdate="RESTRICT"/>
+        <createIndex indexName="i_initiator_status_id" tableName="initiator">
+            <column name="initiator_status_id"/>
+        </createIndex>
+    </changeSet>
+    <changeSet author="Pavlo.Slyvka" id="initiator-fk_account_id">
+        <addForeignKeyConstraint constraintName="fk_account_id" baseTableName="initiator" baseColumnNames="account_id" referencedTableName="account" referencedColumnNames="id" validate="true" deferrable="false" initiallyDeferred="false" onDelete="CASCADE" onUpdate="RESTRICT"/>
+        <createIndex indexName="i_account_id" tableName="initiator">
+            <column name="account_id"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet author="Pavlo.Slyvka" id="document_type-create">
+        <createTable tableName="document_type">
+            <column autoIncrement="true" name="id" type="INT">
+                <constraints nullable="false" primaryKey="true"/>
+            </column>
+            <column name="name" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="active" type="BIT(1)" defaultValue="true">
+                <constraints nullable="false"/>
+            </column>
+            <column name="country_id" type="INT"/>
+        </createTable>
+    </changeSet>
+
+    <changeSet author="Pavlo.Slyvka" id="document-create">
+        <createTable tableName="document">
+            <column autoIncrement="true" name="id" type="INT">
+                <constraints nullable="false" primaryKey="true"/>
+            </column>
+            <column name="file_name" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="path" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="document_type_id" type="INT"/>
+            <column name="entity_id" type="INT"/>
+            <column name="meta_data" type="json"/>
+            <column name="comments" type="VARCHAR(255)"/>
+            <column name="created_date" type="timestamp" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+    <changeSet author="Pavlo.Slyvka" id="document-fk_document_type_id">
+        <addForeignKeyConstraint constraintName="fk_d_document_type_id" baseTableName="document" baseColumnNames="document_type_id" referencedTableName="document_type" referencedColumnNames="id" deferrable="false" initiallyDeferred="false" onDelete="RESTRICT" onUpdate="RESTRICT" validate="true"/>
+        <createIndex indexName="i_d_document_type_id" tableName="document">
+            <column name="document_type_id"/>
+        </createIndex>
+    </changeSet>
+    <changeSet author="Pavlo.Slyvka" id="document_type-fk_entity_id">
+        <addForeignKeyConstraint constraintName="fk_dt_entity_id" baseTableName="document" baseColumnNames="entity_id" referencedTableName="entity" referencedColumnNames="id" deferrable="false" initiallyDeferred="false" onDelete="RESTRICT" onUpdate="RESTRICT" validate="true"/>
+        <createIndex indexName="i_d_entity_id" tableName="document">
+            <column name="entity_id"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet author="Pavlo.Slyvka" id="ip_whitelist-create">
+        <createTable tableName="ip_whitelist">
+            <column autoIncrement="true" name="id" type="INT">
+                <constraints nullable="false" primaryKey="true"/>
+            </column>
+            <column name="ip_range" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="active" type="BIT(1)" defaultValue="true">
+                <constraints nullable="false"/>
+            </column>
+            <column name="description" type="VARCHAR(255)"/>
+        </createTable>
+    </changeSet>
+
+    <changeSet author="Pavlo.Slyvka" id="tax_declaration-create">
+        <createTable tableName="tax_declaration">
+            <column autoIncrement="true" name="id" type="INT">
+                <constraints nullable="false" primaryKey="true"/>
+            </column>
+            <column name="description" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+
+    <changeSet author="Pavlo.Slyvka" id="tax_reason-create">
+        <createTable tableName="tax_reason">
+            <column autoIncrement="true" name="id" type="INT">
+                <constraints nullable="false" primaryKey="true"/>
+            </column>
+            <column name="description" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="display" type="BIT(1)" defaultValue="false">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+
+    <changeSet author="Pavlo.Slyvka" id="payment_method-create">
+        <createTable tableName="payment_method">
+            <column autoIncrement="true" name="id" type="INT">
+                <constraints nullable="false" primaryKey="true"/>
+            </column>
+            <column name="description" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="friendly_name" type="VARCHAR(255)"/>
+        </createTable>
+    </changeSet>
+
+    <changeSet author="Pavlo.Slyvka" id="transaction-create">
+        <createTable tableName="transaction">
+            <column autoIncrement="true" name="id" type="INT">
+                <constraints nullable="false" primaryKey="true"/>
+            </column>
+            <column name="session_id" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column defaultValueComputed="CURRENT_TIMESTAMP" name="created_date" type="timestamp">
+                <constraints nullable="false"/>
+            </column>
+            <column defaultValueComputed="CURRENT_TIMESTAMP" name="statement_date" type="timestamp">
+                <constraints nullable="false"/>
+            </column>
+            <column name="initiator_id" type="INT"/>
+            <column name="initiator_type_id" type="INT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="currency_id" type="INT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="transaction_code_id" type="INT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="channel_id" type="INT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="meta_data" type="json"/>
+        </createTable>
+    </changeSet>
+    <changeSet author="Pavlo.Slyvka" id="transaction-fk_tr_initiator_id">
+        <addForeignKeyConstraint constraintName="fk_tr_initiator_id" baseTableName="transaction" baseColumnNames="initiator_id" referencedTableName="initiator" referencedColumnNames="id" deferrable="false" initiallyDeferred="false" onDelete="CASCADE" onUpdate="RESTRICT" validate="true"/>
+        <createIndex indexName="i_tr_initiator_id" tableName="transaction">
+            <column name="initiator_id"/>
+        </createIndex>
+    </changeSet>
+    <changeSet author="Pavlo.Slyvka" id="transaction-fk_tr_initiator_type_id">
+        <addForeignKeyConstraint constraintName="fk_tr_initiator_type_id" baseTableName="transaction" baseColumnNames="initiator_type_id" referencedTableName="initiator_type" referencedColumnNames="id" deferrable="false" initiallyDeferred="false" onDelete="CASCADE" onUpdate="RESTRICT" validate="true"/>
+        <createIndex indexName="i_tr_initiator_type_id" tableName="transaction">
+            <column name="initiator_type_id"/>
+        </createIndex>
+    </changeSet>
+    <changeSet author="Pavlo.Slyvka" id="transaction-fk_currency_id">
+        <addForeignKeyConstraint constraintName="fk_tr_currency_id" baseTableName="transaction" baseColumnNames="currency_id" referencedTableName="currency" referencedColumnNames="id" deferrable="false" initiallyDeferred="false" onDelete="CASCADE" onUpdate="RESTRICT" validate="true"/>
+        <createIndex indexName="i_tr_currency_id" tableName="transaction">
+            <column name="currency_id"/>
+        </createIndex>
+    </changeSet>
+    <changeSet author="Pavlo.Slyvka" id="transaction-fk_transaction_code_id">
+        <addForeignKeyConstraint constraintName="fk_tr_transaction_code_id" baseTableName="transaction" baseColumnNames="transaction_code_id" referencedTableName="transaction_code" referencedColumnNames="id" deferrable="false" initiallyDeferred="false" onDelete="CASCADE" onUpdate="RESTRICT" validate="true"/>
+        <createIndex indexName="i_tr_transaction_code_id" tableName="transaction">
+            <column name="transaction_code_id"/>
+        </createIndex>
+    </changeSet>
+    <changeSet author="Pavlo.Slyvka" id="transaction-fk_channel_id">
+        <addForeignKeyConstraint constraintName="fk_channel_id" baseTableName="transaction" baseColumnNames="channel_id" referencedTableName="channel" referencedColumnNames="id" deferrable="false" initiallyDeferred="false" onDelete="CASCADE" onUpdate="RESTRICT" validate="true"/>
+        <createIndex indexName="i_channel_id" tableName="transaction">
+            <column name="channel_id"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet author="Pavlo.Slyvka" id="transaction_lines-create">
+        <createTable tableName="transaction_lines">
+            <column autoIncrement="true" name="id" type="INT">
+                <constraints nullable="false" primaryKey="true"/>
+            </column>
+            <column name="amount" type="DECIMAL(19, 2)"/>
+            <column name="description" type="VARCHAR(255)"/>
+            <column name="entity_account_id" type="INT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="transaction_code_id" type="INT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="transaction_id" type="INT">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+    <changeSet author="Pavlo.Slyvka" id="transaction_lines-fk_entity_account_id">
+        <addForeignKeyConstraint constraintName="fk_entity_account_id" baseTableName="transaction_lines" baseColumnNames="entity_account_id" referencedTableName="account" referencedColumnNames="id" deferrable="false" initiallyDeferred="false" onDelete="CASCADE" onUpdate="RESTRICT" validate="true"/>
+        <createIndex indexName="i_entity_account_id" tableName="transaction_lines">
+            <column name="entity_account_id"/>
+        </createIndex>
+    </changeSet>
+    <changeSet author="Pavlo.Slyvka" id="transaction_lines-fk_transaction_code_id">
+        <addForeignKeyConstraint constraintName="fk_tl_transaction_code_id" baseTableName="transaction_lines" baseColumnNames="transaction_code_id" referencedTableName="transaction_code" referencedColumnNames="id" deferrable="false" initiallyDeferred="false" onDelete="CASCADE" onUpdate="RESTRICT" validate="true"/>
+        <createIndex indexName="i_tl_transaction_code_id" tableName="transaction_lines">
+            <column name="transaction_code_id"/>
+        </createIndex>
+    </changeSet>
+    <changeSet author="Pavlo.Slyvka" id="transaction_lines-fk_transaction_id">
+        <addForeignKeyConstraint constraintName="fk_transaction_id" baseTableName="transaction_lines" baseColumnNames="transaction_id" referencedTableName="transaction" referencedColumnNames="id" deferrable="false" initiallyDeferred="false" onDelete="CASCADE" onUpdate="RESTRICT" validate="true"/>
+        <createIndex indexName="i_transaction_id" tableName="transaction_lines">
+            <column name="transaction_id"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet author="Pavlo.Slyvka" id="perf_statistics-create">
+        <createTable tableName="perf_statistics">
+            <column autoIncrement="true" name="id" type="INT">
+                <constraints nullable="false" primaryKey="true"/>
+            </column>
+            <column name="info" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="total_records" type="INT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="account_records" type="INT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="min" type="DECIMAL(19, 9)"/>
+            <column name="avg" type="DECIMAL(19, 9)"/>
+            <column name="max" type="DECIMAL(19, 9)"/>
+            <column name="total_duration" type="DECIMAL(19, 9)"/>
+            <column name="real_duration" type="DECIMAL(19, 9)"/>
+            <column name="parallelism" type="INT"/>
+            <column defaultValueComputed="CURRENT_TIMESTAMP" name="created_date" type="timestamp">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+
+    <changeSet author="Pavlo.Slyvka" id="payment_collection-create">
+        <createTable tableName="payment_collection">
+            <column autoIncrement="true" name="id" type="INT">
+                <constraints nullable="false" primaryKey="true"/>
+            </column>
+            <column name="session_id" type="INT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="payment_method_id" type="INT"/>
+            <column name="channel" type="VARCHAR(255)"/>
+            <column name="created_date" type="timestamp" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+    <changeSet author="Pavlo.Slyvka" id="payment_collection-fk_payment_method_id">
+        <addForeignKeyConstraint constraintName="fk_pc_payment_method" baseTableName="payment_collection" baseColumnNames="payment_method_id" referencedTableName="payment_method" referencedColumnNames="id" deferrable="false" initiallyDeferred="false" onDelete="CASCADE" onUpdate="RESTRICT" validate="true"/>
+        <createIndex indexName="i_pc_payment_method" tableName="payment_collection">
+            <column name="payment_method_id"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet author="Pavlo.Slyvka" id="payment-create">
+        <createTable tableName="payment">
+            <column autoIncrement="true" name="id" type="INT">
+                <constraints nullable="false" primaryKey="true"/>
+            </column>
+            <column name="account_id" type="INT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="account_side" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="status" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="description" type="VARCHAR(255)"/>
+            <column name="count" type="INT"/>
+            <column name="total" type="DECIMAL(19, 2)"/>
+            <column name="tax_declaration_id" type="INT"/>
+            <column name="tax_reason_id" type="INT"/>
+            <column name="payment_collection_id" type="INT"/>
+            <column name="created_date" type="timestamp" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="documents" type="json"/>
+            <column name="meta_data" type="json"/>
+        </createTable>
+    </changeSet>
+    <changeSet author="Pavlo.Slyvka" id="payment-fk_account_id">
+        <addForeignKeyConstraint constraintName="fk_p_account" baseTableName="payment" baseColumnNames="account_id" referencedTableName="account" referencedColumnNames="id" deferrable="false" initiallyDeferred="false" onDelete="CASCADE" onUpdate="RESTRICT" validate="true"/>
+        <createIndex indexName="i_p_account" tableName="payment">
+            <column name="account_id"/>
+        </createIndex>
+    </changeSet>
+    <changeSet author="Pavlo.Slyvka" id="payment-fk_tax_declaration_id">
+        <addForeignKeyConstraint constraintName="fk_p_tax_declaration" baseTableName="payment" baseColumnNames="tax_declaration_id" referencedTableName="tax_declaration" referencedColumnNames="id" deferrable="false" initiallyDeferred="false" onDelete="CASCADE" onUpdate="RESTRICT" validate="true"/>
+        <createIndex indexName="i_p_tax_declaration_id" tableName="payment">
+            <column name="tax_declaration_id"/>
+        </createIndex>
+    </changeSet>
+    <changeSet author="Pavlo.Slyvka" id="payment-fk_tax_reason_id">
+        <addForeignKeyConstraint constraintName="fk_p_tax_reason" baseTableName="payment" baseColumnNames="tax_reason_id" referencedTableName="tax_reason" referencedColumnNames="id" deferrable="false" initiallyDeferred="false" onDelete="CASCADE" onUpdate="RESTRICT" validate="true"/>
+        <createIndex indexName="i_p_tax_reason" tableName="payment">
+            <column name="tax_reason_id"/>
+        </createIndex>
+    </changeSet>
+    <changeSet author="Pavlo.Slyvka" id="payment-fk_payment_collection_id">
+        <addForeignKeyConstraint constraintName="fk_p_payment_collection" baseTableName="payment" baseColumnNames="payment_collection_id" referencedTableName="payment_collection" referencedColumnNames="id" deferrable="false" initiallyDeferred="false" onDelete="CASCADE" onUpdate="RESTRICT" validate="true"/>
+        <createIndex indexName="i_p_payment_collection" tableName="payment">
+            <column name="payment_collection_id"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet author="Pavlo.Slyvka" id="payment_line-create">
+        <createTable tableName="payment_line">
+            <column autoIncrement="true" name="id" type="INT">
+                <constraints nullable="false" primaryKey="true"/>
+            </column>
+            <column name="payment_id" type="INT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="account_id" type="INT"/>
+            <column name="amount" type="DECIMAL(19, 2)"/>
+            <column name="currency" type="VARCHAR(255)"/>
+            <column name="transaction_code" type="VARCHAR(255)"/>
+            <column name="details" type="VARCHAR(255)"/>
+            <column name="transaction_id" type="INT"/>
+            <column name="meta_data" type="json"/>
+        </createTable>
+    </changeSet>
+    <changeSet author="Pavlo.Slyvka" id="payment_line-fk_payment_id">
+        <addForeignKeyConstraint constraintName="fk_pl_payment" baseTableName="payment_line" baseColumnNames="payment_id" referencedTableName="payment" referencedColumnNames="id" deferrable="false" initiallyDeferred="false" onDelete="CASCADE" onUpdate="RESTRICT" validate="true"/>
+        <createIndex indexName="i_pl_payment" tableName="payment_line">
+            <column name="payment_id"/>
+        </createIndex>
+    </changeSet>
+    <changeSet author="Pavlo.Slyvka" id="payment_line-fk_account_id">
+        <addForeignKeyConstraint constraintName="fk_pl_account" baseTableName="payment_line" baseColumnNames="account_id" referencedTableName="account" referencedColumnNames="id" deferrable="false" initiallyDeferred="false" onDelete="CASCADE" onUpdate="RESTRICT" validate="true"/>
+        <createIndex indexName="i_pl_account" tableName="payment_line">
+            <column name="account_id"/>
+        </createIndex>
+    </changeSet>
+    <changeSet author="Pavlo.Slyvka" id="payment_line-fk_transaction_id">
+        <addForeignKeyConstraint constraintName="fk_pl_transaction" baseTableName="payment_line" baseColumnNames="transaction_id" referencedTableName="transaction" referencedColumnNames="id" deferrable="false" initiallyDeferred="false" onDelete="CASCADE" onUpdate="RESTRICT" validate="true"/>
+        <createIndex indexName="i_pl_transaction" tableName="payment_line">
+            <column name="transaction_id"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet author="Pavlo.Slyvka" id="country-insert-test">
+        <sql>
+            INSERT INTO country (id, iso_code, name) VALUES (204, N'ZIM', N'Zimbabwe');
+            INSERT INTO country (id, iso_code, name) VALUES (157, N'RSA', N'South Africa');
+            INSERT INTO country (id, iso_code, name) VALUES (205, N'MOZ', N'Mozambique');
+            INSERT INTO country (id, iso_code, name) VALUES (206, N'KEN', N'Kenya');
+        </sql>
+    </changeSet>
+    <changeSet author="Pavlo.Slyvka" id="entity_id_type-insert-init">
+        <sql>
+            INSERT INTO entity_id_type (id, description) VALUES (1, 'Zimbabwean National ID');
+            INSERT INTO entity_id_type (id, description) VALUES (2, 'South African National ID');
+            INSERT INTO entity_id_type (id, description) VALUES (3, 'Business Registration Number');
+            INSERT INTO entity_id_type (id, description, country_id) VALUES (4, 'Mozambican National ID', 205);
+            INSERT INTO entity_id_type (id, description, country_id) VALUES (5, 'Mozambican Passport', 205);
+            INSERT INTO entity_id_type (id, description, country_id) VALUES (6, 'Mozambican DIRE', 205);
+            INSERT INTO entity_id_type (id, description, country_id) VALUES (7, 'Mozambican NUEL', 205);
+        </sql>
+    </changeSet>
+    <changeSet author="Pavlo.Slyvka" id="transaction_code-insert-init">
+        <sql>
+            INSERT INTO transaction_code (id, code, kyc_required, description, active) VALUES (1, 'PAY', 0, 'Payment', true);
+            INSERT INTO transaction_code (id, code, kyc_required, description, active) VALUES (2, 'MTS', 1, 'Money Transfer', true);
+            INSERT INTO transaction_code (id, code, kyc_required, description, active) VALUES (3, 'IMT', 0, 'IMT', true);
+            INSERT INTO transaction_code (id, code, kyc_required, description, active) VALUES (4, 'VAT', 0, 'VAT', true);
+            INSERT INTO transaction_code (id, code, kyc_required, description, active) VALUES (5, 'DEP', 1, 'Deposit', true);
+            INSERT INTO transaction_code (id, code, kyc_required, description, active) VALUES (6, 'PZP ', 1, 'Payment - Zimparks', true);
+            INSERT INTO transaction_code (id, code, kyc_required, description, active) VALUES (7, 'SZP', 0, 'Sweep - Zimparks', true);
+            INSERT INTO transaction_code (id, code, kyc_required, description, active) VALUES (8, 'NBF', 0, 'Merchant Fee - NetOne', false);
+            INSERT INTO transaction_code (id, code, kyc_required, description, active) VALUES (9, 'TZP', 0, 'Tourism Levy - Zimparks', true);
+            INSERT INTO transaction_code (id, code, kyc_required, description, active) VALUES (10, 'CZP', 0, 'Concessionaire Commission (excl VAT)', true);
+            INSERT INTO transaction_code (id, code, kyc_required, description, active) VALUES (11, 'PZS', 0, 'Swipe Fee', true);
+            INSERT INTO transaction_code (id, code, kyc_required, description, active) VALUES (12, 'EWF', 0, 'Merchant Fee (Ecocash)', true);
+            INSERT INTO transaction_code (id, code, kyc_required, description, active) VALUES (13, 'PZA', 0, 'Merchant Fee (Mpos)', true);
+            INSERT INTO transaction_code (id, code, kyc_required, description, active) VALUES (14, 'PZB', 0, 'Interchange Fee', true);
+            INSERT INTO transaction_code (id, code, kyc_required, description, active) VALUES (15, 'PZC', 0, 'CBZ Postilion Fee', true);
+            INSERT INTO transaction_code (id, code, kyc_required, description, active) VALUES (16, 'PZD', 0, 'Acquirers Fee &lt;= 10', true);
+            INSERT INTO transaction_code (id, code, kyc_required, description, active) VALUES (17, 'PZE', 0, 'Acquirers Fee > 10', true);
+            INSERT INTO transaction_code (id, code, kyc_required, description, active) VALUES (18, 'MZP', 1, 'Merchant Fee - Zimparks', true);
+            INSERT INTO transaction_code (id, code, kyc_required, description, active) VALUES (19, 'AAA', 1, 'Test', true);
+            INSERT INTO transaction_code (id, code, kyc_required, description, active) VALUES (22, 'AAB', 1, 'Merchant Fee - Zimparks', true);
+            INSERT INTO transaction_code (id, code, kyc_required, description, active) VALUES (25, 'AAc', 1, 'Merchant Fee - Zimparks', true);
+            INSERT INTO transaction_code (id, code, kyc_required, description, active) VALUES (28, 'BBB', 1, 'dsgdsfg', true);
+        </sql>
+    </changeSet>
+    <changeSet author="Pavlo.Slyvka" id="language-create">
+        <createTable tableName="language">
+            <column autoIncrement="true" name="id" type="INT">
+                <constraints nullable="false" primaryKey="true"/>
+            </column>
+            <column name="name" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="language_key" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+    <changeSet author="Pavlo.Slyvka" id="dictionary-create">
+        <createTable tableName="dictionary">
+            <column autoIncrement="true" name="id" type="INT">
+                <constraints nullable="false" primaryKey="true"/>
+            </column>
+            <column name="lookup_key" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="environment" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="language_id" type="INT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="section" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="value" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+    <changeSet author="Pavlo.Slyvka" id="dictionary-fk_language_id">
+        <addForeignKeyConstraint constraintName="fk_d_language" baseTableName="dictionary" baseColumnNames="language_id" referencedTableName="language" referencedColumnNames="id" deferrable="false" initiallyDeferred="false" onDelete="CASCADE" onUpdate="RESTRICT" validate="true"/>
+        <createIndex indexName="i_p_language" tableName="dictionary">
+            <column name="language_id"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet author="Pavlo.Slyvka" id="staff-create">
+        <createTable tableName="staff">
+            <column autoIncrement="true" name="id" type="INT">
+                <constraints nullable="false" primaryKey="true"/>
+            </column>
+            <column name="email" type="VARCHAR(255)">
+                <constraints nullable="false" unique="true"/>
+            </column>
+            <column name="first_name" type="VARCHAR(255)"/>
+            <column name="last_name" type="VARCHAR(255)"/>
+            <column name="id_number" type="VARCHAR(255)"/>
+            <column name="id_type" type="INT"/>
+            <column name="msisdn" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="department" type="VARCHAR(255)"/>
+            <column name="login_status" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="entity_id" type="INT"/>
+            <column name="pin_key" type="VARCHAR(255)"/>
+            <column name="pvv" type="VARCHAR(255)"/>
+            <column name="keycloak_id" type="VARCHAR(255)"/>
+            <column name="security_group_id" type="INT"/>
+            <column name="mfa_type" type="VARCHAR(255)"/>
+            <column name="mfa_secret_code" type="VARCHAR(255)"/>
+            <column name="mfa_backup_codes" type="VARCHAR(255)"/>
+            <column name="locale" type="VARCHAR(255)"/>
+            <column name="last_login" type="timestamp"/>
+            <column name="created_date" type="timestamp" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+    <changeSet author="Pavlo.Slyvka" id="staff-fk_entity_id">
+        <addForeignKeyConstraint constraintName="fk_staff_entity_id" baseTableName="staff" baseColumnNames="entity_id" referencedTableName="entity" referencedColumnNames="id" validate="true" deferrable="false" initiallyDeferred="false" onDelete="CASCADE" onUpdate="RESTRICT"/>
+        <createIndex indexName="i_staff_entity_id" tableName="staff">
+            <column name="entity_id"/>
+        </createIndex>
+    </changeSet>
+    <changeSet author="Pavlo.Slyvka" id="staff-fk_id_type">
+        <addForeignKeyConstraint constraintName="fk_s_id_type" baseTableName="staff" baseColumnNames="id_type" referencedTableName="entity_id_type" referencedColumnNames="id" deferrable="false" initiallyDeferred="false" onDelete="CASCADE" onUpdate="RESTRICT" validate="true"/>
+        <createIndex indexName="i_s_id_type" tableName="staff">
+            <column name="id_type"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet author="Pavlo.Slyvka" id="email_template-create">
+        <createTable tableName="email_template">
+            <column autoIncrement="true" name="id" type="INT">
+                <constraints nullable="false" primaryKey="true"/>
+            </column>
+            <column name="type" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="language_id" type="INT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="subject" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="body" type="TEXT">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+    <changeSet author="Pavlo.Slyvka" id="email_template-fk_language_id">
+        <addForeignKeyConstraint constraintName="fk_et_language" baseTableName="email_template" baseColumnNames="language_id" referencedTableName="language" referencedColumnNames="id" deferrable="false" initiallyDeferred="false" onDelete="CASCADE" onUpdate="RESTRICT" validate="true"/>
+        <createIndex indexName="i_et_language" tableName="email_template">
+            <column name="language_id"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet author="Pavlo.Slyvka" id="ticket-create">
+        <createTable tableName="ticket">
+            <column autoIncrement="true" name="id" type="INT">
+                <constraints nullable="false" primaryKey="true"/>
+            </column>
+            <column name="status" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="subject" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="priority" type="INT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="body" type="VARCHAR(255)"/>
+            <column name="staff_user_id" type="INT"/>
+            <column name="created_date" type="timestamp" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+    <changeSet author="Pavlo.Slyvka" id="ticket-fk_staff_user_id">
+        <addForeignKeyConstraint constraintName="fk_staff_user" baseTableName="ticket" baseColumnNames="staff_user_id" referencedTableName="staff" referencedColumnNames="id" deferrable="false" initiallyDeferred="false" onDelete="CASCADE" onUpdate="RESTRICT" validate="true"/>
+        <createIndex indexName="i_staff_user" tableName="ticket">
+            <column name="staff_user_id"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet author="Pavlo.Slyvka" id="transaction_limit-create">
+        <createTable tableName="transaction_limit">
+            <column autoIncrement="true" name="id" type="INT">
+                <constraints nullable="false" primaryKey="true"/>
+            </column>
+            <column name="currency_id" type="INT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="transaction_code_id" type="INT"/>
+            <column name="kyc_status_id" type="INT"/>
+            <column name="entity_type_id" type="INT"/>
+            <column name="account_type_id" type="INT"/>
+            <column name="initiator_type_id" type="INT"/>
+            <column name="tier" type="VARCHAR(255)"/>
+            <column name="authorisation_type" type="VARCHAR(255)"/>
+            <column name="direction" type="VARCHAR(255)"/>
+            <column name="active" type="BIT(1)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="min_limit" type="DECIMAL(19, 2)"/>
+            <column name="max_limit" type="DECIMAL(19, 2)"/>
+            <column name="daily_limit" type="DECIMAL(19, 2)"/>
+            <column name="weekly_limit" type="DECIMAL(19, 2)"/>
+            <column name="monthly_limit" type="DECIMAL(19, 2)"/>
+            <column name="created_date" type="timestamp" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+    <changeSet author="Pavlo.Slyvka" id="transaction_limit-fk_currency_id">
+        <addForeignKeyConstraint constraintName="fk_tl_currency" baseTableName="transaction_limit" baseColumnNames="currency_id" referencedTableName="currency" referencedColumnNames="id" deferrable="false" initiallyDeferred="false" onDelete="CASCADE" onUpdate="RESTRICT" validate="true"/>
+        <createIndex indexName="i_tl_currency" tableName="transaction_limit">
+            <column name="currency_id"/>
+        </createIndex>
+    </changeSet>
+    <changeSet author="Pavlo.Slyvka" id="transaction_limit-fk_transaction_code_id">
+        <addForeignKeyConstraint constraintName="fk_tl_transaction_code" baseTableName="transaction_limit" baseColumnNames="transaction_code_id" referencedTableName="transaction_code" referencedColumnNames="id" deferrable="false" initiallyDeferred="false" onDelete="CASCADE" onUpdate="RESTRICT" validate="true"/>
+        <createIndex indexName="i_tl_transaction_code" tableName="transaction_limit">
+            <column name="transaction_code_id"/>
+        </createIndex>
+    </changeSet>
+    <changeSet author="Pavlo.Slyvka" id="transaction_limit-fk_entity_type_id">
+        <addForeignKeyConstraint constraintName="fk_tl_entity_type" baseTableName="transaction_limit" baseColumnNames="entity_type_id" referencedTableName="entity_type" referencedColumnNames="id" deferrable="false" initiallyDeferred="false" onDelete="CASCADE" onUpdate="RESTRICT" validate="true"/>
+        <createIndex indexName="i_tl_entity_type" tableName="transaction_limit">
+            <column name="entity_type_id"/>
+        </createIndex>
+    </changeSet>
+    <changeSet author="Pavlo.Slyvka" id="transaction_limit-fk_account_type_id">
+        <addForeignKeyConstraint constraintName="fk_tl_account_type" baseTableName="transaction_limit" baseColumnNames="account_type_id" referencedTableName="account_type" referencedColumnNames="id" deferrable="false" initiallyDeferred="false" onDelete="CASCADE" onUpdate="RESTRICT" validate="true"/>
+        <createIndex indexName="i_tl_account_type" tableName="transaction_limit">
+            <column name="account_type_id"/>
+        </createIndex>
+    </changeSet>
+    <changeSet author="Pavlo.Slyvka" id="transaction_limit-fk_initiator_type_id">
+        <addForeignKeyConstraint constraintName="fk_tl_initiator_type" baseTableName="transaction_limit" baseColumnNames="initiator_type_id" referencedTableName="initiator_type" referencedColumnNames="id" deferrable="false" initiallyDeferred="false" onDelete="CASCADE" onUpdate="RESTRICT" validate="true"/>
+        <createIndex indexName="i_tl_initiator_type" tableName="transaction_limit">
+            <column name="initiator_type_id"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet author="Pavlo.Slyvka" id="route-create">
+        <createTable tableName="route">
+            <column autoIncrement="true" name="id" type="INT">
+                <constraints nullable="false" primaryKey="true"/>
+            </column>
+            <column name="name" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="country_id" type="INT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="active" type="BIT(1)">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+<!--    <changeSet author="Pavlo.Slyvka" id="route-u-name_country">-->
+<!--        <addUniqueConstraint columnNames="name, country_id" constraintName="uc_r_name_country" tableName="route"/>-->
+<!--    </changeSet>-->
+    <changeSet author="Pavlo.Slyvka" id="route-fk_country_id">
+        <addForeignKeyConstraint constraintName="fk_r_country" baseTableName="route" baseColumnNames="country_id" referencedTableName="country" referencedColumnNames="id" deferrable="false" initiallyDeferred="false" onDelete="CASCADE" onUpdate="RESTRICT" validate="true"/>
+        <createIndex indexName="i_r_country" tableName="route">
+            <column name="country_id"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet author="Pavlo.Slyvka" id="route_details-create">
+        <createTable tableName="route_details">
+            <column autoIncrement="true" name="id" type="INT">
+                <constraints nullable="false" primaryKey="true"/>
+            </column>
+            <column name="route_id" type="INT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="operator_type" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="min_distance" type="FLOAT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="min_fare" type="DECIMAL(19, 2)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="fare_per_km" type="DECIMAL(19, 2)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="max_fare" type="DECIMAL(19, 2)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="max_distance" type="FLOAT"/>
+        </createTable>
+    </changeSet>
+    <changeSet author="Pavlo.Slyvka" id="route_details-fk_route_id">
+        <addForeignKeyConstraint constraintName="fk_route_details_route_id" baseTableName="route_details" baseColumnNames="route_id" referencedTableName="route" referencedColumnNames="id" validate="true" deferrable="false" initiallyDeferred="false" onDelete="CASCADE" onUpdate="RESTRICT"/>
+        <createIndex indexName="i_route_details_route_id" tableName="route_details">
+            <column name="route_id"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet author="Pavlo.Slyvka" id="route_fares-create">
+        <createTable tableName="route_fares">
+            <column autoIncrement="true" name="id" type="INT">
+                <constraints nullable="false" primaryKey="true"/>
+            </column>
+            <column name="route_id" type="INT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="start_time" type="TIME">
+                <constraints nullable="false"/>
+            </column>
+            <column name="end_time" type="TIME">
+                <constraints nullable="false"/>
+            </column>
+            <column name="peak" type="BIT(1)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="price" type="DECIMAL(19, 2)">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+    <changeSet author="Pavlo.Slyvka" id="route_fares-fk_route_id">
+        <addForeignKeyConstraint constraintName="fk_route_fares_route_id" baseTableName="route_fares" baseColumnNames="route_id" referencedTableName="route" referencedColumnNames="id" validate="true" deferrable="false" initiallyDeferred="false" onDelete="CASCADE" onUpdate="RESTRICT"/>
+        <createIndex indexName="i_route_fares_route_id" tableName="route_fares">
+            <column name="route_id"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet author="Pavlo.Slyvka" id="vehicle-create">
+        <createTable tableName="vehicle">
+            <column autoIncrement="true" name="id" type="INT">
+                <constraints nullable="false" primaryKey="true"/>
+            </column>
+            <column name="vrn" type="VARCHAR(255)">
+                <constraints nullable="false" unique="true"/>
+            </column>
+            <column name="make" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="model" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="vehicle_type" type="VARCHAR(255)"/>
+            <column name="route_id" type="INT"/>
+            <column name="driver_entity_id" type="INT"/>
+            <column name="collector_entity_id" type="INT"/>
+            <column name="entity_id" type="INT"/>
+            <column name="account_id" type="INT"/>
+            <column name="status" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+    <changeSet author="Pavlo.Slyvka" id="vehicle-fk_route_id">
+        <addForeignKeyConstraint constraintName="fk_ve_route" baseTableName="vehicle" baseColumnNames="route_id" referencedTableName="route" referencedColumnNames="id" deferrable="false" initiallyDeferred="false" onDelete="CASCADE" onUpdate="RESTRICT" validate="true"/>
+        <createIndex indexName="i_ve_route" tableName="vehicle">
+            <column name="route_id"/>
+        </createIndex>
+    </changeSet>
+    <changeSet author="Pavlo.Slyvka" id="vehicle-fk_driver_entity_id">
+        <addForeignKeyConstraint constraintName="fk_ve_driver_entity" baseTableName="vehicle" baseColumnNames="driver_entity_id" referencedTableName="entity" referencedColumnNames="id" deferrable="false" initiallyDeferred="false" onDelete="CASCADE" onUpdate="RESTRICT" validate="true"/>
+        <createIndex indexName="i_ve_driver_entity" tableName="vehicle">
+            <column name="driver_entity_id"/>
+        </createIndex>
+    </changeSet>
+    <changeSet author="Pavlo.Slyvka" id="vehicle-fk_collector_entity_id">
+        <addForeignKeyConstraint constraintName="fk_ve_collector_entity" baseTableName="vehicle" baseColumnNames="collector_entity_id" referencedTableName="entity" referencedColumnNames="id" deferrable="false" initiallyDeferred="false" onDelete="CASCADE" onUpdate="RESTRICT" validate="true"/>
+        <createIndex indexName="i_ve_collector_entity" tableName="vehicle">
+            <column name="collector_entity_id"/>
+        </createIndex>
+    </changeSet>
+    <changeSet author="Pavlo.Slyvka" id="vehicle-fk_entity_id">
+        <addForeignKeyConstraint constraintName="fk_ve_entity" baseTableName="vehicle" baseColumnNames="entity_id" referencedTableName="entity" referencedColumnNames="id" deferrable="false" initiallyDeferred="false" onDelete="CASCADE" onUpdate="RESTRICT" validate="true"/>
+        <createIndex indexName="i_ve_entity" tableName="vehicle">
+            <column name="entity_id"/>
+        </createIndex>
+    </changeSet>
+    <changeSet author="Pavlo.Slyvka" id="vehicle-fk_account_id">
+        <addForeignKeyConstraint constraintName="fk_ve_account" baseTableName="vehicle" baseColumnNames="account_id" referencedTableName="account" referencedColumnNames="id" deferrable="false" initiallyDeferred="false" onDelete="CASCADE" onUpdate="RESTRICT" validate="true"/>
+        <createIndex indexName="i_ve_account" tableName="vehicle">
+            <column name="account_id"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet author="Pavlo.Slyvka" id="device-create">
+        <createTable tableName="device">
+            <column autoIncrement="true" name="id" type="INT">
+                <constraints nullable="false" primaryKey="true"/>
+            </column>
+            <column name="code" type="VARCHAR(255)">
+                <constraints nullable="false" unique="true"/>
+            </column>
+            <column name="serial" type="VARCHAR(255)">
+                <constraints nullable="false" unique="true"/>
+            </column>
+            <column name="status" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="account_id" type="INT"/>
+            <column name="vehicle_id" type="INT"/>
+            <column name="meta_data" type="json"/>
+            <column name="created_date" type="timestamp" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="modified_date" type="timestamp" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+    <changeSet author="Pavlo.Slyvka" id="device-fk_account_id">
+        <addForeignKeyConstraint constraintName="fk_de_account" baseTableName="device" baseColumnNames="account_id" referencedTableName="account" referencedColumnNames="id" deferrable="false" initiallyDeferred="false" onDelete="CASCADE" onUpdate="RESTRICT" validate="true"/>
+        <createIndex indexName="i_de_account" tableName="device">
+            <column name="account_id"/>
+        </createIndex>
+    </changeSet>
+    <changeSet author="Pavlo.Slyvka" id="device-fk_vehicle_id">
+        <addForeignKeyConstraint constraintName="fk_de_vehicle" baseTableName="device" baseColumnNames="vehicle_id" referencedTableName="vehicle" referencedColumnNames="id" deferrable="false" initiallyDeferred="false" onDelete="CASCADE" onUpdate="RESTRICT" validate="true"/>
+        <createIndex indexName="i_de_vehicle" tableName="device">
+            <column name="vehicle_id"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet author="Pavlo.Slyvka" id="journal-create">
+        <createTable tableName="journal">
+            <column autoIncrement="true" name="id" type="INT">
+                <constraints nullable="false" primaryKey="true"/>
+            </column>
+            <column name="status" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="amount" type="DECIMAL(19, 2)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="dr_account_id" type="INT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="cr_account_id" type="INT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="transaction_code_id" type="INT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="currency_id" type="INT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="fees_data" type="json"/>
+            <column name="details" type="VARCHAR(255)"/>
+            <column name="notes" type="VARCHAR(255)"/>
+            <column name="created_date" type="timestamp" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_by_staff_id" type="INT"/>
+            <column name="action_date" type="timestamp"/>
+            <column name="action_by_staff_id" type="INT"/>
+            <column name="session_id" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+    <changeSet author="Pavlo.Slyvka" id="journal-fk_dr_account_id">
+        <addForeignKeyConstraint constraintName="fk_jo_dr_account" baseTableName="journal" baseColumnNames="dr_account_id" referencedTableName="account" referencedColumnNames="id" deferrable="false" initiallyDeferred="false" onDelete="CASCADE" onUpdate="RESTRICT" validate="true"/>
+        <createIndex indexName="i_jo_dr_account" tableName="journal">
+            <column name="dr_account_id"/>
+        </createIndex>
+    </changeSet>
+    <changeSet author="Pavlo.Slyvka" id="journal-fk_cr_account_id">
+        <addForeignKeyConstraint constraintName="fk_jo_cr_account" baseTableName="journal" baseColumnNames="cr_account_id" referencedTableName="account" referencedColumnNames="id" deferrable="false" initiallyDeferred="false" onDelete="CASCADE" onUpdate="RESTRICT" validate="true"/>
+        <createIndex indexName="i_jo_cr_account" tableName="journal">
+            <column name="cr_account_id"/>
+        </createIndex>
+    </changeSet>
+    <changeSet author="Pavlo.Slyvka" id="journal-fk_transaction_code_id">
+        <addForeignKeyConstraint constraintName="fk_jo_transaction_code" baseTableName="journal" baseColumnNames="transaction_code_id" referencedTableName="transaction_code" referencedColumnNames="id" deferrable="false" initiallyDeferred="false" onDelete="CASCADE" onUpdate="RESTRICT" validate="true"/>
+        <createIndex indexName="i_jo_transaction_code" tableName="journal">
+            <column name="transaction_code_id"/>
+        </createIndex>
+    </changeSet>
+    <changeSet author="Pavlo.Slyvka" id="journal-fk_currency_id">
+        <addForeignKeyConstraint constraintName="fk_jo_currency" baseTableName="journal" baseColumnNames="currency_id" referencedTableName="currency" referencedColumnNames="id" deferrable="false" initiallyDeferred="false" onDelete="CASCADE" onUpdate="RESTRICT" validate="true"/>
+        <createIndex indexName="i_jo_currency" tableName="journal">
+            <column name="currency_id"/>
+        </createIndex>
+    </changeSet>
+    <changeSet author="Pavlo.Slyvka" id="journal-fk_created_by_staff_id">
+        <addForeignKeyConstraint constraintName="fk_jo_created_by_staff" baseTableName="journal" baseColumnNames="created_by_staff_id" referencedTableName="staff" referencedColumnNames="id" deferrable="false" initiallyDeferred="false" onDelete="CASCADE" onUpdate="RESTRICT" validate="true"/>
+        <createIndex indexName="i_jo_created_by_staff" tableName="journal">
+            <column name="created_by_staff_id"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet author="Pavlo.Slyvka" id="product-create">
+        <createTable tableName="product">
+            <column autoIncrement="true" name="id" type="INT">
+                <constraints nullable="false" primaryKey="true"/>
+            </column>
+            <column name="type" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="name" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="description" type="VARCHAR(255)"/>
+            <column name="currency_id" type="INT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="price" type="DECIMAL(19, 2)">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+    <changeSet author="Pavlo.Slyvka" id="product-fk_currency_id">
+        <addForeignKeyConstraint constraintName="fk_product_currency_id" baseTableName="product" baseColumnNames="currency_id" referencedTableName="currency" referencedColumnNames="id" validate="true" deferrable="false" initiallyDeferred="false" onDelete="CASCADE" onUpdate="RESTRICT"/>
+        <createIndex indexName="i_product_currency_id" tableName="product">
+            <column name="currency_id"/>
+        </createIndex>
+    </changeSet>
+    <changeSet author="Pavlo.Slyvka" id="entity_products-create">
+        <createTable tableName="entity_products">
+            <column autoIncrement="true" name="id" type="INT">
+                <constraints nullable="false" primaryKey="true"/>
+            </column>
+            <column name="entity_id" type="INT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="product_id" type="INT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="relationship_type" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="active" type="BIT(1)" defaultValue="true">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_date" type="timestamp" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="modified_date" type="timestamp"/>
+        </createTable>
+    </changeSet>
+    <changeSet author="Pavlo.Slyvka" id="entity_products-fk_entity_id">
+        <addForeignKeyConstraint constraintName="fk_entity_products_entity_id" baseTableName="entity_products" baseColumnNames="entity_id" referencedTableName="entity" referencedColumnNames="id" validate="true" deferrable="false" initiallyDeferred="false" onDelete="CASCADE" onUpdate="RESTRICT"/>
+        <createIndex indexName="i_entity_products_entity_id" tableName="entity_products">
+            <column name="entity_id"/>
+        </createIndex>
+    </changeSet>
+    <changeSet author="Pavlo.Slyvka" id="entity_products-fk_product_id">
+        <addForeignKeyConstraint constraintName="fk_entity_products_product_id" baseTableName="entity_products" baseColumnNames="product_id" referencedTableName="product" referencedColumnNames="id" validate="true" deferrable="false" initiallyDeferred="false" onDelete="CASCADE" onUpdate="RESTRICT"/>
+        <createIndex indexName="i_entity_products_product_id" tableName="entity_products">
+            <column name="product_id"/>
+        </createIndex>
+    </changeSet>
+
+</databaseChangeLog>

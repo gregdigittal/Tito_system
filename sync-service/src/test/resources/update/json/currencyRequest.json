@@ -1,0 +1,8 @@
+{
+  "action": "UPDATE",
+  "identifier": "AAA",
+  "data": {
+    "Active": true,
+    "PostilionCode": 1
+  }
+}

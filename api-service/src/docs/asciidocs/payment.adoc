@@ -1,0 +1,396 @@
+= Payments API Guide
+Pavlo Slyvka<pavlo@ice.cash>
+1.0.0, 06/6/2022
+:toc: left
+:sectnums:
+:toclevels: 4
+
+The API provides REST endpoints to process payments.
+There is a single endpoint for making all payments, which uses different payment services such as PayGO, EcoCash, OneMoney. A specific payment service is selected depending on the transmitted value in the `"initiatorType"` field of the request. In order for an API user to be able to use payments, it must be authenticated and have permissions to make payments. For the ease of testing there are also available the following unsecure payments endpoints:
+
+ - `/api/v1/unsecure/payments` - to `POST` payment
+ - `/api/v1/unsecure/payments/\{vendorRef\}/response` - respectively to GET payment result by `\{vendorRef\}`.
+
+IMPORTANT: To be able to use these links, your IP address must be registered in the `'ip_whitelist'` database table!
+
+[[single_payment]]
+== Single payment
+
+[[payment_post_request]]
+=== POST payment request
+
+include::{snippets}/payment/post/endpoint.adoc[]
+to create and start processing a new payment.
+It is usually processed asynchronously by several microservices, depending on the payment service that will be selected. This may take some time, therefore, in order to get a real result of payment processing, the end device must perform payment status polling by `vendorRef` from time to time until it receives the final state: either `SUCCESS` or `ERROR`. `PROCESSING` state means that the payment is not finished and the end device needs to check the status again later. Sometimes additional action, eg confirm payment, might be required from the user to finish the payment.
+Request parameters are passed as a `JSON` object, the field structure of which is usually the same for all types of requests, but some payment services require additional information that can be passed as an object in the `"meta"` field.
+
+==== Request fields
+include::{snippets}/payment/post/request-fields.adoc[]
+==== Response example
+include::{snippets}/payment/post/http-response.adoc[]
+
+[[payment_get_response]]
+=== GET payment response
+
+include::{snippets}/payment/response/endpoint.adoc[]
+. It returns payment result by `\{vendorRef\}`.
+
+==== Request path parameters
+include::{snippets}/payment/response/path-parameters.adoc[]
+==== HTTP Request example
+include::{snippets}/payment/response/http-request.adoc[]
+==== Curl example
+include::{snippets}/payment/response/curl-request.adoc[]
+==== Response
+Payment response might be in one of the following states:
+
+===== PROCESSING
+This state means that the payment is still in progress. The response contains the following fields:
+include::{snippets}/payment/processing-response/response-fields.adoc[]
+
+Response example:
+include::{snippets}/payment/processing-response/http-response.adoc[]
+
+===== SUCCESS
+This state means that the payment successfully finished. The response contains the following fields:
+include::{snippets}/payment/response/response-fields.adoc[]
+
+Response example:
+include::{snippets}/payment/response/http-response.adoc[]
+
+===== ERROR
+This state means that the payment failed. The response contains the following fields:
+include::{snippets}/payment/error-response/response-fields.adoc[]
+
+Response example:
+include::{snippets}/payment/error-response/http-response.adoc[]
+
+
+[[payment_post_zimswitch_request]]
+=== ZimSwitch Payment
+
+Payment request example which uses ZimSwitch service:
+
+==== body example
+[source,json]
+include::{snippets}/payment/post/request-body.adoc[]
+==== HTTP request
+include::{snippets}/payment/post/http-request.adoc[]
+==== curl
+include::{snippets}/payment/post/curl-request.adoc[]
+
+[[payment_post_paygo_request]]
+=== PayGO Payment
+
+The PayGO service requires additional action from the end user, he must confirm the payment that the PayGO server requests from him. When the service receives a payment request, it returns a PayGoId response and a base64 image to be polled by the user's device. After confirming the request, the PayGO server processes the payment.
+Currently, the PayGO service does not have the ability to reverse the payment.
+Admin PayGO service documentation can be found  https://uat-gateway.icecash.mobi/payments/paygo-service/docs/index.html[here].
+
+Payment request example which uses PayGO service:
+
+==== body example
+[source,json]
+include::{snippets}/payment/post-paygo/request-body.adoc[]
+==== HTTP request
+include::{snippets}/payment/post-paygo/http-request.adoc[]
+==== curl
+include::{snippets}/payment/post-paygo/curl-request.adoc[]
+==== Response with PayGoId
+This response is received by device to confirm the payment. It means that the payment is still in progress, but user needs to confirm the payment. The response contains the following fields:
+include::{snippets}/payment/paygo-response/response-fields.adoc[]
+
+Response example:
+include::{snippets}/payment/paygo-response/http-response.adoc[]
+
+
+[[payment_post_ecocash_request]]
+=== EcoCash Payment
+
+The EcoCash service requires additional action from the end user, he must confirm the payment that the EcoCash server requests from him. To be able to simulate EcoCash responses, predefined phone numbers are available as `initiator` field:
+
+ - `0770000000` - will always respond success
+ - `0770000001` - will always respond fail
+ - `0770000002` - will always respond failure - timeout
+
+Please note that they do not work in a production environment (`"prod-k8s"` profile)
+
+Payment request example which uses EcoCash service:
+
+==== body example
+[source,json]
+include::{snippets}/payment/post-ecocash/request-body.adoc[]
+==== HTTP request
+include::{snippets}/payment/post-ecocash/http-request.adoc[]
+==== curl
+include::{snippets}/payment/post-ecocash/curl-request.adoc[]
+
+[[payment_post_onemoney_request]]
+=== OneMoney Payment
+
+The test environment is not available at this time, all tests must be run in real time.
+To be able to simulate OneMoney responses, predefined phone numbers are available as `initiator` field:
+
+- `0710000000` - will always respond success
+- `0710000001` - payment response fails
+- `0710000002` - payment result fails
+- `0710000003` - payment result fails with timeout
+- `0710000004` - payment status polling fails
+- `0710000005` - payment status polling succeeds
+- `0710000006` - reversal response fails
+- `0710000007` - reversal result fails
+
+Please note that they do not work in a production environment (`"prod-k8s"` profile)
+Payment request example which uses OneMoney service:
+
+==== body example
+[source,json]
+include::{snippets}/payment/post-onemoney/request-body.adoc[]
+==== HTTP request
+include::{snippets}/payment/post-onemoney/http-request.adoc[]
+==== curl
+include::{snippets}/payment/post-onemoney/curl-request.adoc[]
+
+
+[[pending_payment_management]]
+== Pending payment management
+
+Instead of immediate execution, the user can create a pending payment and approve it for execution after some time. Also, the payment may require confirmation by other team members who have the appropriate rights on this account.
+
+Typically, each user can have one of the following authorization types:
+
+ - `SINGLE` - anyone with approval rights on this account is able to approve or decline the payment (can be the loader if they have the rights). This authorization type is also implied if not explicitly set.
+ - `Dual OR` - Payment must be approved by 2 members from defined approval list `A` or approval list `B` (one of which can be the loader if they have the rights)
+ - `Dual AND` - Payment must be approved by 2 members - one from `A` and one from `B` (one of which can be the loader if they have the rights)
+
+All endpoints require the user to be authenticated on the system, as the corresponding user rights are retrieved from their authentication token, otherwise a 401 error code will be returned.
+
+TIP: For testing purposes, in order to avoid re-authentication, `/api/v1/unsecure` prefix can be used instead of `/api/v1` in all payment management endpoints.
+For that user can be authenticated sending `POST` request to `/api/v1/unsecure/payments/pending/auth` with the following request body: `{"principal": "13980288-c838-4960-8200-9ec2af1fa737","realm": "ONLINE"}` Where `principal` is entity keycloak ID, `realm` is either `ONLINE` or `MOBI`. To remove the user authentication `DELETE` request can be sent to the same URL. `GET` request to the URL can be used to get currently authenticated user.
+
+
+[[pending_payment]]
+=== Pending payment
+
+Each pending payment consists of a parent record containing the totals as well as the general metadata for this particular payment and one or many payments (individual line items for each payment). When the parent payment is approved, all correspondent payment lines are executed.
+
+
+[[pending_payment_get_request]]
+==== Get pending payment request
+
+include::{snippets}/pending-payment/get/endpoint.adoc[]
+to get payment details identified by \{id\} of the payment if the user has the appropriate permission.
+
+===== Request path parameters
+include::{snippets}/pending-payment/get/path-parameters.adoc[]
+===== HTTP Request example
+include::{snippets}/pending-payment/get/http-request.adoc[]
+===== Curl example
+include::{snippets}/pending-payment/get/curl-request.adoc[]
+===== HTTP Response example
+include::{snippets}/pending-payment/get/http-response.adoc[]
+===== Response fields
+include::{snippets}/pending-payment/get/response-fields.adoc[]
+
+
+[[pending_payment_get_list_request]]
+==== Get pending payment list request
+
+include::{snippets}/pending-payment/get-list/endpoint.adoc[]
+to get list of payments for which the user has the appropriate permissions. This endpoint uses paging, so providing the optional `page` and `size` parameters will return `size` amount of payments on the `page` page. By default, page = 0, size = 10.
+
+===== HTTP Request example
+include::{snippets}/pending-payment/get-list/http-request.adoc[]
+===== Curl example
+include::{snippets}/pending-payment/get-list/curl-request.adoc[]
+===== HTTP Response example
+include::{snippets}/pending-payment/get-list/http-response.adoc[]
+
+
+[[pending_payment_post_request]]
+==== Create pending payment request
+
+include::{snippets}/pending-payment/create/endpoint.adoc[]
+to create a new pending payment and its payment lines. The payment is always created with `PENDING` status. There is no need to include payment lines in the request if you plan to load them from a predefined template or need to add them later. The method ignores `id` field, if provided, and always creates a new payment. The data is sent as a `JSON` object, which has the following structure:
+include::{snippets}/pending-payment/create/request-fields.adoc[]
+
+===== HTTP Request example
+include::{snippets}/pending-payment/create/http-request.adoc[]
+===== Curl example
+include::{snippets}/pending-payment/create/curl-request.adoc[]
+===== HTTP Response example
+include::{snippets}/pending-payment/create/http-response.adoc[]
+
+
+[[pending_payment_put_request]]
+==== Update pending payment request
+
+include::{snippets}/pending-payment/update/endpoint.adoc[]
+to update the pending payment and its payment lines.
+
+IMPORTANT: Only payments with `PENDING` status might be updated.
+
+Only those lines that are transmitted will be updated, the rest remain unchanged. If the payment line does not contain an identifier, a new payment line will be added. Thus, this method can be used both to add new lines and to change existing lines.
+
+There is no need to include payment lines in the request if only the parent payment fields need to be changed.
+
+IMPORTANT: The following fields are informational and cannot be changed by this method: `status`, `createDate`, `documents`, `paymentCollectionId`, `meta.CreatedId`, `meta.ModifiedId`, `meta.ModifiedDate`, `meta.ApprovedId`, `meta.ApprovedDate`, `meta.Approved2Id`, `meta.Approved2Date`, `meta.importTemplate`, `paymentLine[].transactionId`. If you try to change these fields, they will all be ignored!
+
+===== HTTP Request example
+include::{snippets}/pending-payment/update/http-request.adoc[]
+===== Curl example
+include::{snippets}/pending-payment/update/curl-request.adoc[]
+===== HTTP Response example
+include::{snippets}/pending-payment/get/http-response.adoc[]
+
+
+[[pending_payment_upload_request]]
+==== Upload pending payment lines request
+
+include::{snippets}/pending-payment/upload/endpoint.adoc[]
+to upload payment lines using one of the predefined templates. The payment must exist in the system and `template` name must be provided with the request. Only one template can be uploaded.
+
+=== Request parts
+include::{snippets}/pending-payment/upload/request-parts.adoc[]
+=== Path parameters
+include::{snippets}/pending-payment/upload/path-parameters.adoc[]
+=== HTTP Request example
+include::{snippets}/pending-payment/upload/http-request.adoc[]
+=== Curl example
+include::{snippets}/pending-payment/upload/curl-request.adoc[]
+=== HTTP Response example
+include::{snippets}/pending-payment/get/http-response.adoc[]
+
+
+[[pending_payment_approve_request]]
+==== Approve pending payment request
+
+include::{snippets}/pending-payment/approve/endpoint.adoc[]
+to approve the payment identified by \{paymentId\}.
+
+IMPORTANT: Only payments with `PENDING` status might be approved.
+
+If a payment needs to be confirmed by multiple users, then it will remain in `PENDING` status until it is fully confirmed. A fully confirmed payment changes its status to `PROCESSING` and is automatically sent for execution. Payment execution is being performed line by line sequentially. Upon successful completion of the payment line, the identifier of the successfully completed transaction is recorded in the `transactionId` field.
+
+===== HTTP Request example
+include::{snippets}/pending-payment/approve/http-request.adoc[]
+===== Curl example
+include::{snippets}/pending-payment/approve/curl-request.adoc[]
+===== HTTP Response example
+include::{snippets}/pending-payment/get/http-response.adoc[]
+
+
+[[pending_payment_reject_request]]
+==== Reject pending payment request
+
+include::{snippets}/pending-payment/reject/endpoint.adoc[]
+to reject the payment identified by \{paymentId\}.
+
+IMPORTANT: Only payments with `PENDING` status might be rejected.
+
+===== HTTP Request example
+include::{snippets}/pending-payment/reject/http-request.adoc[]
+===== Curl example
+include::{snippets}/pending-payment/reject/curl-request.adoc[]
+===== HTTP Response example
+include::{snippets}/pending-payment/get/http-response.adoc[]
+
+
+[[pending_payment_documents]]
+=== Pending payment documents
+
+Any supporting documents might be uploaded against the payment.
+
+[[pending_payment_docs_upload_request]]
+==== Upload payment documents request
+
+include::{snippets}/payment-document/upload/endpoint.adoc[]
+to upload documents assigned to correspondent `paymentId` payment. It is possible to upload multiple document with one call.
+
+===== HTTP Request example
+include::{snippets}/payment-document/upload/http-request.adoc[]
+===== Curl example
+include::{snippets}/payment-document/upload/curl-request.adoc[]
+===== HTTP Response example
+include::{snippets}/payment-document/upload/http-response.adoc[]
+
+
+[[pending_payment_docs_content_request]]
+==== Get payment document content request
+
+include::{snippets}/payment-document/content/endpoint.adoc[]
+to extract document content identified by \{documentId\} of the document assigned to \{paymentId\} payment.
+
+===== HTTP Request example
+include::{snippets}/payment-document/content/http-request.adoc[]
+===== Curl example
+include::{snippets}/payment-document/content/curl-request.adoc[]
+===== HTTP Response example
+include::{snippets}/payment-document/content/http-response.adoc[]
+
+
+[[pending_payment_docs_delete_request]]
+==== Delete payment document request
+
+include::{snippets}/payment-document/delete/endpoint.adoc[]
+to delete the document identified by \{documentId\} assigned to \{paymentId\} payment.
+
+===== HTTP Request example
+include::{snippets}/payment-document/delete/http-request.adoc[]
+===== Curl example
+include::{snippets}/payment-document/delete/curl-request.adoc[]
+===== HTTP Response example
+include::{snippets}/payment-document/delete/http-response.adoc[]
+
+
+[[pending_payment_collection]]
+=== Pending payment collection
+
+A collection is an optional method of grouping multiple payments together. This is used in a "shopping cart" scenario for our existing API where a user will pay for multiple "Payments" in a single payment.
+
+[[pending_payment_collection_create_request]]
+==== Create payment collection request
+
+include::{snippets}/pending-payment/collection-create/endpoint.adoc[]
+to create the payment collection and assign one or many payments to it.
+
+The data is sent as a `JSON` object, which has the following structure:
+include::{snippets}/pending-payment/collection-create/request-fields.adoc[]
+
+===== HTTP Request example
+include::{snippets}/pending-payment/collection-create/http-request.adoc[]
+===== Curl example
+include::{snippets}/pending-payment/collection-create/curl-request.adoc[]
+===== HTTP Response example
+include::{snippets}/pending-payment/collection-create/http-response.adoc[]
+
+
+[[pending_payment_collection_reject_request]]
+==== Reject payment collection request
+
+include::{snippets}/pending-payment/collection-reject/endpoint.adoc[]
+to reject all payments assigned to a collection identified by \{collectionId\}.
+
+===== HTTP Request example
+include::{snippets}/pending-payment/collection-reject/http-request.adoc[]
+===== Curl example
+include::{snippets}/pending-payment/collection-reject/curl-request.adoc[]
+===== HTTP Response example
+include::{snippets}/pending-payment/collection-reject/http-response.adoc[]
+
+
+[[pending_payment_collection_approve_request]]
+==== Approve payment collection request
+
+include::{snippets}/pending-payment/collection-approve/endpoint.adoc[]
+to approve all payments assigned to a collection identified by \{collectionId\}.
+
+===== HTTP Request example
+include::{snippets}/pending-payment/collection-approve/http-request.adoc[]
+===== Curl example
+include::{snippets}/pending-payment/collection-approve/curl-request.adoc[]
+===== HTTP Response example
+include::{snippets}/pending-payment/collection-approve/http-response.adoc[]
+
+[[error_codes]]
+== Error codes
+include::{snippets}/error-codes/error-codes.adoc[]

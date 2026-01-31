@@ -1,0 +1,124 @@
+
+type StaffMember {
+    id: ID
+    email: String
+    firstName: String
+    lastName: String
+    idNumber: String
+    idNumberType: ID
+    msisdn: String
+    loginStatus: LoginStatus
+    entityId: ID
+    securityGroupId: ID
+    securityGroup: SecurityGroup
+    department: String
+    mfaType: MfaType
+    mfaSecretCode: String
+    mfaQrCode: String
+    mfaBackupCodes: [String]
+    locale: String
+    lastLogin: DateTime
+    createdDate: DateTime
+}
+
+input NewStaffMemberInput {
+    email: String!
+    firstName: String!
+    lastName: String
+    idNumber: String!
+    idNumberType: ID!
+    msisdn: String!
+    department: String!
+    locale: String = "en"
+    entityId: ID
+    securityGroupId: ID!
+    loginStatus: LoginStatus = ACTIVE
+}
+
+input StaffMemberInput {
+    email: String!
+    firstName: String
+    lastName: String
+    msisdn: String!
+    locale: String
+    entityId: ID
+    securityGroupId: ID
+}
+
+input StaffMemberUpdate {
+    email: String!
+    firstName: String!
+    lastName: String
+    idNumber: String!
+    idNumberType: Int!
+    msisdn: String!
+    department: String!
+    mfaType: MfaType
+    locale: String = "en"
+    loginStatus: LoginStatus
+    entityId: ID
+    securityGroupId: ID!
+}
+
+enum MfaType {
+    OTP, TOTP
+}
+
+enum EntitiesSearchCriteria {
+    ENTITY_ID, ACCOUNT_NUMBER, NAMES, INITIATOR_NUMBER, ID_NUMBER, MOBILE_NUMBER
+}
+
+input JournalInput {
+    currencyId: ID!
+    transactionCodeId: ID!
+    amount: Float!
+    drAccountId: ID!
+    crAccountId: ID!
+    details: String!
+    notes: String
+}
+
+type JournalPageable {
+    total: Int
+    content: [Journal]
+}
+
+type Journal {
+    id: ID
+    status: JournalStatus
+    amount: Float
+    drAccountId: ID
+    drAccount: Account
+    crAccountId: ID
+    crAccount: Account
+    transactionCodeId: ID
+    transactionCode: TransactionCode
+    fees: [JournalFee]
+    details: String
+    notes: String
+    documents: [JournalDocument]
+    createdDate: DateTime
+}
+
+enum JournalStatus {
+    PENDING, ACCEPTED, REJECTED
+}
+
+input JournalFeeInput {
+    feeId: ID!
+    amount: Float!
+}
+
+type JournalFee {
+    feeId: ID
+    amount: Float
+    chargeType: ChargeType
+    processOrder: Int
+    drAccountId: ID
+    crAccountId: ID
+}
+
+type JournalDocument {
+    id: ID
+    fileName: String
+}

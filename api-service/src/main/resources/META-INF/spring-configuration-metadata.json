@@ -1,0 +1,209 @@
+{
+  "properties": [
+    {
+      "name": "ice.cash.ip-whitelist.disable-check",
+      "type": "java.lang.String",
+      "description": "Disable IP whitelist checking."
+    },
+    {
+      "name": "ice.cash.ip-whitelist.password",
+      "type": "java.lang.String",
+      "description": "Password for IP whitelist updates."
+    },
+    {
+      "name": "ice.cash.date-format",
+      "type": "java.lang.String",
+      "description": "Request date format."
+    },
+    {
+      "name": "ice.cash.payment.group",
+      "type": "java.lang.String",
+      "description": "Log service listener Group ID."
+    },
+    {
+      "name": "ice.cash.mongodb.request-collection",
+      "type": "java.lang.String",
+      "description": "MongoDB collection to save requests."
+    },
+    {
+      "name": "ice.cash.mongodb.response-collection",
+      "type": "java.lang.String",
+      "description": "MongoDB collection to save responses."
+    },
+    {
+      "name": "ice.cash.keycloak.admin.client-id",
+      "type": "java.lang.String",
+      "description": "Keycloak admin client ID to perform actions with users and roles"
+    },
+    {
+      "name": "ice.cash.keycloak.admin.client-secret",
+      "type": "java.lang.String",
+      "description": "Keycloak admin client ID secret"
+    },
+    {
+      "name": "ice.cash.security-module.host",
+      "type": "java.lang.String",
+      "description": "Security module host"
+    },
+    {
+      "name": "ice.cash.security-module.url",
+      "type": "java.lang.String",
+      "description": "Security module URL"
+    },
+    {
+      "name": "ice.cash.security-module.ignore-ssl-certificate",
+      "type": "java.lang.Boolean",
+      "description": "Whether ignore SSL certificate for Security module or not"
+    },
+    {
+      "name": "ice.cash.notification.fake-sms-mobiles",
+      "type": "java.lang.String",
+      "description": "Comma separated list of fake msisdn that should not be sent SMS"
+    },
+    {
+      "name": "ice.cash.notification.fake-emails",
+      "type": "java.lang.String",
+      "description": "Comma separated list of fake email that should not be sent emails"
+    },
+    {
+      "name": "ice.cash.entities.mfa.access-token-expiration",
+      "type": "java.time.Duration",
+      "description": "Time after access token receiving when it would be expired"
+    },
+    {
+      "name": "ice.cash.entities.mfa.expired-tokens-cleanup-cron",
+      "type": "java.lang.String",
+      "description": "Expired tokens cleanup job CRON"
+    },
+    {
+      "name": "ice.cash.entities.mfa.otp-digits-amount",
+      "type": "java.lang.Integer",
+      "description": "Digits amount for one-time password generating"
+    },
+    {
+      "name": "ice.cash.entities.mfa.otp-send-sms",
+      "type": "java.lang.Boolean",
+      "description": "Whether send one-time password via SMS message or not"
+    },
+    {
+      "name": "ice.cash.entities.mfa.otp-code-expiration",
+      "type": "java.time.Duration",
+      "description": "Time after one-time password would be expired"
+    },
+    {
+      "name": "ice.cash.entities.mfa.totp-qr-code-digits",
+      "type": "java.lang.Integer",
+      "description": "Digits amount for time-based one-time password"
+    },
+    {
+      "name": "ice.cash.entities.mfa.totp-qr-code-period",
+      "type": "java.lang.Integer",
+      "description": "Period between time-based one-time password change"
+    },
+    {
+      "name": "ice.cash.entities.mfa.backup-codes-amount",
+      "type": "java.lang.Integer",
+      "description": "Backup codes amount to generate"
+    },
+    {
+      "name": "ice.cash.entities.mfa.max-wrong-login-attempts",
+      "type": "java.lang.Integer",
+      "description": "Max count of allowed login attempts"
+    },
+    {
+      "name": "ice.cash.entities.mfa.max-wrong-login-period",
+      "type": "java.time.Duration",
+      "description": "Period for max allowed login attempts, can be empty"
+    },
+    {
+      "name": "ice.cash.staff.reset-password-url",
+      "type": "java.lang.String",
+      "description": "URL prefix to reset password UI page"
+    },
+    {
+      "name": "ice.cash.staff.mfa.access-token-expiration",
+      "type": "java.time.Duration",
+      "description": "Time after access token receiving when it would be expired"
+    },
+    {
+      "name": "ice.cash.staff.mfa.otp-digits-amount",
+      "type": "java.lang.Integer",
+      "description": "Digits amount for one-time password generating"
+    },
+    {
+      "name": "ice.cash.staff.mfa.otp-send-sms",
+      "type": "java.lang.Boolean",
+      "description": "Whether send one-time password via SMS message or not"
+    },
+    {
+      "name": "ice.cash.staff.mfa.otp-code-expiration",
+      "type": "java.time.Duration",
+      "description": "Time after one-time password would be expired"
+    },
+    {
+      "name": "ice.cash.staff.mfa.totp-qr-code-digits",
+      "type": "java.lang.Integer",
+      "description": "Digits amount for time-based one-time password"
+    },
+    {
+      "name": "ice.cash.staff.mfa.totp-qr-code-period",
+      "type": "java.lang.Integer",
+      "description": "Period between time-based one-time password change"
+    },
+    {
+      "name": "ice.cash.staff.mfa.backup-codes-amount",
+      "type": "java.lang.Integer",
+      "description": "Backup codes amount to generate"
+    },
+    {
+      "name": "ice.cash.staff.mfa.max-wrong-login-attempts",
+      "type": "java.lang.Integer",
+      "description": "Max count of allowed login attempts"
+    },
+    {
+      "name": "ice.cash.staff.mfa.max-wrong-login-period",
+      "type": "java.time.Duration",
+      "description": "Period for max allowed login attempts, can be empty"
+    },
+    {
+      "name": "mariadb.url",
+      "type": "java.lang.String",
+      "description": "MariaDB-galera URL string"
+    },
+    {
+      "name": "mariadb.username",
+      "type": "java.lang.String",
+      "description": "MariaDB-galera username"
+    },
+    {
+      "name": "mariadb.password",
+      "type": "java.lang.String",
+      "description": "MariaDB-galera password"
+    },
+    {
+      "name": "liquibase.change-log-file",
+      "type": "java.lang.String",
+      "description": "Liquibase change-log file name"
+    },
+    {
+      "name": "mongodb.host",
+      "type": "java.lang.String",
+      "description": "MongoDB host:post"
+    },
+    {
+      "name": "mongodb.database",
+      "type": "java.lang.String",
+      "description": "MongoDB database name with additional parameters"
+    },
+    {
+      "name": "mongodb.username",
+      "type": "java.lang.String",
+      "description": "MongoDB username"
+    },
+    {
+      "name": "mongodb.password",
+      "type": "java.lang.String",
+      "description": "MongoDB password"
+    }
+  ]
+}
