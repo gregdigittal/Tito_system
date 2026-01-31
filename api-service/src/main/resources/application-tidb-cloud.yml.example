@@ -1,0 +1,16 @@
+# TiDB Cloud (or any TiDB/MySQL) connection for Tito_system
+# Copy to application-tidb-cloud.yml and fill in your values.
+# application-tidb-cloud.yml is gitignored — do not commit it.
+#
+# Run api-service with profiles: dev-k8s,tidb-cloud
+# Example: ./mvnw -pl api-service -am -DskipTests spring-boot:run -Dspring-boot.run.profiles=dev-k8s,tidb-cloud
+
+tidb:
+  url: jdbc:mysql://YOUR_HOST:YOUR_PORT/YOUR_DATABASE?createDatabaseIfNotExist=true&allowPublicKeyRetrieval=true&useSSL=true&serverTimezone=Africa/Harare
+  username: YOUR_USERNAME
+  password: YOUR_PASSWORD
+
+# Optional: use test data changelog on first run (creates schema + test user).
+# Omit or set to liquibase-db-changelog.xml for schema only.
+liquibase:
+  change-log-file: liquibase-db-changelog-test.xml

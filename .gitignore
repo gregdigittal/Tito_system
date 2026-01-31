@@ -30,3 +30,6 @@ build/
 .vscode/
 /onemoney-service/src/main/java/META-INF/JAXB/
 /deploy.cmd
+
+### Local DB config (never commit credentials) ###
+api-service/src/main/resources/application-tidb-cloud.yml
