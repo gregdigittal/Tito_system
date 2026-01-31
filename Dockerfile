@@ -6,8 +6,8 @@ COPY . .
 
 RUN mvn -pl api-service -am -DskipTests -q package -B
 
-# Run stage
-FROM eclipse-temurin:21-jre-alpine
+# Run stage: use non-Alpine JRE for MongoDB Atlas TLS (Alpine can cause "Received fatal alert: internal_error")
+FROM eclipse-temurin:21-jre
 WORKDIR /app
 
 COPY --from=builder /app/api-service/target/api-service.jar app.jar
