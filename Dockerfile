@@ -10,7 +10,7 @@ RUN mvn -pl api-service -am -DskipTests -q package -B
 FROM eclipse-temurin:21-jre-alpine
 WORKDIR /app
 
-COPY --from=builder /app/api-service/target/api-service-*.jar app.jar
+COPY --from=builder /app/api-service/target/api-service.jar app.jar
 
 EXPOSE 8080
 
