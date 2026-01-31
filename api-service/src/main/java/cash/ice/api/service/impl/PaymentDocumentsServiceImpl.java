@@ -15,6 +15,7 @@ import org.apache.commons.io.IOUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.util.DigestUtils;
 
 import java.io.ByteArrayInputStream;
@@ -24,6 +25,7 @@ import java.util.ArrayList;
 @Service
 @Slf4j
 @RequiredArgsConstructor
+@ConditionalOnBean(MinioClient.class)
 public class PaymentDocumentsServiceImpl implements PaymentDocumentsService {
     private final PaymentRepository paymentRepository;
     private final PermissionsService permissionsService;

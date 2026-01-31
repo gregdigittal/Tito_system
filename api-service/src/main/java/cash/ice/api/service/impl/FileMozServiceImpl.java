@@ -15,6 +15,7 @@ import io.minio.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.IOUtils;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -23,12 +24,15 @@ import java.net.URLConnection;
 import java.util.Map;
 import java.util.Objects;
 
+import io.minio.MinioClient;
+
 import static cash.ice.common.error.ErrorCodes.EC1001;
 import static cash.ice.common.error.ErrorCodes.EC1015;
 
 @Service
 @RequiredArgsConstructor
 @Slf4j
+@ConditionalOnBean(MinioClient.class)
 public class FileMozServiceImpl implements FileMozService {
     private final DocumentsService documentsService;
     private final EntityRepository entityRepository;

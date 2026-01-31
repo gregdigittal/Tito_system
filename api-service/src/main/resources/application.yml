@@ -40,7 +40,8 @@ ice:
       fake-sms-mobiles: 000000000000, 263000000000, 263000000001
       fake-emails: test@ice.cash
     payment:
-      group: ${kafka.prefix}.api-service
+      # Default kafka.prefix (tito) so app starts without KAFKA_PREFIX (e.g. Render minimal deploy)
+      group: ${kafka.prefix:tito}.api-service
     entities:
       security-disabled: false
       validate-email-uniqueness: false

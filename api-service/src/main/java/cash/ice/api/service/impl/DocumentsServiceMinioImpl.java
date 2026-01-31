@@ -17,6 +17,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.IOUtils;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -28,11 +29,14 @@ import java.io.ByteArrayInputStream;
 import java.net.URLConnection;
 import java.util.List;
 
+import io.minio.MinioClient;
+
 import static cash.ice.common.error.ErrorCodes.EC1065;
 
 @Service
 @Slf4j
 @RequiredArgsConstructor
+@ConditionalOnBean(MinioClient.class)
 public class DocumentsServiceMinioImpl implements DocumentsService {
     private final DocumentRepository documentRepository;
     private final EntityRepository entityRepository;
