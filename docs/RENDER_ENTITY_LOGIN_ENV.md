@@ -18,8 +18,21 @@ The entity login flow uses **resource owner password** grant. The client identif
 
 ## If login fails (“No token received”)
 
-1. Check **Render logs** at login time. The api-service now logs Keycloak login failures with realm, clientId, URL and exception message.
-2. Confirm Phase Two: client has Direct access grants ON, user exists and password is correct, user is enabled.
-3. Confirm env vars are set and **Redeploy** after changing them.
+1. In **Render logs**, search for:
+   - **KEYCLOAK_LOGIN_ATTEMPT** — confirms a login was tried and shows realm, clientId, URL in use.
+   - **KEYCLOAK_LOGIN_FAILED** — shows the exact reason (e.g. config missing, exception from Keycloak).
+2. If you see “config missing” (clientId or clientSecret empty), set the env vars below and redeploy.
+3. If you see an exception (e.g. 401, invalid_client, Direct access grants disabled), fix that in Phase Two or the env (URL, realm, client secret).
+4. Confirm Phase Two: client has Direct access grants ON, user exists and password is correct, user is enabled.
+5. **Redeploy** tito-api after changing any env var.
+
+### Env vars when not using a k8s profile
+
+If Render does **not** use a profile like `prod-k8s`, set these instead (Spring Boot prefix `ice.cash.keycloak.entities`):
+
+| Env var | Value |
+|--------|--------|
+| **ICE_CASH_KEYCLOAK_ENTITIES_DEFAULT_CLIENT_ID** | `tito-api` |
+| **ICE_CASH_KEYCLOAK_ENTITIES_DEFAULT_CLIENT_SECRET** | Client secret from Phase Two → tito-api → Credentials |
 
 See also: Tito_UI_Client `docs/LOGIN_NO_TOKEN_RECEIVED.md` and `docs/PHASE_TWO_CLIENT_SETUP.md`.
