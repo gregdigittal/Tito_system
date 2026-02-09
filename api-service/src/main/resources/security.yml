@@ -30,6 +30,8 @@ ice:
       entities:
         auth-server-url: ${auth.keycloak.url}
         realm: ${auth.keycloak.realm}
+        default-client-id: ${auth.keycloak.entities.client-id:tito-api}
+        default-client-secret: ${auth.keycloak.entities.client-secret:}
         admin-client-id: ${auth.keycloak.admin.client-id}
         admin-client-secret: ${auth.keycloak.admin.client-secret}
       backoffice:

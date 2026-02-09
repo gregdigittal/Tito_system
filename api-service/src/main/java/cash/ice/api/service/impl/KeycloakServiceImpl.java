@@ -203,19 +203,31 @@ public class KeycloakServiceImpl implements KeycloakService {
 
     private AccessTokenResponse loginUser(String usernamePrefix, String grantType, String entityId, String password, String clientId, String clientSecret) {
         String username = usernamePrefix + entityId;
+        String effectiveGrantType = Strings.isNullOrEmpty(grantType) ? OAuth2Constants.PASSWORD : grantType;
         String clientID = Strings.isNullOrEmpty(clientId) ? keycloakProperties.getDefaultClientId() : clientId;
+        String clientSecretToUse = Strings.isNullOrEmpty(clientSecret) ? keycloakProperties.getDefaultClientSecret() : clientSecret;
         log.debug("  Keycloak login user username: {}, password: {}, grantType: {}, clientId: {}, clientSecret: {}, realm: {}, url: {}",
-                username, password != null, grantType, clientID, clientSecret != null, keycloakProperties.getRealm(), keycloakProperties.getAuthServerUrl());
+                username, password != null, effectiveGrantType, clientID, clientSecretToUse != null, keycloakProperties.getRealm(), keycloakProperties.getAuthServerUrl());
         try (Keycloak keycloak = KeycloakBuilder.builder()
                 .serverUrl(keycloakProperties.getAuthServerUrl())
                 .realm(keycloakProperties.getRealm())
-                .grantType(grantType)
+                .grantType(effectiveGrantType)
                 .clientId(clientID)
-                .clientSecret(clientSecret)
+                .clientSecret(clientSecretToUse)
                 .username(username)
                 .password(password)
                 .build()) {
-            return keycloak.tokenManager().getAccessToken();
+            AccessTokenResponse token = keycloak.tokenManager().getAccessToken();
+            if (token == null || token.getToken() == null) {
+                log.warn("Keycloak login returned no token for username: {}, realm: {}, clientId: {}, url: {}",
+                        username, keycloakProperties.getRealm(), clientID, keycloakProperties.getAuthServerUrl());
+            }
+            return token;
+        } catch (Exception e) {
+            log.warn("Keycloak login failed for username: {}, realm: {}, clientId: {}, url: {} — {}: {}",
+                    username, keycloakProperties.getRealm(), clientID, keycloakProperties.getAuthServerUrl(),
+                    e.getClass().getSimpleName(), e.getMessage(), e);
+            throw e;
         }
     }
 
