@@ -36,6 +36,7 @@ import static org.mockito.Mockito.*;
 @ExtendWith(MockitoExtension.class)
 class EntityRegistrationServiceImplTest {
     private static final String ZWL = "ZWL";
+    private static final String PIN = "1234";
     private static final int ENTITY_ID = 11;
     private static final int ACCOUNT_ID = 12;
     private static final String MOBILE = "123-45-67";
