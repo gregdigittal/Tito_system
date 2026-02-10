@@ -138,7 +138,7 @@ public class EntityRegistrationMozServiceImpl implements EntityRegistrationMozSe
             documentsService.assignDocumentToEntity(entity, request.getIdUploadDocumentId());
             documentsService.assignDocumentToEntity(entity, request.getNuitUploadDocumentId());
             return finishUserRegistration(entity, prepaidAccount.getAccountNumber(), mobile.getMsisdn(), authEntity,
-                    request.getPin() == null ? pin : null);
+                    pin, request.getPin() == null ? pin : null);
         } catch (Exception e) {
             removeDocumentsIfNeed(removeDocumentsOnFail, request.getIdUploadDocumentId(), request.getNuitUploadDocumentId());
             throw e;
@@ -197,7 +197,7 @@ public class EntityRegistrationMozServiceImpl implements EntityRegistrationMozSe
             documentsService.assignDocumentToEntity(entity, representative.getIdUploadDocumentId());
             documentsService.assignDocumentToEntity(entity, representative.getNuitUploadDocumentId());
             return finishUserRegistration(entity, prepaidAccount.getAccountNumber(), mobile.getMsisdn(), authEntity,
-                    representative.getPin() == null ? pin : null);
+                    pin, representative.getPin() == null ? pin : null);
         } catch (Exception e) {
             removeDocumentsIfNeed(removeDocumentsOnFail, company.getNuelUploadDocumentId(), company.getNuitUploadDocumentId(), representative.getIdUploadDocumentId(), representative.getNuitUploadDocumentId());
             throw e;
@@ -258,8 +258,9 @@ public class EntityRegistrationMozServiceImpl implements EntityRegistrationMozSe
         return prepaidAccount;
     }
 
-    private RegisterMozResponse finishUserRegistration(EntityClass entity, String accountNumber, String msisdn, EntityClass authEntity, String smsPin) {
-        String keycloakId = keycloakService.createUser(entity.keycloakUsername(), entity.getPvv(),
+    private RegisterMozResponse finishUserRegistration(EntityClass entity, String accountNumber, String msisdn,
+                                                       EntityClass authEntity, String keycloakPassword, String smsPin) {
+        String keycloakId = keycloakService.createUser(entity.keycloakUsername(), keycloakPassword,
                 entity.getFirstName(), entity.getLastName(), entity.getEmail());
         try {
             entityRepository.save(entity.setKeycloakId(keycloakId)

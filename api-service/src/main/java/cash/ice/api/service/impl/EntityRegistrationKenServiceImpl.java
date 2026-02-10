@@ -91,7 +91,7 @@ public class EntityRegistrationKenServiceImpl implements EntityRegistrationKenSe
     }
 
     private RegisterKenResponse finishUserRegistration(EntityClass entity, String accountNumber, String msisdn, EntityClass authEntity, String pin) {
-        String keycloakId = keycloakService.createUser(entity.keycloakUsername(), entity.getPvv(),
+        String keycloakId = keycloakService.createUser(entity.keycloakUsername(), pin,
                 entity.getFirstName(), entity.getLastName(), entity.getEmail());
         try {
             entityRepository.save(entity.setKeycloakId(keycloakId)

@@ -91,7 +91,7 @@ public class EntityRegistrationServiceImpl implements EntityRegistrationService 
         }
         Account primaryAccount = saveAccount(entity, AccountType.PRIMARY_ACCOUNT, currency, accountNumber, request.getAuthorisationType());
         saveInitiator(request.getCard(), primaryAccount);
-        String keycloakId = keycloakService.createUser(entity.keycloakUsername(), pvv,
+        String keycloakId = keycloakService.createUser(entity.keycloakUsername(), pin,
                 request.getFirstName(), request.getLastName(), request.getEmail());
         try {
             entityRepository.save(entity.setKeycloakId(keycloakId));

@@ -137,7 +137,7 @@ class EntityRegistrationServiceImplTest {
         RegisterResponse response = service.registerEntity(request);
 
         verifyRepositories();
-        verify(keycloakService).createUser("30000011", PVV, FIRST_NAME, LAST_NAME, EMAIL);
+        verify(keycloakService).createUser("30000011", PIN, FIRST_NAME, LAST_NAME, EMAIL);
 
         assertThat(response.getStatus()).isEqualTo(ResponseStatus.SUCCESS);
         assertThat(response.getMessage()).isEqualTo("Registration processed successfully");
@@ -234,7 +234,7 @@ class EntityRegistrationServiceImplTest {
         RegisterResponse response = service.registerEntity(request);
 
         verifyRepositoriesForSimpleReg();
-        verify(keycloakService).createUser("30000011", PVV, FIRST_NAME, LAST_NAME, EMAIL);
+        verify(keycloakService).createUser("30000011", PIN, FIRST_NAME, LAST_NAME, EMAIL);
 
         assertThat(response.getStatus()).isEqualTo(ResponseStatus.SUCCESS);
         assertThat(response.getMessage()).isEqualTo("Registration processed successfully");

@@ -6,5 +6,8 @@
     <include file="db/changelog/mysql-changelog-pk-fix.xml"/>
     <include file="db/changelog/payments-db-structure.xml"/>
     <include file="db/changelog/payments-test-data.xml"/>
+    <include file="db/changelog/payments-tito-finance-admin-groups.xml"/>
+    <include file="db/changelog/payments-tito-test-users.xml"/>
+    <include file="db/changelog/payments-tito-admin-staff.xml"/>
 
 </databaseChangeLog>

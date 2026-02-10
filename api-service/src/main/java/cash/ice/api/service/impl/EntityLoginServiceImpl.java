@@ -94,13 +94,13 @@ public class EntityLoginServiceImpl implements EntityLoginService {
         try {
             LoginResponse loginResponse = mfaService.enterBackupCode(entity.idString(), entity.getMfaBackupCodes(), mfaRequest.getCode(), entitiesProperties.getMfa())
                     .setLocale(entity.getLocale());
+            if (loginResponse.getStatus() == LoginResponse.Status.SUCCESS &&
+                    (loginResponse.getAccessToken() == null || loginResponse.getAccessToken().getToken() == null)) {
+                throw new ICEcashException("Access token is expired", ErrorCodes.EC1038);
+            }
             entityRepository.save(entity
                     .setMfaBackupCodes(entity.getMfaBackupCodes().stream()
                             .filter(code -> !code.equals(mfaRequest.getCode())).toList()));
-            if (loginResponse.getStatus() == LoginResponse.Status.SUCCESS && loginResponse.getAccessToken() == null) {
-                loginResponse.setAccessToken(loginEntity(entity.keycloakUsername(), entity.getPvv()))
-                        .setMfaType(entity.getMfaType());
-            }
             return loginResponse;
         } catch (LockLoginException e) {
             throw lockUserLogin(entity, e.getInitialException());
@@ -143,7 +143,7 @@ public class EntityLoginServiceImpl implements EntityLoginService {
                 .orElseThrow(() -> new UnexistingUserException("entityId: " + entityId));
         EntityClass savedEntity = entityRepository.save(entity
                 .setPvv(securityPvvService.acquirePvv(entity.getInternalId(), newPassword)));
-        updateKeycloakUser(savedEntity, savedEntity.getPvv());
+        updateKeycloakUser(savedEntity, newPassword);
         return savedEntity;
     }
 
@@ -156,7 +156,7 @@ public class EntityLoginServiceImpl implements EntityLoginService {
         if (pvv.equals(entity.getPvv())) {
             EntityClass savedEntity = entityRepository.save(entity
                     .setPvv(securityPvvService.acquirePvv(entity.getInternalId(), newPassword)));
-            updateKeycloakUser(savedEntity, savedEntity.getPvv());
+            updateKeycloakUser(savedEntity, newPassword);
             return savedEntity;
         } else {
             throw new ICEcashException("Old password is incorrect", ErrorCodes.EC1032);
@@ -185,7 +185,7 @@ public class EntityLoginServiceImpl implements EntityLoginService {
         String newPin = Tool.generateDigits(4, false);
         EntityClass savedEntity = entityRepository.save(entity
                 .setPvv(securityPvvService.acquirePvv(entity.getInternalId(), newPin)));
-        updateKeycloakUser(savedEntity, savedEntity.getPvv());
+        updateKeycloakUser(savedEntity, newPin);
         notificationService.sendSmsPinCode(newPin, getMsisdn(entity));
         return savedEntity;
     }
@@ -264,13 +264,17 @@ public class EntityLoginServiceImpl implements EntityLoginService {
         return entity;
     }
 
-    private AccessTokenResponse loginEntity(String username, String pvv) {
-        return keycloakService.loginUser(
-                null,
-                username,
-                pvv,
-                null,
-                null);
+    private AccessTokenResponse loginEntity(String username, String password) {
+        try {
+            return keycloakService.loginUser(
+                    null,
+                    username,
+                    password,
+                    null,
+                    null);
+        } catch (NotAuthorizedException e) {
+            return null;
+        }
     }
 
     private void updateKeycloakUser(EntityClass entity, String password) {

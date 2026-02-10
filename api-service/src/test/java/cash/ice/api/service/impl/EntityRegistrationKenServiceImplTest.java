@@ -102,7 +102,7 @@ class EntityRegistrationKenServiceImplTest {
         when(currencyRepository.findByIsoCode(Currency.KES)).thenReturn(Optional.of(currency));
         when(entityRegistrationService.saveAccount(entity, currency, PRIMARY_ACCOUNT, null)).thenReturn(primaryAccount);
         when(entityRegistrationService.saveAccount(entity, currency, FNDS_ACCOUNT, null)).thenReturn(fndsAccount);
-        when(keycloakService.createUser(entity.keycloakUsername(), PVV, FIRST_NAME, LAST_NAME, EMAIL)).thenReturn(KEYCLOAK_ID);
+        when(keycloakService.createUser(entity.keycloakUsername(), PIN, FIRST_NAME, LAST_NAME, EMAIL)).thenReturn(KEYCLOAK_ID);
         when(kenProperties.isRegisterNotificationSmsEnable()).thenReturn(true);
         when(kenProperties.getRegisterNotificationSmsMessageEn()).thenReturn("Your new Voucher Account Number is %s.\nYour PIN is %s.");
 

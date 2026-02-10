@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.1.xsd">
+
+    <!-- Tito test users: one per frontend user type (General User, Matatu/Taxi Owner, Agents, SACCO).
+         Login username = idNumber, password = pin (4 digits). -->
+
+    <changeSet author="tito" id="tito-test-user-general" runAlways="false" failOnError="false">
+        <comment>Test user: General User (individual). Username 1111111111111111, PIN 1111.</comment>
+        <sql>
+            INSERT INTO initiator (initiator_type_id, identifier, account_id, initiator_category_id, initiator_status_id, pvv, notes, start_date, expiry_date, meta_data, configuration) VALUES (3, '1111111111111111', null, 4, 1, 'A11A1111A1111111', 'Tito test General User', '2022-09-01', '2032-09-01', null, null);
+        </sql>
+        <customChange class="cash.ice.api.task.RegisterUserDbMigrationTask">
+            <param name="userJson" value='{
+                "firstName": "Test",
+                "lastName": "GeneralUser",
+                "idTypeId": 1,
+                "entityType": "Personal",
+                "email": "test.general@tito.test",
+                "idNumber": "1111111111111111",
+                "accountNumber": "33333333336",
+                "pin": "1111",
+                "key": "1111111111111111",
+                "pvv": "A11A1111A1111111",
+                "card": "1111111111111111",
+                "company": "ICEcash",
+                "mobile": "263111111111"
+            }' />
+        </customChange>
+        <sql>
+            INSERT INTO account_relationship (entity_id, partner_account_id, security_groups) VALUES ((SELECT id FROM entity WHERE id_number = '1111111111111111'), (SELECT id FROM account WHERE account_number = '33333333336'), '{"ONLINE": 6}');
+            INSERT INTO transaction_lines (transaction_id, transaction_code_id, entity_account_id, description, amount) VALUES (1, 1, (SELECT id FROM account WHERE account_number = '33333333336'), 'Test Deposit', 100000.00);
+        </sql>
+    </changeSet>
+
+    <changeSet author="tito" id="tito-test-user-matatu" runAlways="false" failOnError="false">
+        <comment>Test user: Matatu/Taxi Owner. Username 2222222222222222, PIN 2222.</comment>
+        <sql>
+            INSERT INTO initiator (initiator_type_id, identifier, account_id, initiator_category_id, initiator_status_id, pvv, notes, start_date, expiry_date, meta_data, configuration) VALUES (3, '2222222222222222', null, 4, 1, 'B22B2222B2222222', 'Tito test Matatu Owner', '2022-09-01', '2032-09-01', null, null);
+        </sql>
+        <customChange class="cash.ice.api.task.RegisterUserDbMigrationTask">
+            <param name="userJson" value='{
+                "firstName": "Test",
+                "lastName": "MatatuOwner",
+                "idTypeId": 1,
+                "entityType": "Personal",
+                "email": "test.matatu@tito.test",
+                "idNumber": "2222222222222222",
+                "accountNumber": "33333333337",
+                "pin": "2222",
+                "key": "2222222222222222",
+                "pvv": "B22B2222B2222222",
+                "card": "2222222222222222",
+                "company": "ICEcash",
+                "mobile": "263222222222"
+            }' />
+        </customChange>
+        <sql>
+            INSERT INTO account_relationship (entity_id, partner_account_id, security_groups) VALUES ((SELECT id FROM entity WHERE id_number = '2222222222222222'), (SELECT id FROM account WHERE account_number = '33333333337'), '{"ONLINE": 6}');
+            INSERT INTO transaction_lines (transaction_id, transaction_code_id, entity_account_id, description, amount) VALUES (1, 1, (SELECT id FROM account WHERE account_number = '33333333337'), 'Test Deposit', 100000.00);
+        </sql>
+    </changeSet>
+
+    <changeSet author="tito" id="tito-test-user-agents" runAlways="false" failOnError="false">
+        <comment>Test user: Agents. Username 4444444444444444, PIN 4444.</comment>
+        <sql>
+            INSERT INTO initiator (initiator_type_id, identifier, account_id, initiator_category_id, initiator_status_id, pvv, notes, start_date, expiry_date, meta_data, configuration) VALUES (3, '4444444444444444', null, 4, 1, 'D44D4444D4444444', 'Tito test Agents', '2022-09-01', '2032-09-01', null, null);
+        </sql>
+        <customChange class="cash.ice.api.task.RegisterUserDbMigrationTask">
+            <param name="userJson" value='{
+                "firstName": "Test",
+                "lastName": "Agents",
+                "idTypeId": 1,
+                "entityType": "Personal",
+                "email": "test.agents@tito.test",
+                "idNumber": "4444444444444444",
+                "accountNumber": "33333333338",
+                "pin": "4444",
+                "key": "4444444444444444",
+                "pvv": "D44D4444D4444444",
+                "card": "4444444444444444",
+                "company": "ICEcash",
+                "mobile": "263444444444"
+            }' />
+        </customChange>
+        <sql>
+            INSERT INTO account_relationship (entity_id, partner_account_id, security_groups) VALUES ((SELECT id FROM entity WHERE id_number = '4444444444444444'), (SELECT id FROM account WHERE account_number = '33333333338'), '{"ONLINE": 6}');
+            INSERT INTO transaction_lines (transaction_id, transaction_code_id, entity_account_id, description, amount) VALUES (1, 1, (SELECT id FROM account WHERE account_number = '33333333338'), 'Test Deposit', 100000.00);
+        </sql>
+    </changeSet>
+
+    <changeSet author="tito" id="tito-test-user-sacco" runAlways="false" failOnError="false">
+        <comment>Test user: SACCO. Username 5555555555555555, PIN 5555.</comment>
+        <sql>
+            INSERT INTO initiator (initiator_type_id, identifier, account_id, initiator_category_id, initiator_status_id, pvv, notes, start_date, expiry_date, meta_data, configuration) VALUES (3, '5555555555555555', null, 4, 1, 'E55E5555E5555555', 'Tito test SACCO', '2022-09-01', '2032-09-01', null, null);
+        </sql>
+        <customChange class="cash.ice.api.task.RegisterUserDbMigrationTask">
+            <param name="userJson" value='{
+                "firstName": "Test",
+                "lastName": "SACCO",
+                "idTypeId": 1,
+                "entityType": "Personal",
+                "email": "test.sacco@tito.test",
+                "idNumber": "5555555555555555",
+                "accountNumber": "33333333339",
+                "pin": "5555",
+                "key": "5555555555555555",
+                "pvv": "E55E5555E5555555",
+                "card": "5555555555555555",
+                "company": "ICEcash",
+                "mobile": "263555555555"
+            }' />
+        </customChange>
+        <sql>
+            INSERT INTO account_relationship (entity_id, partner_account_id, security_groups) VALUES ((SELECT id FROM entity WHERE id_number = '5555555555555555'), (SELECT id FROM account WHERE account_number = '33333333339'), '{"ONLINE": 6}');
+            INSERT INTO transaction_lines (transaction_id, transaction_code_id, entity_account_id, description, amount) VALUES (1, 1, (SELECT id FROM account WHERE account_number = '33333333339'), 'Test Deposit', 100000.00);
+        </sql>
+    </changeSet>
+</databaseChangeLog>

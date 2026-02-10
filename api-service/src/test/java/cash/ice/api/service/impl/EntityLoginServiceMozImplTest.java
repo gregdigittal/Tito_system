@@ -95,7 +95,7 @@ class EntityLoginServiceMozImplTest {
         when(accountRepository.findByAccountNumber(USERNAME)).thenReturn(List.of(new Account().setEntityId(ENTITY_ID).setAccountStatus(AccountStatus.ACTIVE)));
         when(entityRepository.findById(ENTITY_ID)).thenReturn(Optional.of(entity));
         when(securityPvvService.acquirePvv(INTERNAL_ID, PIN)).thenReturn(PVV);
-        when(keycloakService.loginUser(null, ENTITY_KEYCLOAK_USERNAME, PVV, null, null)).thenReturn(accessToken);
+        when(keycloakService.loginUser(null, ENTITY_KEYCLOAK_USERNAME, PIN, null, null)).thenReturn(accessToken);
         when(entityMsisdnRepository.findByEntityIdAndPrimaryMsisdn(ENTITY_ID)).thenReturn(Optional.of(new EntityMsisdn().setMsisdn(MSISDN)));
         when(entitiesProperties.getMfa()).thenReturn(mfaProperties);
         when(mfaService.handleLogin(String.valueOf(ENTITY_ID), accessToken, MfaType.OTP, SECRET_CODE, MSISDN, mfaProperties)).thenReturn(loginResponse);

@@ -4,11 +4,19 @@
 #
 # Run api-service with profiles: dev-k8s,tidb-cloud
 # Example: ./mvnw -pl api-service -am -DskipTests spring-boot:run -Dspring-boot.run.profiles=dev-k8s,tidb-cloud
+#
+# Alternatively, set env vars (no file needed, e.g. on Render):
+#   TIDB_URL, TIDB_USERNAME, TIDB_PASSWORD
+# Spring Boot maps these to tidb.url, tidb.username, tidb.password.
 
 tidb:
   url: jdbc:mysql://YOUR_HOST:YOUR_PORT/YOUR_DATABASE?createDatabaseIfNotExist=true&allowPublicKeyRetrieval=true&useSSL=true&serverTimezone=Africa/Harare
   username: YOUR_USERNAME
   password: YOUR_PASSWORD
+
+# TiDB Cloud: useSSL=true is required. For strict TLS use:
+#   ...&useSSL=true&sslMode=VERIFY_CA&certificateAuthorityPath=/path/to/ca.pem
+# (TiDB Cloud Connect dialog may provide a CA cert download.)
 
 # Optional: use test data changelog on first run (creates schema + test user).
 # Omit or set to liquibase-db-changelog.xml for schema only.

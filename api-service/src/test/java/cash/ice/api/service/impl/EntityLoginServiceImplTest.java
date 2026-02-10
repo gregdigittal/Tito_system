@@ -201,6 +201,25 @@ class EntityLoginServiceImplTest {
     }
 
     @Test
+    void testWrongPasswordFromKeycloakIsHandledByMfaTracking() throws LockLoginException {
+        MfaProperties mfaProperties = new MfaProperties();
+
+        when(accountRepository.findByAccountNumber(USERNAME)).thenReturn(List.of(new Account().setEntityId(ENTITY_ID).setAccountStatus(AccountStatus.ACTIVE)));
+        when(entityRepository.findById(ENTITY_ID)).thenReturn(Optional.of(createEntity()));
+        when(keycloakService.loginUser(null, ENTITY_KEYCLOAK_USERNAME, PIN, null, null))
+                .thenThrow(new NotAuthorizedException(Response.status(401)));
+        when(entityMsisdnRepository.findByEntityIdAndPrimaryMsisdn(ENTITY_ID)).thenReturn(Optional.of(new EntityMsisdn().setMsisdn(MSISDN)));
+        when(entitiesProperties.getMfa()).thenReturn(mfaProperties);
+        when(mfaService.handleLogin(String.valueOf(ENTITY_ID), null, MfaType.OTP, SECRET_CODE, MSISDN, mfaProperties))
+                .thenThrow(new LockLoginException(new NotAuthorizedException(Response.status(401))));
+
+        assertThrows(NotAuthorizedException.class,
+                () -> service.makeLogin(new LoginEntityRequest().setUsername(USERNAME).setPassword(PIN)));
+        verify(entityRepository).save(entityArgumentCaptor.capture());
+        assertThat(entityArgumentCaptor.getValue().getLoginStatus()).isEqualTo(LoginStatus.LOCKED);
+    }
+
+    @Test
     void testEnterLoginMfaCode() throws LockLoginException {
         AccessTokenResponse accessToken = new AccessTokenResponse();
         MfaProperties mfaProperties = new MfaProperties();
@@ -222,13 +241,12 @@ class EntityLoginServiceImplTest {
         EntityClass entity = createEntity();
         AccessTokenResponse accessToken = new AccessTokenResponse();
         MfaProperties mfaProperties = new MfaProperties();
-        LoginResponse loginResponse = LoginResponse.success(null);
+        LoginResponse loginResponse = LoginResponse.success(accessToken);
 
         when(accountRepository.findByAccountNumber(USERNAME)).thenReturn(List.of(new Account().setEntityId(ENTITY_ID).setAccountStatus(AccountStatus.ACTIVE)));
         when(entityRepository.findById(ENTITY_ID)).thenReturn(Optional.of(entity));
         when(entitiesProperties.getMfa()).thenReturn(mfaProperties);
         when(mfaService.enterBackupCode(String.valueOf(ENTITY_ID), entity.getMfaBackupCodes(), backupCode, mfaProperties)).thenReturn(loginResponse);
-        when(keycloakService.loginUser(null, ENTITY_KEYCLOAK_USERNAME, PVV, null, null)).thenReturn(accessToken);
 
         LoginResponse actualResponse = service.enterLoginMfaBackupCode(
                 new LoginMfaRequest().setUsername(USERNAME).setCode(backupCode));
@@ -236,6 +254,23 @@ class EntityLoginServiceImplTest {
         assertThat(actualResponse.getAccessToken()).isEqualTo(accessToken);
         verify(entityRepository).save(entityArgumentCaptor.capture());
         assertThat(entityArgumentCaptor.getValue().getMfaBackupCodes()).isEqualTo(List.of("backupCode2"));
+    }
+
+    @Test
+    void testEnterLoginMfaBackupCodeWithoutTokenThrows() throws LockLoginException {
+        String backupCode = "backupCode1";
+        EntityClass entity = createEntity();
+        MfaProperties mfaProperties = new MfaProperties();
+        LoginResponse loginResponse = LoginResponse.success(null);
+
+        when(accountRepository.findByAccountNumber(USERNAME)).thenReturn(List.of(new Account().setEntityId(ENTITY_ID).setAccountStatus(AccountStatus.ACTIVE)));
+        when(entityRepository.findById(ENTITY_ID)).thenReturn(Optional.of(entity));
+        when(entitiesProperties.getMfa()).thenReturn(mfaProperties);
+        when(mfaService.enterBackupCode(String.valueOf(ENTITY_ID), entity.getMfaBackupCodes(), backupCode, mfaProperties)).thenReturn(loginResponse);
+
+        ICEcashException exception = assertThrows(ICEcashException.class,
+                () -> service.enterLoginMfaBackupCode(new LoginMfaRequest().setUsername(USERNAME).setCode(backupCode)));
+        assertThat(exception.getErrorCode()).isEqualTo(ErrorCodes.EC1038);
     }
 
     @Test
@@ -264,7 +299,7 @@ class EntityLoginServiceImplTest {
         when(entityRepository.save(any())).thenAnswer(invocation -> invocation.getArguments()[0]);
 
         service.updateEntityPassword(authUser, oldPassword, newPassword);
-        verify(keycloakService).updateUser(KEYCLOAK_ID, newPvv, FIRST_NAME, LAST_NAME, EMAIL);
+        verify(keycloakService).updateUser(KEYCLOAK_ID, newPassword, FIRST_NAME, LAST_NAME, EMAIL);
         verify(entityRepository).save(entityArgumentCaptor.capture());
         assertThat(entityArgumentCaptor.getValue().getPvv()).isEqualTo(newPvv);
     }

@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.1.xsd">
+
+    <!-- Tito Admin user (gregm): staff row for backoffice login. Keycloak user in backoffice-local-realm.json. -->
+
+    <changeSet author="tito" id="tito-admin-staff-gregm">
+        <comment>Staff row for admin user gregm (username gregm, password 123456). Keycloak: backoffice-local, roles BACKOFFICE, TITO_ADMIN.</comment>
+        <sql>
+            INSERT INTO staff (email, first_name, last_name, msisdn, login_status, security_group_id, keycloak_id)
+            VALUES ('gregm@tito.local', 'Greg', 'Admin', '263000000000', 'ACTIVE', 3001, 'b1c0b16f-d194-4c4e-c162-7d5be8d41614');
+        </sql>
+    </changeSet>
+</databaseChangeLog>

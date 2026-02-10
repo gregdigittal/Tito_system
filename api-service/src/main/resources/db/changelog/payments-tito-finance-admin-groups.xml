@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.1.xsd">
+
+    <!-- Tito Admin / Finance Admin security groups (Option B).
+         Keycloak realm roles TITO_ADMIN / FINANCE_ADMIN live in backoffice-local-realm.json. -->
+
+    <changeSet author="tito-admin" id="tito-finance-admin-security-groups">
+        <comment>Add security_group rows for Tito Admin and Finance Admin; reuse existing rights.</comment>
+        <sql>
+            INSERT INTO security_group (id, name, description, active, meta_data, legacy_id)
+            VALUES (3001, 'Tito Admin', 'Tito product administration (config, terminology, deployment)', true, '{"OnlineProfileAccess":true}', 'tito:1');
+            INSERT INTO security_group (id, name, description, active, meta_data, legacy_id)
+            VALUES (3002, 'Finance Admin', 'Finance and journal administration (journals, approvals)', true, '{"OnlineProfileAccess":true}', 'tito:2');
+
+            -- Reuse existing backoffice rights: BULKPAY(9), RELEASE_A(15), RELEASE_B(54), BULKPAY_LOAD(60)
+            INSERT INTO security_group_right (security_group_id, security_right_id) VALUES (3001, 9);
+            INSERT INTO security_group_right (security_group_id, security_right_id) VALUES (3001, 15);
+            INSERT INTO security_group_right (security_group_id, security_right_id) VALUES (3001, 54);
+            INSERT INTO security_group_right (security_group_id, security_right_id) VALUES (3001, 60);
+            INSERT INTO security_group_right (security_group_id, security_right_id) VALUES (3002, 9);
+            INSERT INTO security_group_right (security_group_id, security_right_id) VALUES (3002, 15);
+            INSERT INTO security_group_right (security_group_id, security_right_id) VALUES (3002, 54);
+            INSERT INTO security_group_right (security_group_id, security_right_id) VALUES (3002, 60);
+        </sql>
+    </changeSet>
+</databaseChangeLog>

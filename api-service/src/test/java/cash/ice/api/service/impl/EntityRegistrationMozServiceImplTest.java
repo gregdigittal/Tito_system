@@ -123,7 +123,7 @@ class EntityRegistrationMozServiceImplTest {
         when(entityRegistrationService.saveAccount(entity, currency, PRIMARY_ACCOUNT, null)).thenReturn(primaryAccount);
         when(entityRegistrationService.saveAccount(entity, currency, SUBSIDY_ACCOUNT, null)).thenReturn(subsidyAccount);
         when(entityRegistrationService.saveAccount(entity, currency, PREPAID_TRANSPORT, null)).thenReturn(prepaidAccount);
-        when(keycloakService.createUser(entity.keycloakUsername(), PVV, FIRST_NAME, LAST_NAME, EMAIL)).thenReturn(KEYCLOAK_ID);
+        when(keycloakService.createUser(entity.keycloakUsername(), PIN, FIRST_NAME, LAST_NAME, EMAIL)).thenReturn(KEYCLOAK_ID);
         when(mozProperties.isRegisterNotificationSmsEnable()).thenReturn(true);
         when(mozProperties.getRegisterNotificationSmsMessageEn()).thenReturn("notification account number: %s");
 
@@ -204,7 +204,7 @@ class EntityRegistrationMozServiceImplTest {
         when(entityRegistrationService.saveAccount(entity, currency, PRIMARY_ACCOUNT, null)).thenReturn(primaryAccount);
         when(entityRegistrationService.saveAccount(entity, currency, SUBSIDY_ACCOUNT, null)).thenReturn(subsidyAccount);
         when(entityRegistrationService.saveAccount(entity, currency, PREPAID_TRANSPORT, null)).thenReturn(prepaidAccount);
-        when(keycloakService.createUser(entity.keycloakUsername(), PVV, FIRST_NAME, LAST_NAME, EMAIL)).thenReturn(KEYCLOAK_ID);
+        when(keycloakService.createUser(entity.keycloakUsername(), PIN, FIRST_NAME, LAST_NAME, EMAIL)).thenReturn(KEYCLOAK_ID);
         when(mozProperties.isRegisterNotificationSmsEnable()).thenReturn(true);
         when(mozProperties.getRegisterNotificationSmsMessageEn()).thenReturn("notification account number: %s");
 

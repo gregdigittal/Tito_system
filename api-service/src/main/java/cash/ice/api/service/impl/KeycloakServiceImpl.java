@@ -239,10 +239,15 @@ public class KeycloakServiceImpl implements KeycloakService {
     @Override
     public AccessTokenResponse refreshToken(String refreshToken, String clientId, String clientSecret) {
         try (Client client = Keycloak.getClientProvider().newRestEasyClient(null, null, false)) {
-            TokenService tokenService = getTokenService(client, clientId, clientSecret);
+            String clientIdToUse = Strings.isNullOrEmpty(clientId) ? keycloakProperties.getDefaultClientId() : clientId;
+            String clientSecretToUse = Strings.isNullOrEmpty(clientSecret) ? keycloakProperties.getDefaultClientSecret() : clientSecret;
+            TokenService tokenService = getTokenService(client, clientIdToUse, clientSecretToUse);
             Form form = new Form().param(GRANT_TYPE, REFRESH_TOKEN)
                     .param(REFRESH_TOKEN, refreshToken);
-            form.param(CLIENT_ID, Strings.isNullOrEmpty(clientId) ? keycloakProperties.getDefaultClientId() : clientId);
+            form.param(CLIENT_ID, clientIdToUse);
+            if (!Strings.isNullOrEmpty(clientSecretToUse)) {
+                form.param(CLIENT_SECRET, clientSecretToUse);
+            }
             try {
                 return tokenService.refreshToken(keycloakProperties.getRealm(), form.asMap());
             } catch (Exception e) {
@@ -255,16 +260,21 @@ public class KeycloakServiceImpl implements KeycloakService {
     @Override
     public void invalidateRefreshToken(String refreshToken, String clientId, String clientSecret) {
         try (Client client = Keycloak.getClientProvider().newRestEasyClient(null, null, false)) {
-            TokenService tokenService = getTokenService(client, clientId, clientSecret);
+            String clientIdToUse = Strings.isNullOrEmpty(clientId) ? keycloakProperties.getDefaultClientId() : clientId;
+            String clientSecretToUse = Strings.isNullOrEmpty(clientSecret) ? keycloakProperties.getDefaultClientSecret() : clientSecret;
+            TokenService tokenService = getTokenService(client, clientIdToUse, clientSecretToUse);
             Form form = new Form().param(REFRESH_TOKEN, refreshToken);
-            form.param(CLIENT_ID, Strings.isNullOrEmpty(clientId) ? keycloakProperties.getDefaultClientId() : clientId);
+            form.param(CLIENT_ID, clientIdToUse);
+            if (!Strings.isNullOrEmpty(clientSecretToUse)) {
+                form.param(CLIENT_SECRET, clientSecretToUse);
+            }
             tokenService.logout(keycloakProperties.getRealm(), form.asMap());
         }
     }
 
     private TokenService getTokenService(Client client, String clientId, String clientSecret) {
         WebTarget target = client.target(keycloakProperties.getAuthServerUrl());
-        if (clientSecret != null) {
+        if (!Strings.isNullOrEmpty(clientSecret)) {
             target.register(new BasicAuthFilter(clientId, clientSecret));
         }
         return Keycloak.getClientProvider().targetProxy(target, TokenService.class);
