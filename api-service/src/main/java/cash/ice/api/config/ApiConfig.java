@@ -1,5 +1,6 @@
 package cash.ice.api.config;
 
+import cash.ice.api.config.property.DeploymentConfigProperties;
 import cash.ice.api.config.property.KeycloakProperties;
 import cash.ice.api.service.KeycloakService;
 import cash.ice.api.service.impl.KeycloakServiceImpl;
@@ -9,6 +10,12 @@ import org.springframework.context.annotation.Configuration;
 
 @Configuration
 public class ApiConfig {
+
+    @Bean
+    @ConfigurationProperties(prefix = "ice.cash.deployment")
+    protected DeploymentConfigProperties deploymentConfigProperties() {
+        return new DeploymentConfigProperties();
+    }
 
     @Bean
     @ConfigurationProperties(prefix = "ice.cash.keycloak.entities")

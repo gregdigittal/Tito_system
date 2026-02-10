@@ -25,6 +25,18 @@ spring:
 spring.graphql.schema.printer.enabled: true
 ice:
   cash:
+    # Phase 6: deployment config (country, terminology, currencies, locale). Override via env (e.g. ICE_CASH_DEPLOYMENT_COUNTRY_CODE).
+    deployment:
+      country-code: KE
+      default-currency-code: KES
+      default-locale: en_KE
+      vehicle-terminology: Matatu
+      taxi-owner-label: Matatu/Taxi Owner
+      user-type-to-account-type:
+        "General User": CommuterRegular
+        "Matatu/Taxi Owner": MatatuOwnerBusiness
+        "Agents": AgentBusiness
+        "SACCO": SaccoBusiness
     mongodb:
       request-collection: PaymentRequest
       response-collection: PaymentResponse

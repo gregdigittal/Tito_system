@@ -1,7 +1,16 @@
+# Default: build URI from host/username/password/auth-db
 spring:
   data:
     mongodb:
       uri: mongodb://${mongodb.username}:${mongodb.password}@${mongodb.host}/${mongodb.auth-db}
+      database: ${mongodb.database}
+---
+# Use full URI when set (e.g. Render + Atlas: set MONGODB_URI and MONGODB_DATABASE)
+spring.config.activate.on-profile: mongodb-uri
+spring:
+  data:
+    mongodb:
+      uri: ${mongodb.uri}
       database: ${mongodb.database}
 ---
 spring.config.activate.on-profile: local, local-perf
