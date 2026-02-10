@@ -53,11 +53,11 @@ public class EntityLoginServiceImpl implements EntityLoginService {
         if (entity.getLoginStatus() != LoginStatus.ACTIVE) {
             throw new ICEcashException(String.format("Entity is %s for login", entity.getId()), ErrorCodes.EC1035);
         }
-        String pvv = securityPvvService.acquirePvv(entity.getInternalId(), request.getPassword());
+        // Keycloak resource-owner password grant expects the plain password
         return keycloakService.loginUser(
                 request.getGrantType(),
                 entity.keycloakUsername(),
-                pvv,
+                request.getPassword(),
                 request.getClientId(),
                 request.getClientSecret());
     }
@@ -66,8 +66,8 @@ public class EntityLoginServiceImpl implements EntityLoginService {
     @Transactional
     public LoginResponse makeLogin(LoginEntityRequest request) {
         EntityClass entity = findActiveEntity(request.getUsername());
-        String pvv = securityPvvService.acquirePvv(entity.getInternalId(), request.getPassword());
-        AccessTokenResponse accessToken = loginEntity(entity.keycloakUsername(), pvv);
+        // Keycloak resource-owner password grant expects the plain password, not the PVV (stored hash)
+        AccessTokenResponse accessToken = loginEntity(entity.keycloakUsername(), request.getPassword());
         try {
             return mfaService.handleLogin(entity.idString(), accessToken, entity.getMfaType(), entity.getMfaSecretCode(), getMsisdn(entity), entitiesProperties.getMfa())
                     .setLocale(entity.getLocale())

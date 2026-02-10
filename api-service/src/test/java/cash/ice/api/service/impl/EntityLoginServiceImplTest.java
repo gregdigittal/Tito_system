@@ -91,8 +91,7 @@ class EntityLoginServiceImplTest {
 
         when(accountRepository.findByAccountNumber(enterId)).thenReturn(List.of(new Account().setEntityId(ENTITY_ID).setAccountStatus(AccountStatus.ACTIVE)));
         when(entityRepository.findById(ENTITY_ID)).thenReturn(Optional.of(createEntity()));
-        when(securityPvvService.acquirePvv(INTERNAL_ID, PIN)).thenReturn(PVV);
-        when(keycloakService.loginUser(GRANT_TYPE, ENTITY_KEYCLOAK_USERNAME, PVV, CLIENT_ID, CLIENT_SECRET)).thenReturn(expectedResponse);
+        when(keycloakService.loginUser(GRANT_TYPE, ENTITY_KEYCLOAK_USERNAME, PIN, CLIENT_ID, CLIENT_SECRET)).thenReturn(expectedResponse);
 
         AccessTokenResponse actualResponse = service.simpleLogin(request);
         assertSame(expectedResponse, actualResponse);
@@ -107,8 +106,7 @@ class EntityLoginServiceImplTest {
 
         when(accountRepository.findByAccountNumber(enterId)).thenReturn(List.of(new Account().setEntityId(ENTITY_ID), new Account().setEntityId(ENTITY_ID).setAccountStatus(AccountStatus.ACTIVE)));
         when(entityRepository.findById(ENTITY_ID)).thenReturn(Optional.of(createEntity()));
-        when(securityPvvService.acquirePvv(INTERNAL_ID, PIN)).thenReturn(PVV);
-        when(keycloakService.loginUser(GRANT_TYPE, ENTITY_KEYCLOAK_USERNAME, PVV, CLIENT_ID, CLIENT_SECRET)).thenReturn(expectedResponse);
+        when(keycloakService.loginUser(GRANT_TYPE, ENTITY_KEYCLOAK_USERNAME, PIN, CLIENT_ID, CLIENT_SECRET)).thenReturn(expectedResponse);
 
         AccessTokenResponse actualResponse = service.simpleLogin(request);
         assertSame(expectedResponse, actualResponse);
@@ -135,8 +133,7 @@ class EntityLoginServiceImplTest {
         when(initiatorRepository.findByIdentifier(enterId)).thenReturn(Optional.of(new Initiator().setAccountId(ACCOUNT_ID)));
         when(accountRepository.findById(ACCOUNT_ID)).thenReturn(Optional.of(new Account().setEntityId(ENTITY_ID)));
         when(entityRepository.findById(ENTITY_ID)).thenReturn(Optional.of(createEntity()));
-        when(securityPvvService.acquirePvv(INTERNAL_ID, PIN)).thenReturn(PVV);
-        when(keycloakService.loginUser(GRANT_TYPE, ENTITY_KEYCLOAK_USERNAME, PVV, CLIENT_ID, CLIENT_SECRET)).thenReturn(expectedResponse);
+        when(keycloakService.loginUser(GRANT_TYPE, ENTITY_KEYCLOAK_USERNAME, PIN, CLIENT_ID, CLIENT_SECRET)).thenReturn(expectedResponse);
 
         AccessTokenResponse actualResponse = service.simpleLogin(request);
         assertSame(expectedResponse, actualResponse);
@@ -150,8 +147,7 @@ class EntityLoginServiceImplTest {
         AccessTokenResponse expectedResponse = new AccessTokenResponse();
 
         when(entityRepository.findByIdNumber(enterId)).thenReturn(List.of(createEntity()));
-        when(securityPvvService.acquirePvv(INTERNAL_ID, PIN)).thenReturn(PVV);
-        when(keycloakService.loginUser(GRANT_TYPE, ENTITY_KEYCLOAK_USERNAME, PVV, CLIENT_ID, CLIENT_SECRET)).thenReturn(expectedResponse);
+        when(keycloakService.loginUser(GRANT_TYPE, ENTITY_KEYCLOAK_USERNAME, PIN, CLIENT_ID, CLIENT_SECRET)).thenReturn(expectedResponse);
 
         AccessTokenResponse actualResponse = service.simpleLogin(request);
         assertSame(expectedResponse, actualResponse);
@@ -175,8 +171,7 @@ class EntityLoginServiceImplTest {
 
         when(accountRepository.findByAccountNumber(USERNAME)).thenReturn(List.of(new Account().setEntityId(ENTITY_ID).setAccountStatus(AccountStatus.ACTIVE)));
         when(entityRepository.findById(ENTITY_ID)).thenReturn(Optional.of(createEntity()));
-        when(securityPvvService.acquirePvv(INTERNAL_ID, PIN)).thenReturn(PVV);
-        when(keycloakService.loginUser(null, ENTITY_KEYCLOAK_USERNAME, PVV, null, null)).thenReturn(accessToken);
+        when(keycloakService.loginUser(null, ENTITY_KEYCLOAK_USERNAME, PIN, null, null)).thenReturn(accessToken);
         when(entityMsisdnRepository.findByEntityIdAndPrimaryMsisdn(ENTITY_ID)).thenReturn(Optional.of(new EntityMsisdn().setMsisdn(MSISDN)));
         when(entitiesProperties.getMfa()).thenReturn(mfaProperties);
         when(mfaService.handleLogin(String.valueOf(ENTITY_ID), accessToken, MfaType.OTP, SECRET_CODE, MSISDN, mfaProperties)).thenReturn(loginResponse);
@@ -193,8 +188,7 @@ class EntityLoginServiceImplTest {
 
         when(accountRepository.findByAccountNumber(USERNAME)).thenReturn(List.of(new Account().setEntityId(ENTITY_ID).setAccountStatus(AccountStatus.ACTIVE)));
         when(entityRepository.findById(ENTITY_ID)).thenReturn(Optional.of(createEntity()));
-        when(securityPvvService.acquirePvv(INTERNAL_ID, PIN)).thenReturn(PVV);
-        when(keycloakService.loginUser(null, ENTITY_KEYCLOAK_USERNAME, PVV, null, null)).thenReturn(accessToken);
+        when(keycloakService.loginUser(null, ENTITY_KEYCLOAK_USERNAME, PIN, null, null)).thenReturn(accessToken);
         when(entityMsisdnRepository.findByEntityIdAndPrimaryMsisdn(ENTITY_ID)).thenReturn(Optional.of(new EntityMsisdn().setMsisdn(MSISDN)));
         when(entitiesProperties.getMfa()).thenReturn(mfaProperties);
         when(mfaService.handleLogin(String.valueOf(ENTITY_ID), accessToken, MfaType.OTP, SECRET_CODE, MSISDN, mfaProperties))
