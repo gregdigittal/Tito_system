@@ -202,7 +202,8 @@ public class KeycloakServiceImpl implements KeycloakService {
     }
 
     private AccessTokenResponse loginUser(String usernamePrefix, String grantType, String entityId, String password, String clientId, String clientSecret) {
-        String username = usernamePrefix + entityId;
+        // Caller may pass full username (e.g. entity_30000001) or raw id (e.g. 30000001); avoid double prefix
+        String username = (entityId != null && entityId.startsWith(usernamePrefix)) ? entityId : (usernamePrefix + entityId);
         String effectiveGrantType = Strings.isNullOrEmpty(grantType) ? OAuth2Constants.PASSWORD : grantType;
         String clientID = Strings.isNullOrEmpty(clientId) ? keycloakProperties.getDefaultClientId() : clientId;
         String clientSecretToUse = Strings.isNullOrEmpty(clientSecret) ? keycloakProperties.getDefaultClientSecret() : clientSecret;
