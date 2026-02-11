@@ -5,7 +5,7 @@ import cash.ice.api.dto.LoginData;
 import cash.ice.api.dto.LoginResponse;
 import cash.ice.api.errors.LockLoginException;
 import cash.ice.api.errors.UnexistingUserException;
-import cash.ice.api.repository.LoginDataRepository;
+import cash.ice.api.repository.LoginDataStore;
 import cash.ice.api.service.KeycloakService;
 import cash.ice.api.service.MfaService;
 import cash.ice.api.service.NotificationService;
@@ -46,7 +46,7 @@ public class MfaServiceImpl implements MfaService {
     private final SecurityPvvService securityPvvService;
     private final NotificationService notificationService;
     private final KeycloakService keycloakService;
-    private final LoginDataRepository loginDataRepository;
+    private final LoginDataStore loginDataStore;
     private final SecretGenerator secretGenerator;
     private final CodeVerifier verifier;
     private final TimeProvider timeProvider;
@@ -76,7 +76,7 @@ public class MfaServiceImpl implements MfaService {
                 }
             }
             invalidateAccessTokenIfNeed(loginData.getToken());
-            loginDataRepository.save(loginData
+            loginDataStore.save(loginData
                     .setToken(accessToken)
                     .setTokenReceiveTime(Instant.now())
                     .setTokenExpireTime(Instant.now().plus(mfaProperties.getAccessTokenExpiration())));
@@ -124,7 +124,7 @@ public class MfaServiceImpl implements MfaService {
 
     @Override
     public void cleanupLoginData(String login) {
-        loginDataRepository.save(findUserLoginData(login, true)
+        loginDataStore.save(findUserLoginData(login, true)
                 .cleanup(true));
     }
 
@@ -147,15 +147,15 @@ public class MfaServiceImpl implements MfaService {
     @Override
     public String createForgotPasswordKey(String login) {
         LoginData loginData = findUserLoginData(login, true);
-        loginDataRepository.save(loginData.setForgotPasswordKey(secretGenerator.generate()));
+        loginDataStore.save(loginData.setForgotPasswordKey(secretGenerator.generate()));
         return loginData.getForgotPasswordKey();
     }
 
     @Override
     public String lookupLoginByForgotPasswordKey(String forgotPasswordKey) {
-        LoginData loginData = loginDataRepository.findByForgotPasswordKey(forgotPasswordKey).orElseThrow(() ->
+        LoginData loginData = loginDataStore.findByForgotPasswordKey(forgotPasswordKey).orElseThrow(() ->
                 new ICEcashException("Unknown key provided", ErrorCodes.EC1034));
-        loginDataRepository.save(loginData.setForgotPasswordKey(null));
+        loginDataStore.save(loginData.setForgotPasswordKey(null));
         return loginData.getLogin();
     }
 
@@ -196,16 +196,16 @@ public class MfaServiceImpl implements MfaService {
     @Override
     public void cleanupExpiredTokensTask() {
         Instant now = Instant.now();
-        List<LoginData> expiredTokenUsers = loginDataRepository.findAllByTokenExpireTimeIsBefore(now);
+        List<LoginData> expiredTokenUsers = loginDataStore.findAllByTokenExpireTimeIsBefore(now);
         log.info("Cleanup {} staff members expired tokens older than: {}", expiredTokenUsers.size(), now);
         if (!expiredTokenUsers.isEmpty()) {
             expiredTokenUsers.forEach(loginData -> loginData.cleanup(false));
-            loginDataRepository.saveAll(expiredTokenUsers);
+            loginDataStore.saveAll(expiredTokenUsers);
         }
     }
 
     private LoginData findUserLoginData(String login, boolean createIfAbsent) {
-        return loginDataRepository.findByLogin(login).orElseGet(() -> {
+        return loginDataStore.findByLogin(login).orElseGet(() -> {
             if (createIfAbsent) {
                 return new LoginData().setLogin(login);
             } else {
@@ -217,14 +217,14 @@ public class MfaServiceImpl implements MfaService {
     private LoginResponse handleSuccessfulLogin(LoginData loginData) {
         AccessTokenResponse token = loginData.getToken();
         MfaType mfaType = loginData.getMfaType();
-        loginDataRepository.save(loginData.cleanup(true));
+        loginDataStore.save(loginData.cleanup(true));
         return LoginResponse.success(logToken(token)).setMfaType(mfaType);
     }
 
     private LoginResponse handleFailedLoginAttempt(LoginData loginData, String type, MfaProperties mfaProperties) throws LockLoginException {
         loginData.addFailedLoginAttempt(mfaProperties.getMaxWrongLoginAttempts());
         log.debug("Wrong {}, account: {}, failAttempts: {}", type, loginData.getLogin(), loginData.getFailedLoginAttempts());
-        loginDataRepository.save(loginData);
+        loginDataStore.save(loginData);
         if (isMaxLoginAttemptsViolated(loginData, mfaProperties)) {
             throw new LockLoginException(new NotAuthorizedException("Wrong " + type));
         }

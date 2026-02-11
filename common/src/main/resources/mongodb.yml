@@ -5,6 +5,17 @@ spring:
       uri: mongodb://${mongodb.username}:${mongodb.password}@${mongodb.host}/${mongodb.auth-db}
       database: ${mongodb.database}
 ---
+# Dummy values when MongoDB is disabled (profile no-mongodb); Mongo auto-config is excluded so these are not used.
+spring.config.activate.on-profile: no-mongodb
+mongodb:
+  uri: ""
+  username: ""
+  password: ""
+  host: localhost
+  database: default
+  auth-db: admin
+
+---
 # Use full URI when set (e.g. Render + Atlas: set MONGODB_URI and MONGODB_DATABASE)
 spring.config.activate.on-profile: mongodb-uri
 spring:

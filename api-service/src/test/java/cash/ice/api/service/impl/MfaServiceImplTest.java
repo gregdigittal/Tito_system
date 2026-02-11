@@ -5,7 +5,7 @@ import cash.ice.api.dto.LoginData;
 import cash.ice.api.dto.LoginResponse;
 import cash.ice.api.errors.LockLoginException;
 import cash.ice.api.errors.UnexistingUserException;
-import cash.ice.api.repository.LoginDataRepository;
+import cash.ice.api.repository.LoginDataStore;
 import cash.ice.api.service.KeycloakService;
 import cash.ice.api.service.MfaService;
 import cash.ice.api.service.NotificationService;
@@ -62,7 +62,7 @@ class MfaServiceImplTest {
     @Mock
     private KeycloakService keycloakService;
     @Mock
-    private LoginDataRepository loginDataRepository;
+    private LoginDataStore loginDataStore;
     @Mock
     private SecretGenerator secretGenerator;
     @Mock
@@ -84,7 +84,7 @@ class MfaServiceImplTest {
 
     @BeforeEach
     void init() {
-        service = new MfaServiceImpl(securityPvvService, notificationService, keycloakService, loginDataRepository, secretGenerator,
+        service = new MfaServiceImpl(securityPvvService, notificationService, keycloakService, loginDataStore, secretGenerator,
                 verifier, timeProvider, codeGenerator, qrDataFactory, qrGenerator, recoveryCodeGenerator);
     }
 
@@ -108,7 +108,7 @@ class MfaServiceImplTest {
         assertThat(actualResponse.getMfaType()).isEqualTo(MfaType.OTP);
 
         verify(notificationService).sendSmsPinCode(anyString(), eq(MSISDN));
-        verify(loginDataRepository).save(loginDataCaptor.capture());
+        verify(loginDataStore).save(loginDataCaptor.capture());
         LoginData actualLoginData = loginDataCaptor.getValue();
         assertThat(actualLoginData.getLogin()).isEqualTo(LOGIN);
         assertThat(actualLoginData.getMfaType()).isEqualTo(MfaType.OTP);
@@ -130,7 +130,7 @@ class MfaServiceImplTest {
         assertThat(actualResponse.getStatus()).isEqualTo(LoginResponse.Status.MFA_REQUIRED);
         assertThat(actualResponse.getMfaType()).isEqualTo(MfaType.TOTP);
 
-        verify(loginDataRepository).save(loginDataCaptor.capture());
+        verify(loginDataStore).save(loginDataCaptor.capture());
         LoginData actualLoginData = loginDataCaptor.getValue();
         assertThat(actualLoginData.getLogin()).isEqualTo(LOGIN);
         assertThat(actualLoginData.getMfaType()).isEqualTo(MfaType.TOTP);
@@ -148,7 +148,7 @@ class MfaServiceImplTest {
         assertThrows(NotAuthorizedException.class,
                 () -> service.handleLogin(LOGIN, null, null, MFA_SECRET_CODE, MSISDN, mfaProperties));
 
-        verify(loginDataRepository).save(loginDataCaptor.capture());
+        verify(loginDataStore).save(loginDataCaptor.capture());
         LoginData actualLoginData = loginDataCaptor.getValue();
         assertThat(actualLoginData.getLogin()).isEqualTo(LOGIN);
         assertThat(actualLoginData.getFailedLoginAttempts()).isNotEmpty();
@@ -157,14 +157,14 @@ class MfaServiceImplTest {
     @Test
     void testHandleFailedLoginLastAttempt() {
         MfaProperties mfaProperties = new MfaProperties().setMaxWrongLoginAttempts(3);
-        when(loginDataRepository.findByLogin(LOGIN)).thenReturn(Optional.of(new LoginData().setLogin(LOGIN)
+        when(loginDataStore.findByLogin(LOGIN)).thenReturn(Optional.of(new LoginData().setLogin(LOGIN)
                 .setFailedLoginAttempts(new ArrayList<>(List.of(Tool.currentDateTime(), Tool.currentDateTime())))));
 
         LockLoginException exception = assertThrows(LockLoginException.class,
                 () -> service.handleLogin(LOGIN, null, null, MFA_SECRET_CODE, MSISDN, mfaProperties));
         assertThat(exception.getInitialException()).isNotNull();
 
-        verify(loginDataRepository).save(loginDataCaptor.capture());
+        verify(loginDataStore).save(loginDataCaptor.capture());
         LoginData actualLoginData = loginDataCaptor.getValue();
         assertThat(actualLoginData.getLogin()).isEqualTo(LOGIN);
         assertThat(actualLoginData.getFailedLoginAttempts().size()).isEqualTo(3);
@@ -173,7 +173,7 @@ class MfaServiceImplTest {
     @Test
     void testEnterTotpMfaCode() throws LockLoginException {
         MfaProperties mfaProperties = new MfaProperties().setOtpCodeExpiration(Duration.ofMinutes(5));
-        when(loginDataRepository.findByLogin(LOGIN)).thenReturn(Optional.of(new LoginData().setLogin(LOGIN)
+        when(loginDataStore.findByLogin(LOGIN)).thenReturn(Optional.of(new LoginData().setLogin(LOGIN)
                 .setToken(ACCESS_TOKEN).setTokenReceiveTime(Instant.now().minus(Duration.ofMinutes(4))).setTokenExpireTime(Instant.now().plus(Duration.ofMinutes(1)))
                 .setMfaType(MfaType.TOTP).setMfaSecretCode(MFA_SECRET_CODE).setFailedLoginAttempts(List.of(Tool.currentDateTime()))));
         when(verifier.isValidCode(MFA_SECRET_CODE, PIN)).thenReturn(true);
@@ -182,14 +182,14 @@ class MfaServiceImplTest {
         assertThat(actualResponse.getAccessToken()).isEqualTo(ACCESS_TOKEN);
         assertThat(actualResponse.getStatus()).isEqualTo(LoginResponse.Status.SUCCESS);
 
-        verify(loginDataRepository).save(loginDataCaptor.capture());
+        verify(loginDataStore).save(loginDataCaptor.capture());
         checkLoginDataCleanedUp(loginDataCaptor.getValue());
     }
 
     @Test
     void testEnterOtpMfaCode() throws LockLoginException {
         MfaProperties mfaProperties = new MfaProperties().setOtpCodeExpiration(Duration.ofMinutes(5));
-        when(loginDataRepository.findByLogin(LOGIN)).thenReturn(Optional.of(new LoginData().setLogin(LOGIN)
+        when(loginDataStore.findByLogin(LOGIN)).thenReturn(Optional.of(new LoginData().setLogin(LOGIN)
                 .setToken(ACCESS_TOKEN).setTokenReceiveTime(Instant.now().minus(Duration.ofMinutes(4))).setTokenExpireTime(Instant.now().plus(Duration.ofMinutes(1)))
                 .setMfaType(MfaType.OTP).setMfaPinKey(MFA_PIN_KEY).setOtpPvv(PVV).setFailedLoginAttempts(List.of(Tool.currentDateTime()))));
         when(securityPvvService.acquirePvv(MFA_PIN_KEY, PIN)).thenReturn(PVV);
@@ -198,14 +198,14 @@ class MfaServiceImplTest {
         assertThat(actualResponse.getAccessToken()).isEqualTo(ACCESS_TOKEN);
         assertThat(actualResponse.getStatus()).isEqualTo(LoginResponse.Status.SUCCESS);
 
-        verify(loginDataRepository).save(loginDataCaptor.capture());
+        verify(loginDataStore).save(loginDataCaptor.capture());
         checkLoginDataCleanedUp(loginDataCaptor.getValue());
     }
 
     @Test
     void testEnterWrongOtpMfaCode() {
         MfaProperties mfaProperties = new MfaProperties().setMaxWrongLoginAttempts(3).setOtpCodeExpiration(Duration.ofMinutes(5));
-        when(loginDataRepository.findByLogin(LOGIN)).thenReturn(Optional.of(new LoginData().setLogin(LOGIN)
+        when(loginDataStore.findByLogin(LOGIN)).thenReturn(Optional.of(new LoginData().setLogin(LOGIN)
                 .setToken(ACCESS_TOKEN).setTokenReceiveTime(Instant.now().minus(Duration.ofMinutes(4))).setTokenExpireTime(Instant.now().plus(Duration.ofMinutes(1)))
                 .setMfaType(MfaType.OTP).setMfaPinKey(MFA_PIN_KEY).setOtpPvv(PVV)));
         when(securityPvvService.acquirePvv(MFA_PIN_KEY, PIN)).thenReturn("Wrong PVV");
@@ -213,7 +213,7 @@ class MfaServiceImplTest {
         assertThrows(NotAuthorizedException.class,
                 () -> service.enterMfaCode(LOGIN, PIN, mfaProperties));
 
-        verify(loginDataRepository).save(loginDataCaptor.capture());
+        verify(loginDataStore).save(loginDataCaptor.capture());
         LoginData actualLoginData = loginDataCaptor.getValue();
         assertThat(actualLoginData.getLogin()).isEqualTo(LOGIN);
         assertThat(actualLoginData.getFailedLoginAttempts()).isNotEmpty();
@@ -222,7 +222,7 @@ class MfaServiceImplTest {
     @Test
     void testEnterWrongOtpMfaCodeLastAttempt() {
         MfaProperties mfaProperties = new MfaProperties().setMaxWrongLoginAttempts(3).setOtpCodeExpiration(Duration.ofMinutes(5));
-        when(loginDataRepository.findByLogin(LOGIN)).thenReturn(Optional.of(new LoginData().setLogin(LOGIN)
+        when(loginDataStore.findByLogin(LOGIN)).thenReturn(Optional.of(new LoginData().setLogin(LOGIN)
                 .setToken(ACCESS_TOKEN).setTokenReceiveTime(Instant.now().minus(Duration.ofMinutes(4))).setTokenExpireTime(Instant.now().plus(Duration.ofMinutes(1)))
                 .setMfaType(MfaType.OTP).setMfaPinKey(MFA_PIN_KEY).setOtpPvv(PVV).setFailedLoginAttempts(new ArrayList<>(List.of(Tool.currentDateTime(), Tool.currentDateTime())))));
         when(securityPvvService.acquirePvv(MFA_PIN_KEY, PIN)).thenReturn("Wrong PVV");
@@ -231,7 +231,7 @@ class MfaServiceImplTest {
                 () -> service.enterMfaCode(LOGIN, PIN, mfaProperties));
         assertThat(exception.getInitialException()).isNotNull();
 
-        verify(loginDataRepository).save(loginDataCaptor.capture());
+        verify(loginDataStore).save(loginDataCaptor.capture());
         LoginData actualLoginData = loginDataCaptor.getValue();
         assertThat(actualLoginData.getLogin()).isEqualTo(LOGIN);
         assertThat(actualLoginData.getFailedLoginAttempts().size()).isEqualTo(3);
@@ -240,7 +240,7 @@ class MfaServiceImplTest {
     @Test
     void testEnterOtpMfaCodeTokenExpired() {
         MfaProperties mfaProperties = new MfaProperties().setMaxWrongLoginAttempts(3).setOtpCodeExpiration(Duration.ofMinutes(5));
-        when(loginDataRepository.findByLogin(LOGIN)).thenReturn(Optional.of(new LoginData().setLogin(LOGIN)
+        when(loginDataStore.findByLogin(LOGIN)).thenReturn(Optional.of(new LoginData().setLogin(LOGIN)
                 .setToken(ACCESS_TOKEN).setTokenReceiveTime(Instant.now().minus(Duration.ofMinutes(6))).setTokenExpireTime(Instant.now().minus(Duration.ofMinutes(1)))
                 .setMfaType(MfaType.OTP).setMfaPinKey(MFA_PIN_KEY).setOtpPvv(PVV)));
 
@@ -259,7 +259,7 @@ class MfaServiceImplTest {
     @Test
     void testEnterBackupCode() throws LockLoginException {
         List<String> activeBackupCodes = List.of("1111", PIN, "2222");
-        when(loginDataRepository.findByLogin(LOGIN)).thenReturn(Optional.of(new LoginData().setLogin(LOGIN)
+        when(loginDataStore.findByLogin(LOGIN)).thenReturn(Optional.of(new LoginData().setLogin(LOGIN)
                 .setToken(ACCESS_TOKEN).setTokenReceiveTime(Instant.now().minus(Duration.ofMinutes(4))).setTokenExpireTime(Instant.now().plus(Duration.ofMinutes(1)))
                 .setMfaType(MfaType.TOTP).setMfaSecretCode(MFA_SECRET_CODE).setFailedLoginAttempts(List.of(Tool.currentDateTime()))));
 
@@ -267,7 +267,7 @@ class MfaServiceImplTest {
         assertThat(actualResponse.getAccessToken()).isEqualTo(ACCESS_TOKEN);
         assertThat(actualResponse.getStatus()).isEqualTo(LoginResponse.Status.SUCCESS);
 
-        verify(loginDataRepository).save(loginDataCaptor.capture());
+        verify(loginDataStore).save(loginDataCaptor.capture());
         checkLoginDataCleanedUp(loginDataCaptor.getValue());
     }
 
@@ -275,14 +275,14 @@ class MfaServiceImplTest {
     void testEnterWrongBackupCode() {
         List<String> activeBackupCodes = List.of("1111", "2222");
         MfaProperties mfaProperties = new MfaProperties().setMaxWrongLoginAttempts(3);
-        when(loginDataRepository.findByLogin(LOGIN)).thenReturn(Optional.of(new LoginData().setLogin(LOGIN)
+        when(loginDataStore.findByLogin(LOGIN)).thenReturn(Optional.of(new LoginData().setLogin(LOGIN)
                 .setToken(ACCESS_TOKEN).setTokenReceiveTime(Instant.now().minus(Duration.ofMinutes(4))).setTokenExpireTime(Instant.now().plus(Duration.ofMinutes(1)))
                 .setMfaType(MfaType.TOTP).setMfaSecretCode(MFA_SECRET_CODE)));
 
         assertThrows(NotAuthorizedException.class,
                 () -> service.enterBackupCode(LOGIN, activeBackupCodes, PIN, mfaProperties));
 
-        verify(loginDataRepository).save(loginDataCaptor.capture());
+        verify(loginDataStore).save(loginDataCaptor.capture());
         LoginData actualLoginData = loginDataCaptor.getValue();
         assertThat(actualLoginData.getLogin()).isEqualTo(LOGIN);
         assertThat(actualLoginData.getFailedLoginAttempts()).isNotEmpty();
@@ -292,7 +292,7 @@ class MfaServiceImplTest {
     void testEnterWrongBackupCodeLastAttempt() {
         List<String> activeBackupCodes = List.of("1111", "2222");
         MfaProperties mfaProperties = new MfaProperties().setMaxWrongLoginAttempts(3);
-        when(loginDataRepository.findByLogin(LOGIN)).thenReturn(Optional.of(new LoginData().setLogin(LOGIN)
+        when(loginDataStore.findByLogin(LOGIN)).thenReturn(Optional.of(new LoginData().setLogin(LOGIN)
                 .setToken(ACCESS_TOKEN).setTokenReceiveTime(Instant.now().minus(Duration.ofMinutes(4))).setTokenExpireTime(Instant.now().plus(Duration.ofMinutes(1)))
                 .setMfaType(MfaType.TOTP).setMfaSecretCode(MFA_SECRET_CODE).setFailedLoginAttempts(new ArrayList<>(List.of(Tool.currentDateTime(), Tool.currentDateTime())))));
 
@@ -300,7 +300,7 @@ class MfaServiceImplTest {
                 () -> service.enterBackupCode(LOGIN, activeBackupCodes, PIN, mfaProperties));
         assertThat(exception.getInitialException()).isNotNull();
 
-        verify(loginDataRepository).save(loginDataCaptor.capture());
+        verify(loginDataStore).save(loginDataCaptor.capture());
         LoginData actualLoginData = loginDataCaptor.getValue();
         assertThat(actualLoginData.getLogin()).isEqualTo(LOGIN);
         assertThat(actualLoginData.getFailedLoginAttempts().size()).isEqualTo(3);
@@ -309,7 +309,7 @@ class MfaServiceImplTest {
     @Test
     void testResendOtpCode() {
         MfaProperties mfaProperties = new MfaProperties().setOtpSendSms(true).setOtpDigitsAmount(PIN.length());
-        when(loginDataRepository.findByLogin(LOGIN)).thenReturn(Optional.of(new LoginData().setLogin(LOGIN)
+        when(loginDataStore.findByLogin(LOGIN)).thenReturn(Optional.of(new LoginData().setLogin(LOGIN)
                 .setMfaType(MfaType.OTP).setMfaPinKey(MFA_PIN_KEY).setOtpPvv(PVV)));
         when(securityPvvService.restorePin(MFA_PIN_KEY, PVV, PIN.length())).thenReturn(PIN);
 
@@ -319,7 +319,7 @@ class MfaServiceImplTest {
 
     @Test
     void testResendOtpCodeNoPvvSaved() {
-        when(loginDataRepository.findByLogin(LOGIN)).thenReturn(Optional.of(new LoginData().setLogin(LOGIN)));
+        when(loginDataStore.findByLogin(LOGIN)).thenReturn(Optional.of(new LoginData().setLogin(LOGIN)));
         ICEcashException exception = assertThrows(ICEcashException.class,
                 () -> service.resendOtpCode(LOGIN, MSISDN, new MfaProperties()));
         assertThat(exception.getErrorCode()).isEqualTo(ErrorCodes.EC1033);
@@ -334,12 +334,12 @@ class MfaServiceImplTest {
 
     @Test
     void testCleanupLoginData() {
-        when(loginDataRepository.findByLogin(LOGIN)).thenReturn(Optional.of(new LoginData().setLogin(LOGIN)
+        when(loginDataStore.findByLogin(LOGIN)).thenReturn(Optional.of(new LoginData().setLogin(LOGIN)
                 .setToken(ACCESS_TOKEN).setTokenReceiveTime(Instant.now().minus(Duration.ofMinutes(4))).setTokenExpireTime(Instant.now().plus(Duration.ofMinutes(1)))
                 .setMfaType(MfaType.TOTP).setMfaSecretCode(MFA_SECRET_CODE).setFailedLoginAttempts(List.of(Tool.currentDateTime()))));
 
         service.cleanupLoginData(LOGIN);
-        verify(loginDataRepository).save(loginDataCaptor.capture());
+        verify(loginDataStore).save(loginDataCaptor.capture());
         checkLoginDataCleanedUp(loginDataCaptor.getValue());
     }
 
@@ -349,7 +349,7 @@ class MfaServiceImplTest {
         String actualKey = service.createForgotPasswordKey(LOGIN);
         assertThat(actualKey).isEqualTo(FORGOT_PASSWORD_KEY);
 
-        verify(loginDataRepository).save(loginDataCaptor.capture());
+        verify(loginDataStore).save(loginDataCaptor.capture());
         LoginData actualLoginData = loginDataCaptor.getValue();
         assertThat(actualLoginData.getLogin()).isEqualTo(LOGIN);
         assertThat(actualLoginData.getForgotPasswordKey()).isEqualTo(FORGOT_PASSWORD_KEY);
@@ -357,12 +357,12 @@ class MfaServiceImplTest {
 
     @Test
     void testLookupLoginByForgotPasswordKey() {
-        when(loginDataRepository.findByForgotPasswordKey(FORGOT_PASSWORD_KEY))
+        when(loginDataStore.findByForgotPasswordKey(FORGOT_PASSWORD_KEY))
                 .thenReturn(Optional.of(new LoginData().setLogin(LOGIN)));
         String actualLogin = service.lookupLoginByForgotPasswordKey(FORGOT_PASSWORD_KEY);
         assertThat(actualLogin).isEqualTo(LOGIN);
 
-        verify(loginDataRepository).save(loginDataCaptor.capture());
+        verify(loginDataStore).save(loginDataCaptor.capture());
         LoginData actualLoginData = loginDataCaptor.getValue();
         assertThat(actualLoginData.getLogin()).isEqualTo(LOGIN);
         assertThat(actualLoginData.getForgotPasswordKey()).isNull();

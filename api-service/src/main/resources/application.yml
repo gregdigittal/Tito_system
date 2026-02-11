@@ -168,6 +168,14 @@ ice:
       payment-confirmation-sms-message-en: "Payment of %s KES made from %s at %s"
 
 ---
+# Login without MongoDB: app starts with TiDB + Keycloak only; login session data in memory (lost on restart).
+# Use only when Atlas cannot be fixed yet. Excludes Mongo so other Mongo-dependent features (payments, OTP) will not work.
+spring.config.activate.on-profile: no-mongodb
+spring.autoconfigure.exclude:
+  - org.springframework.boot.autoconfigure.mongo.MongoDataAutoConfiguration
+  - org.springframework.boot.autoconfigure.data.mongo.MongoRepositoriesAutoConfiguration
+
+---
 spring.config.activate.on-profile: local, local-perf
 minio:
   url: http://localhost:19000/

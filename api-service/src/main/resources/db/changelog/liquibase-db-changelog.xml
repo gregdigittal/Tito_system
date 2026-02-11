@@ -5,5 +5,9 @@
 
     <include file="db/changelog/mysql-changelog-pk-fix.xml"/>
     <include file="db/changelog/payments-db-structure.xml"/>
+    <!-- Phase 7: Backoffice rights (if missing) then Tito Admin (3001) and Finance Admin (3002) security groups + staff seed -->
+    <include file="db/changelog/payments-tito-backoffice-rights.xml"/>
+    <include file="db/changelog/payments-tito-finance-admin-groups.xml"/>
+    <include file="db/changelog/payments-tito-admin-staff.xml"/>
 
 </databaseChangeLog>

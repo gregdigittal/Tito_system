@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.1.xsd">
+
+    <!-- Ensure backoffice security_right rows exist (ids 9, 15, 54, 60).
+         Used by Tito Admin / Finance Admin groups. Idempotent: only inserts when missing. -->
+
+    <changeSet author="tito-admin" id="tito-backoffice-security-rights">
+        <comment>Insert backoffice security_right rows if not present (production may not have test data).</comment>
+        <sql>
+            INSERT INTO security_right (id, name, description, right_type)
+            SELECT 9, 'BULKPAY', 'Access to Bulk Payments', null WHERE NOT EXISTS (SELECT 1 FROM security_right WHERE id = 9);
+            INSERT INTO security_right (id, name, description, right_type)
+            SELECT 15, 'RELEASE_A', 'Group A Release', null WHERE NOT EXISTS (SELECT 1 FROM security_right WHERE id = 15);
+            INSERT INTO security_right (id, name, description, right_type)
+            SELECT 54, 'RELEASE_B', 'Group B Release', null WHERE NOT EXISTS (SELECT 1 FROM security_right WHERE id = 54);
+            INSERT INTO security_right (id, name, description, right_type)
+            SELECT 60, 'BULKPAY_LOAD', 'Load a new Bulk Payment', null WHERE NOT EXISTS (SELECT 1 FROM security_right WHERE id = 60);
+        </sql>
+    </changeSet>
+</databaseChangeLog>

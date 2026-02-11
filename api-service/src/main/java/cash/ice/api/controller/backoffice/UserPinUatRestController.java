@@ -5,7 +5,7 @@ import cash.ice.api.config.property.StaffProperties;
 import cash.ice.api.dto.LoginData;
 import cash.ice.api.entity.backoffice.StaffMember;
 import cash.ice.api.errors.UnexistingUserException;
-import cash.ice.api.repository.LoginDataRepository;
+import cash.ice.api.repository.LoginDataStore;
 import cash.ice.api.repository.backoffice.StaffMemberRepository;
 import cash.ice.api.service.EntityLoginService;
 import cash.ice.api.service.SecurityPvvService;
@@ -40,7 +40,7 @@ public class UserPinUatRestController {
     private final EntityRepository entityRepository;
     private final StaffMemberRepository staffMemberRepository;
     private final InitiatorRepository initiatorRepository;
-    private final LoginDataRepository loginDataRepository;
+    private final LoginDataStore loginDataStore;
     private final EntitiesProperties entitiesProperties;
     private final StaffProperties staffProperties;
 
@@ -65,7 +65,7 @@ public class UserPinUatRestController {
     @GetMapping("/entity/otp")
     public String getEntityOtpPin(@RequestParam String entityId) {
         log.info("GET pin for entity OTP: " + entityId);
-        LoginData loginData = loginDataRepository.findByLogin(entityId)
+        LoginData loginData = loginDataStore.findByLogin(entityId)
                 .orElseThrow(() -> new UnexistingUserException(entityId));
         if (loginData.getOtpPvv() == null) {
             throw new RuntimeException("OTP PIN isn't set");
@@ -91,7 +91,7 @@ public class UserPinUatRestController {
     @GetMapping("/staff/otp")
     public String getOtpPin(@RequestParam String email) {
         log.info("GET pin for staff member OTP: " + email);
-        LoginData loginData = loginDataRepository.findByLogin(email)
+        LoginData loginData = loginDataStore.findByLogin(email)
                 .orElseThrow(() -> new UnexistingUserException(email));
         if (loginData.getOtpPvv() == null) {
             throw new RuntimeException("OTP PIN isn't set");
@@ -102,7 +102,7 @@ public class UserPinUatRestController {
     @GetMapping("/staff/email/key")
     public String getForgotPasswordEmailKey(@RequestParam String email) {
         log.info("GET forgot password email key: " + email);
-        LoginData loginData = loginDataRepository.findByLogin(email)
+        LoginData loginData = loginDataStore.findByLogin(email)
                 .orElseThrow(() -> new UnexistingUserException(email));
         if (loginData.getForgotPasswordKey() == null) {
             throw new RuntimeException("Forgot password email key isn't set");
