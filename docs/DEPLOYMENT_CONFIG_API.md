@@ -47,9 +47,12 @@ The **currencies** and **locales** lists in the response come from the database 
     "Matatu/Taxi Owner": "MatatuOwnerBusiness",
     "Agents": "AgentBusiness",
     "SACCO": "SaccoBusiness"
-  }
+  },
+  "topUpProviderIds": [ "MPESA" ]
 }
 ```
+
+The **topUpProviderIds** array (Phase 8-1) lists top-up provider identifiers allowed for the deployment country (e.g. `MPESA`, `EMOLA`). See `docs/PHASE_8_1_REGIONAL_TOPUP_SERVICE_DESIGN.md`.
 
 ## Code references
 

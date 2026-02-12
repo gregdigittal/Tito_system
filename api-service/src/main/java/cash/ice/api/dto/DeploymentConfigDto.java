@@ -28,6 +28,8 @@ public class DeploymentConfigDto {
     private List<CurrencyItem> currencies;
     private List<LocaleItem> locales;
     private Map<String, String> userTypeToAccountType;
+    /** Phase 8-1: Top-up provider ids allowed for this deployment country (e.g. MPESA, EMOLA). */
+    private List<String> topUpProviderIds;
 
     @Data
     @NoArgsConstructor

@@ -2,6 +2,7 @@ package cash.ice.api.controller;
 
 import cash.ice.api.config.property.DeploymentConfigProperties;
 import cash.ice.api.dto.DeploymentConfigDto;
+import cash.ice.api.service.TopUpServiceSelector;
 import cash.ice.sqldb.entity.Currency;
 import cash.ice.sqldb.entity.Language;
 import cash.ice.sqldb.repository.CurrencyRepository;
@@ -30,6 +31,7 @@ public class DeploymentConfigController {
     private final DeploymentConfigProperties deploymentConfig;
     private final CurrencyRepository currencyRepository;
     private final LanguageRepository languageRepository;
+    private final TopUpServiceSelector topUpServiceSelector;
 
     @GetMapping(value = "/deployment", produces = MediaType.APPLICATION_JSON_VALUE)
     public DeploymentConfigDto getDeploymentConfig() {
@@ -44,8 +46,11 @@ public class DeploymentConfigController {
                 ? Map.of()
                 : deploymentConfig.getUserTypeToAccountType();
 
+        String countryCode = deploymentConfig.getCountryCode();
+        List<String> topUpProviderIds = topUpServiceSelector.getAllowedProviderIds(countryCode);
+
         return DeploymentConfigDto.builder()
-                .countryCode(deploymentConfig.getCountryCode())
+                .countryCode(countryCode)
                 .defaultCurrencyCode(deploymentConfig.getDefaultCurrencyCode())
                 .defaultLocale(deploymentConfig.getDefaultLocale())
                 .vehicleTerminology(deploymentConfig.getVehicleTerminology())
@@ -53,6 +58,7 @@ public class DeploymentConfigController {
                 .currencies(currencies)
                 .locales(locales)
                 .userTypeToAccountType(userTypeToAccountType.isEmpty() ? null : userTypeToAccountType)
+                .topUpProviderIds(topUpProviderIds.isEmpty() ? null : topUpProviderIds)
                 .build();
     }
 
