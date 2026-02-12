@@ -1,22 +1,26 @@
 package cash.ice.api.config;
 
 import cash.ice.api.repository.InMemoryLoginDataStore;
+import cash.ice.api.repository.LoginDataRepository;
 import cash.ice.api.repository.LoginDataStore;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
+import cash.ice.api.repository.MongoLoginDataStore;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-/**
- * Ensures a LoginDataStore bean exists when neither Mongo nor the no-mongodb profile
- * provides one (e.g. Render without MongoDB env or with failed Mongo connection).
- * Use of the in-memory store means login/MFA session data is not persisted across restarts.
- */
 @Configuration
+@Slf4j
 public class LoginDataStoreConfig {
 
     @Bean
-    @ConditionalOnMissingBean(LoginDataStore.class)
-    public LoginDataStore fallbackLoginDataStore() {
+    public LoginDataStore loginDataStore(
+            @Autowired(required = false) LoginDataRepository mongoRepository) {
+        if (mongoRepository != null) {
+            log.info("Using MongoDB LoginDataStore");
+            return new MongoLoginDataStore(mongoRepository);
+        }
+        log.warn("MongoDB not available — using in-memory LoginDataStore (session data will not survive restarts)");
         return new InMemoryLoginDataStore();
     }
 }

@@ -2,8 +2,6 @@ package cash.ice.api.repository;
 
 import cash.ice.api.dto.LoginData;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.context.annotation.Profile;
-import org.springframework.stereotype.Component;
 
 import java.time.Instant;
 import java.util.ArrayList;
@@ -17,8 +15,6 @@ import java.util.concurrent.ConcurrentHashMap;
  * Session data is lost on restart and not shared across instances. Use only for
  * temporary/testing so login works with TiDB + Keycloak only.
  */
-@Component
-@Profile("no-mongodb")
 @Slf4j
 public class InMemoryLoginDataStore implements LoginDataStore {
 

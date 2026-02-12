@@ -2,18 +2,12 @@ package cash.ice.api.repository;
 
 import cash.ice.api.dto.LoginData;
 import lombok.RequiredArgsConstructor;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
-import org.springframework.context.annotation.Primary;
-import org.springframework.stereotype.Component;
 
 import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 
-@Component
-@Primary
 @RequiredArgsConstructor
-@ConditionalOnBean(LoginDataRepository.class)
 public class MongoLoginDataStore implements LoginDataStore {
 
     private final LoginDataRepository repository;
