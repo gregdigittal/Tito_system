@@ -6,7 +6,10 @@
         http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.1.xsd">
 
     <!-- Tito test users: one per frontend user type (General User, Matatu/Taxi Owner, Agents, SACCO).
-         Login username = idNumber, password = pin (4 digits). -->
+         Login username = idNumber, password = pin (4 digits).
+         NOTE: These changesets reference account numbers 33333333336-33333333339 which are not created
+         by the main schema, so they typically fail (failOnError=false). For TiDB Cloud / Render, create
+         test users via script + SQL instead. See docs/TITO_TEST_USERS_SETUP.md. -->
 
     <changeSet author="tito" id="tito-test-user-general" runAlways="false" failOnError="false">
         <comment>Test user: General User (individual). Username 1111111111111111, PIN 1111.</comment>
