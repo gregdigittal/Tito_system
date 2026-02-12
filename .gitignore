@@ -33,3 +33,10 @@ build/
 
 ### Local DB config (never commit credentials) ###
 api-service/src/main/resources/application-tidb-cloud.yml
+
+# macOS
+.DS_Store
+
+# Environment files with secrets
+.env
+Tito-api.env

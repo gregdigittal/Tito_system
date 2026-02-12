@@ -35,4 +35,10 @@ If Render does **not** use a profile like `prod-k8s`, set these instead (Spring 
 | **ICE_CASH_KEYCLOAK_ENTITIES_DEFAULT_CLIENT_ID** | `tito-api` |
 | **ICE_CASH_KEYCLOAK_ENTITIES_DEFAULT_CLIENT_SECRET** | Client secret from Phase Two → tito-api → Credentials |
 
+### Logging (optional)
+
+To reduce Kafka and Spring Kafka log noise in Render logs, set **SPRING_PROFILES_ACTIVE** to include `render` (e.g. `render` or `no-mongodb,render`). The `render` profile sets `org.apache.kafka` and `org.springframework.kafka` to WARN. See `api-service/src/main/resources/application-render.yml`.
+
+---
+
 See also: Tito_UI_Client `docs/LOGIN_NO_TOKEN_RECEIVED.md` and `docs/PHASE_TWO_CLIENT_SETUP.md`.

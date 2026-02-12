@@ -1,0 +1,9 @@
+# Render profile: reduce log noise (Kafka, etc.) in Render dashboard.
+# Activate with: SPRING_PROFILES_ACTIVE=render (or add 'render' to existing profiles).
+spring.config.activate.on-profile: render
+logging:
+  level:
+    root: INFO
+    org.apache.kafka: WARN
+    org.springframework.kafka: WARN
+    org.apache.kafka.clients: WARN
