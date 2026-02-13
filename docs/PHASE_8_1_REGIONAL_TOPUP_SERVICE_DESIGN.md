@@ -29,6 +29,7 @@
 - **TopUpServiceSelector** interface and **DefaultTopUpServiceSelector** (stub map: KE → [MPESA], MZ → [MPESA, EMOLA], default → all).
 - **Deployment config API:** `GET /api/v1/config/deployment` now includes **topUpProviderIds** (list of allowed provider names for the deployment country).
 - **DeploymentConfigDto** and **DeploymentConfigController** wire `TopUpServiceSelector.getAllowedProviderIds(countryCode)` into the response.
+- **Validation:** `EntityMozServiceImpl.topupAccount` now rejects a provider not in `TopUpServiceSelector.getAllowedProviderIds(countryCode)` with `EC1001` (request params validation failed). Country code comes from `DeploymentConfigProperties.getCountryCode()` (default `KE`).
 
 ## Files touched
 

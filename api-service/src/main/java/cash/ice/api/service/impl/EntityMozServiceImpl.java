@@ -1,5 +1,6 @@
 package cash.ice.api.service.impl;
 
+import cash.ice.api.config.property.DeploymentConfigProperties;
 import cash.ice.api.config.property.MozProperties;
 import cash.ice.api.dto.AuthUser;
 import cash.ice.api.dto.ConfigInput;
@@ -12,6 +13,7 @@ import cash.ice.api.dto.moz.TagInfoMoz;
 import cash.ice.api.errors.UnexistingUserException;
 import cash.ice.api.service.EntityMozService;
 import cash.ice.api.service.Me60MozService;
+import cash.ice.api.service.TopUpServiceSelector;
 import cash.ice.api.service.OtpService;
 import cash.ice.api.service.PermissionsService;
 import cash.ice.common.constant.IceCashProfile;
@@ -38,6 +40,8 @@ import java.math.BigDecimal;
 import java.util.List;
 import java.util.Objects;
 
+import org.springframework.util.StringUtils;
+
 import static cash.ice.common.error.ErrorCodes.*;
 import static cash.ice.sqldb.entity.AccountType.*;
 
@@ -59,6 +63,8 @@ public class EntityMozServiceImpl implements EntityMozService {
     private final AccountBalanceRepository accountBalanceRepository;
     private final EntityMsisdnRepository entityMsisdnRepository;
     private final MozProperties mozProperties;
+    private final DeploymentConfigProperties deploymentConfigProperties;
+    private final TopUpServiceSelector topUpServiceSelector;
 
     @Override
     public EntityClass getAuthEntity(AuthUser authUser, ConfigInput config) {
@@ -174,6 +180,15 @@ public class EntityMozServiceImpl implements EntityMozService {
 
     @Override
     public PaymentResponse topupAccount(EntityClass authEntity, String accountNumber, MoneyProviderMoz provider, String mobile, BigDecimal amount) {
+        String countryCode = StringUtils.hasText(deploymentConfigProperties.getCountryCode())
+                ? deploymentConfigProperties.getCountryCode().trim()
+                : "KE";
+        List<String> allowedProviders = topUpServiceSelector.getAllowedProviderIds(countryCode);
+        if (!allowedProviders.contains(provider.name())) {
+            throw new ICEcashException(
+                    String.format("Top-up provider %s is not available for country %s", provider.name(), countryCode),
+                    EC1001);
+        }
         Account account = accountRepository.findByAccountNumber(accountNumber).stream().findFirst().orElseThrow(() ->
                 new ICEcashException(EC1022, String.format("Account %s does not exist", accountNumber)));
         EntityClass entity = entityRepository.findById(account.getEntityId())
