@@ -7,5 +7,7 @@ import java.util.List;
 
 public interface SettlementRuleRepository extends JpaRepository<SettlementRule, Integer> {
 
+    List<SettlementRule> findByEntityId(Integer entityId);
+
     List<SettlementRule> findByEntityIdAndActiveTrue(Integer entityId);
 }

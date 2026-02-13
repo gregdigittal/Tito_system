@@ -44,6 +44,8 @@ type Query {
     listLinkedBankAccounts: [LinkedBankAccountMoz]
     userTripsMoz(page: Int = 0, size: Int = 30): TripsPageableMoz
     currentTripMoz: TripMoz
+    listSettlementRules(entityId: ID): [SettlementRuleMoz]
+    listSweepRules(accountId: ID): [SweepRuleMoz]
 
 #    FNDS:
     userFNDS: UserFNDS
@@ -76,6 +78,12 @@ type Mutation {
     delinkNfcTagMoz(identifier: String!): TagInfoMoz
     linkBankAccount(bankId: String!, branchCode: String, accountNumber: String!, accountName: String, currency: String): LinkedBankAccountMoz
     unlinkBankAccount(id: ID!): Boolean
+    createSettlementRule(input: CreateSettlementRuleInput!): SettlementRuleMoz
+    updateSettlementRule(id: ID!, input: UpdateSettlementRuleInput!): SettlementRuleMoz
+    deleteSettlementRule(id: ID!): Boolean
+    createSweepRule(input: CreateSweepRuleInput!): SweepRuleMoz
+    updateSweepRule(id: ID!, input: UpdateSweepRuleInput!): SweepRuleMoz
+    deleteSweepRule(id: ID!): Boolean
     topupAccountMoz(accountNumber: String!, provider: MoneyProviderMoz!, mobile: String!, amount: Float!): PaymentResponse
     cashOutToMobileMoney(accountNumber: String!, provider: MoneyProviderMoz!, mobile: String!, amount: Float!): PaymentResponse
     makePaymentMoz(paymentRequest: PaymentRequestInput!): PaymentResponse

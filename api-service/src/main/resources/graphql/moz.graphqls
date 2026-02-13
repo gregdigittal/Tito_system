@@ -345,3 +345,58 @@ type TripsPageableMoz {
     total: Int
     content: [TripMoz]
 }
+
+# Phase 8-5: Settlement rules per Sacco/owner
+type SettlementRuleMoz {
+    id: ID
+    entityId: ID
+    ruleName: String
+    shareJson: String
+    active: Boolean
+    createdAt: DateTime
+}
+
+input CreateSettlementRuleInput {
+    entityId: ID!
+    ruleName: String
+    shareJson: String!
+    active: Boolean = true
+}
+
+input UpdateSettlementRuleInput {
+    ruleName: String
+    shareJson: String
+    active: Boolean
+}
+
+# Phase 8-6: Sweep rules (wallet → M-Pesa/bank)
+type SweepRuleMoz {
+    id: ID
+    accountId: ID
+    destinationType: String
+    destinationRef: String
+    triggerType: String
+    scheduleExpression: String
+    thresholdAmount: Float
+    active: Boolean
+    createdAt: DateTime
+}
+
+input CreateSweepRuleInput {
+    accountId: ID!
+    destinationType: String!
+    destinationRef: String
+    triggerType: String!
+    scheduleExpression: String
+    thresholdAmount: Float
+    active: Boolean = true
+}
+
+input UpdateSweepRuleInput {
+    destinationType: String
+    destinationRef: String
+    triggerType: String
+    scheduleExpression: String
+    thresholdAmount: Float
+    active: Boolean
+}

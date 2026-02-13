@@ -7,5 +7,7 @@ import java.util.List;
 
 public interface SweepRuleRepository extends JpaRepository<SweepRule, Integer> {
 
+    List<SweepRule> findByAccountId(Integer accountId);
+
     List<SweepRule> findByAccountIdAndActiveTrue(Integer accountId);
 }
