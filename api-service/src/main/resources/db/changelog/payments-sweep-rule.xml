@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.1.xsd">
+
+    <changeSet author="tito" id="payments-sweep-rule-create">
+        <comment>Phase 8-6: Sweep rules — Tito wallet to M-Pesa or bank. Trigger: schedule, threshold, or manual.</comment>
+        <createTable tableName="sweep_rule">
+            <column name="id" type="INT" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="account_id" type="INT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="destination_type" type="VARCHAR(32)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="destination_ref" type="VARCHAR(255)"/>
+            <column name="trigger_type" type="VARCHAR(32)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="schedule_expression" type="VARCHAR(128)"/>
+            <column name="threshold_amount" type="DECIMAL(19, 2)"/>
+            <column name="active" type="BIT(1)" defaultValueBoolean="true">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_date" type="DATETIME"/>
+        </createTable>
+    </changeSet>
+    <changeSet author="tito" id="payments-sweep-rule-fk-account">
+        <addForeignKeyConstraint baseTableName="sweep_rule" baseColumnNames="account_id"
+            constraintName="fk_sweep_rule_account_id" referencedTableName="account" referencedColumnNames="id"
+            onDelete="CASCADE" onUpdate="RESTRICT"/>
+        <createIndex indexName="i_sweep_rule_account_id" tableName="sweep_rule">
+            <column name="account_id"/>
+        </createIndex>
+    </changeSet>
+</databaseChangeLog>

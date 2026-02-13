@@ -9,5 +9,8 @@
     <include file="db/changelog/payments-tito-backoffice-rights.xml"/>
     <include file="db/changelog/payments-tito-finance-admin-groups.xml"/>
     <include file="db/changelog/payments-tito-admin-staff.xml"/>
+    <!-- Phase 8-6: Sweep rules table; 8-7: Pool account type -->
+    <include file="db/changelog/payments-sweep-rule.xml"/>
+    <include file="db/changelog/payments-pool-account-type.xml"/>
 
 </databaseChangeLog>
