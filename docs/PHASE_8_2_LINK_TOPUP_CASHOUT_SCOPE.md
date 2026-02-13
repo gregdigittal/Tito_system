@@ -17,7 +17,7 @@
 ## Suggested next steps
 
 1. **Frontend (done):** Agent and general-user top-up pages now call `PaymentsGroup.topUpAccountMozCall.call()` with account number, mobile, amount, provider before showing success; on failure show `apiResponseErrorMessage(response)` in a snackbar; on success update local state via `updateAccountBalanceAction`.
-2. **Backend:** No change required for top-up itself. For **cash-out**, define an API (e.g. `cashOutToMobileMoney(accountNumber, provider, mobile, amount)`) and wire to provider (M-Pesa, etc.) when ready.
+2. **Backend:** No change required for top-up itself. For **cash-out**, implement GraphQL mutation **cashOutToMobileMoney(accountNumber, provider, mobile, amount)** (frontend already calls it from Account Withdraw; until then users see API error). Wire to provider (M-Pesa, etc.) when ready.
 3. **Link:** If “link” means a dedicated step (e.g. “Add M-Pesa number”), reuse or extend msisdn (entity mobile) and ensure top-up/cash-out use that or an explicit field.
 
 ## References
