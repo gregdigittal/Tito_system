@@ -16,7 +16,7 @@
 
 ## Suggested next steps
 
-1. **Frontend:** In the top-up flows (e.g. account_topup_agent, account_topup_general_user), call `PaymentsGroup.topUpAccountMozCall.call()` (or `InitiatePaymentCall`) with account number, mobile, amount, provider before showing success; on failure show `apiResponseErrorMessage(response)` in a snackbar/dialog. Then refresh user/accounts (e.g. GetUserDetailsCall) or update local state on success.
+1. **Frontend (done):** Agent and general-user top-up pages now call `PaymentsGroup.topUpAccountMozCall.call()` with account number, mobile, amount, provider before showing success; on failure show `apiResponseErrorMessage(response)` in a snackbar; on success update local state via `updateAccountBalanceAction`.
 2. **Backend:** No change required for top-up itself. For **cash-out**, define an API (e.g. `cashOutToMobileMoney(accountNumber, provider, mobile, amount)`) and wire to provider (M-Pesa, etc.) when ready.
 3. **Link:** If “link” means a dedicated step (e.g. “Add M-Pesa number”), reuse or extend msisdn (entity mobile) and ensure top-up/cash-out use that or an explicit field.
 
