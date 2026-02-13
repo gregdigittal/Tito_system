@@ -165,6 +165,16 @@ public class EntityMozController {
     }
 
     @MutationMapping
+    @PreAuthorize("isAuthenticated()")
+    public PaymentResponse cashOutToMobileMoney(@Argument String accountNumber, @Argument MoneyProviderMoz provider, @Argument String mobile, @Argument BigDecimal amount) {
+        EntityClass authEntity = entityMozService.getAuthEntity(getAuthUser(), null);
+        Objects.requireNonNull(authEntity);
+        log.info("> cash-out to mobile money: account: {}, entity: (id={}), provider: {}, mobile: {}, amount: {}",
+                accountNumber, authEntity.getId(), provider, mobile, amount);
+        return entityMozService.cashOutToMobileMoney(authEntity, accountNumber, provider, mobile, amount);
+    }
+
+    @MutationMapping
     public PaymentResponse makePaymentMoz(@Argument PaymentRequest paymentRequest) {
         log.info("> " + paymentRequest);
         return me60MozService.makePayment(paymentRequest);

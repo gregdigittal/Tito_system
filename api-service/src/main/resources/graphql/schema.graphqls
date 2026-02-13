@@ -71,6 +71,7 @@ type Mutation {
     linkVehicleToPosDeviceMoz(posDeviceSerial: String!, vehicleId: ID!): Device
     linkNfcTagMoz(nfcTag: LinkNfcTagRequest!, otp: String!): TagInfoMoz
     topupAccountMoz(accountNumber: String!, provider: MoneyProviderMoz!, mobile: String!, amount: Float!): PaymentResponse
+    cashOutToMobileMoney(accountNumber: String!, provider: MoneyProviderMoz!, mobile: String!, amount: Float!): PaymentResponse
     makePaymentMoz(paymentRequest: PaymentRequestInput!): PaymentResponse
     makeBulkPaymentMoz(payments: [PaymentRequestInput]!): PaymentResponse
     interAccountTransferMoz(fromAccountType: String! = "Primary", toAccountType: String!, currency: String! = "MZN", amount: Float!, config: ConfigInput): Entity

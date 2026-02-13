@@ -37,4 +37,7 @@ public interface EntityMozService {
     EntityClass addOrUpdateMsisdn(EntityClass entity, MsisdnType type, String mobile, String oldMobile, String description, String otp);
 
     PaymentResponse topupAccount(EntityClass authEntity, String accountNumber, MoneyProviderMoz provider, String mobile, BigDecimal amount);
+
+    /** Phase 8-2: Cash-out from Tito wallet to mobile money. Not yet wired to provider; throws until implemented. */
+    PaymentResponse cashOutToMobileMoney(EntityClass authEntity, String accountNumber, MoneyProviderMoz provider, String mobile, BigDecimal amount);
 }
