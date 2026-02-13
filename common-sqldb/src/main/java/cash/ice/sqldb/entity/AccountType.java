@@ -16,6 +16,8 @@ public class AccountType implements Serializable {
     public static final String SUBSIDY_ACCOUNT = "Subsidy";
     public static final String PREPAID_TRANSPORT = "Prepaid";
     public static final String FNDS_ACCOUNT = "FNDS";
+    /** Phase 8-10: Platform revenue (fees, device rental). */
+    public static final String TITO_REVENUE = "TiTo Revenue";
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

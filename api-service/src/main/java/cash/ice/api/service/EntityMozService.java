@@ -40,4 +40,10 @@ public interface EntityMozService {
 
     /** Phase 8-2: Cash-out from Tito wallet to mobile money. Not yet wired to provider; throws until implemented. */
     PaymentResponse cashOutToMobileMoney(EntityClass authEntity, String accountNumber, MoneyProviderMoz provider, String mobile, BigDecimal amount);
+
+    /**
+     * Phase 8-6: Internal cash-out by account id (e.g. for sweep). No auth-entity check; for system use only.
+     * When provider is implemented, shared with user-facing cashOutToMobileMoney.
+     */
+    PaymentResponse cashOutToMobileMoneyByAccountId(Integer accountId, MoneyProviderMoz provider, String mobile, BigDecimal amount);
 }

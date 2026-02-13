@@ -315,3 +315,33 @@ type RouteFareKen {
 enum MoneyProviderMoz {
     MPESA, EMOLA
 }
+
+# Phase 8-3: Linked bank accounts
+type LinkedBankAccountMoz {
+    id: ID
+    bankId: String
+    branchCode: String
+    accountNumber: String
+    accountName: String
+    currency: String
+    status: String
+    createdAt: DateTime
+}
+
+# Phase 8-4: User trips
+type TripMoz {
+    id: ID
+    tapInAt: DateTime
+    tapOutAt: DateTime
+    routeId: ID
+    routeName: String
+    fare: Float
+    currency: String
+    status: String
+    deviceId: ID
+}
+
+type TripsPageableMoz {
+    total: Int
+    content: [TripMoz]
+}

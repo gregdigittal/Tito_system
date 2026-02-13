@@ -9,5 +9,8 @@
     <include file="db/changelog/payments-tito-finance-admin-groups.xml"/>
     <include file="db/changelog/payments-tito-test-users.xml"/>
     <include file="db/changelog/payments-tito-admin-staff.xml"/>
+    <!-- Phase 8-3: Linked bank accounts; 8-4: User trips -->
+    <include file="db/changelog/payments-linked-bank-account.xml"/>
+    <include file="db/changelog/payments-trip.xml"/>
 
 </databaseChangeLog>

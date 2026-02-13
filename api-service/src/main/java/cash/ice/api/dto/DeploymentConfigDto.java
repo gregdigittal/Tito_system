@@ -30,6 +30,9 @@ public class DeploymentConfigDto {
     private Map<String, String> userTypeToAccountType;
     /** Phase 8-1: Top-up provider ids allowed for this deployment country (e.g. MPESA, EMOLA). */
     private List<String> topUpProviderIds;
+    /** Phase 8-18: Support contact for Help & Support screen. */
+    private String supportContactEmail;
+    private String supportContactUrl;
 
     @Data
     @NoArgsConstructor

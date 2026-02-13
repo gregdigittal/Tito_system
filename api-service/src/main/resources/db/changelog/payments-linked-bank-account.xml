@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.1.xsd">
+
+    <changeSet author="tito" id="payments-linked-bank-account-create">
+        <comment>Phase 8-3: Linked bank accounts for Sacco/owner/agent settlements and sweep.</comment>
+        <createTable tableName="linked_bank_account">
+            <column name="id" type="INT" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="entity_id" type="INT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="bank_id" type="VARCHAR(64)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="branch_code" type="VARCHAR(32)"/>
+            <column name="account_number" type="VARCHAR(64)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="account_name" type="VARCHAR(255)"/>
+            <column name="currency" type="VARCHAR(3)"/>
+            <column name="status" type="VARCHAR(32)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_date" type="DATETIME"/>
+        </createTable>
+    </changeSet>
+    <changeSet author="tito" id="payments-linked-bank-account-fk-entity">
+        <addForeignKeyConstraint baseTableName="linked_bank_account" baseColumnNames="entity_id"
+            constraintName="fk_linked_bank_account_entity_id" referencedTableName="entity" referencedColumnNames="id"
+            onDelete="CASCADE" onUpdate="RESTRICT"/>
+        <createIndex indexName="i_linked_bank_account_entity_id" tableName="linked_bank_account">
+            <column name="entity_id"/>
+        </createIndex>
+    </changeSet>
+</databaseChangeLog>

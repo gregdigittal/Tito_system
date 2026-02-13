@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.1.xsd">
+
+    <changeSet author="tito" id="payments-tito-fee-rule-create">
+        <comment>Phase 8-10: TiTo fee/device-rental rules — per country, source account type, percent or fixed amount.</comment>
+        <createTable tableName="tito_fee_rule">
+            <column name="id" type="INT" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="country_code" type="VARCHAR(8)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="rule_type" type="VARCHAR(32)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="source_account_type_id" type="INT"/>
+            <column name="share_percent" type="DECIMAL(5, 2)"/>
+            <column name="fixed_amount" type="DECIMAL(19, 2)"/>
+            <column name="currency_id" type="INT"/>
+            <column name="active" type="BIT(1)" defaultValueBoolean="true">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_date" type="DATETIME"/>
+        </createTable>
+    </changeSet>
+    <changeSet author="tito" id="payments-tito-fee-rule-index">
+        <createIndex indexName="i_tito_fee_rule_country_active" tableName="tito_fee_rule">
+            <column name="country_code"/>
+            <column name="active"/>
+        </createIndex>
+    </changeSet>
+</databaseChangeLog>

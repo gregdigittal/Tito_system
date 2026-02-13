@@ -30,6 +30,12 @@ public class DeploymentConfigProperties {
     /** Optional: map frontend user type display name → backend AccountTypeMoz value. */
     private Map<String, String> userTypeToAccountType = defaultUserTypeMapping();
 
+    /** Phase 8-18: Support contact email for Help & Support (optional). */
+    private String supportContactEmail;
+
+    /** Phase 8-18: Support contact URL for Help & Support (optional). */
+    private String supportContactUrl;
+
     private static Map<String, String> defaultUserTypeMapping() {
         Map<String, String> m = new LinkedHashMap<>();
         m.put("General User", "CommuterRegular");

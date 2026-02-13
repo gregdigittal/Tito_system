@@ -12,5 +12,14 @@
     <!-- Phase 8-6: Sweep rules table; 8-7: Pool account type -->
     <include file="db/changelog/payments-sweep-rule.xml"/>
     <include file="db/changelog/payments-pool-account-type.xml"/>
+    <!-- Phase 8-10: TiTo Revenue account type; 8-13: Reconciliation run -->
+    <include file="db/changelog/payments-tito-revenue-account-type.xml"/>
+    <include file="db/changelog/payments-reconciliation-run.xml"/>
+    <!-- Phase 8-3: Linked bank accounts; 8-4: User trips -->
+    <include file="db/changelog/payments-linked-bank-account.xml"/>
+    <include file="db/changelog/payments-trip.xml"/>
+    <!-- Phase 8-5: Settlement rules; 8-10: TiTo fee rules -->
+    <include file="db/changelog/payments-settlement-rule.xml"/>
+    <include file="db/changelog/payments-tito-fee-rule.xml"/>
 
 </databaseChangeLog>

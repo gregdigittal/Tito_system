@@ -59,6 +59,8 @@ public class DeploymentConfigController {
                 .locales(locales)
                 .userTypeToAccountType(userTypeToAccountType.isEmpty() ? null : userTypeToAccountType)
                 .topUpProviderIds(topUpProviderIds.isEmpty() ? null : topUpProviderIds)
+                .supportContactEmail(deploymentConfig.getSupportContactEmail())
+                .supportContactUrl(deploymentConfig.getSupportContactUrl())
                 .build();
     }
 

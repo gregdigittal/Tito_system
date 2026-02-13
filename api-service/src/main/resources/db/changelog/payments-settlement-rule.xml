@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.1.xsd">
+
+    <changeSet author="tito" id="payments-settlement-rule-create">
+        <comment>Phase 8-5: Settlement rules per Sacco/owner — configurable split (e.g. driver %, conductor %, platform %).</comment>
+        <createTable tableName="settlement_rule">
+            <column name="id" type="INT" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="entity_id" type="INT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="rule_name" type="VARCHAR(128)"/>
+            <column name="share_json" type="TEXT">
+                <comments>JSON e.g. {"Driver":40,"Conductor":10,"Sacco":30,"Owner":15,"Platform":5} (percent or fixed by key)</comments>
+            </column>
+            <column name="active" type="BIT(1)" defaultValueBoolean="true">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_date" type="DATETIME"/>
+        </createTable>
+    </changeSet>
+    <changeSet author="tito" id="payments-settlement-rule-fk">
+        <addForeignKeyConstraint baseTableName="settlement_rule" baseColumnNames="entity_id"
+            constraintName="fk_settlement_rule_entity_id" referencedTableName="entity" referencedColumnNames="id"
+            onDelete="CASCADE" onUpdate="RESTRICT"/>
+        <createIndex indexName="i_settlement_rule_entity_id" tableName="settlement_rule">
+            <column name="entity_id"/>
+        </createIndex>
+    </changeSet>
+</databaseChangeLog>

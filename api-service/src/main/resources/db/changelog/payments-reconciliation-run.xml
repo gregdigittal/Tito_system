@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.1.xsd">
+
+    <changeSet author="tito" id="payments-reconciliation-run-create">
+        <comment>Phase 8-13: Daily reconciliation — run summary per business date / device.</comment>
+        <createTable tableName="reconciliation_run">
+            <column name="id" type="INT" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="business_date" type="DATE">
+                <constraints nullable="false"/>
+            </column>
+            <column name="device_id" type="VARCHAR(64)"/>
+            <column name="started_at" type="DATETIME">
+                <constraints nullable="false"/>
+            </column>
+            <column name="finished_at" type="DATETIME"/>
+            <column name="status" type="VARCHAR(32)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="server_count" type="INT" defaultValueNumeric="0"/>
+            <column name="device_count" type="INT" defaultValueNumeric="0"/>
+            <column name="matched_count" type="INT" defaultValueNumeric="0"/>
+            <column name="mismatch_count" type="INT" defaultValueNumeric="0"/>
+            <column name="detail_json" type="TEXT"/>
+        </createTable>
+    </changeSet>
+    <changeSet author="tito" id="payments-reconciliation-run-index">
+        <createIndex indexName="i_reconciliation_run_business_date" tableName="reconciliation_run">
+            <column name="business_date"/>
+        </createIndex>
+    </changeSet>
+</databaseChangeLog>

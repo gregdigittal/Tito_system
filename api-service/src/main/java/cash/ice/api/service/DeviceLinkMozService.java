@@ -11,4 +11,7 @@ public interface DeviceLinkMozService {
     Device linkPosDeviceToVehicle(String posDeviceSerial, int authEntityId, Integer vehicleId);
 
     TagInfoMoz linkNfcTag(LinkNfcTagRequest nfcTag, String otp);
+
+    /** Delink NFC tag from account; tag returns to Unassigned. Caller must own the account. */
+    TagInfoMoz delinkNfcTag(String identifier, Integer authEntityId);
 }

@@ -41,6 +41,9 @@ type Query {
     userPaymentDevicesMoz(id: ID, config: ConfigInput, page: Int = 0, size: Int = 30, sort: SortInput): InitiatorsPageable
     userStatementMoz(id: ID, accountType: String!, currency: String! = "MZN", vrnId: ID, tagId: ID, transactionCode: String, description: String, config: ConfigInput, page: Int = 0, size: Int = 30, sort: SortInput): TransactionsPageableMoz
     transactionStatisticsMoz(statisticsType: StatisticsTypeMoz!, days: Int!): [TransactionStatisticsMoz]
+    listLinkedBankAccounts: [LinkedBankAccountMoz]
+    userTripsMoz(page: Int = 0, size: Int = 30): TripsPageableMoz
+    currentTripMoz: TripMoz
 
 #    FNDS:
     userFNDS: UserFNDS
@@ -69,7 +72,10 @@ type Mutation {
     registerDeviceMoz(request: RegisterDeviceMozRequest!): String
     linkPosDeviceMoz(posDeviceSerial: String!, entityId: ID!, otp: String!): Device
     linkVehicleToPosDeviceMoz(posDeviceSerial: String!, vehicleId: ID!): Device
-    linkNfcTagMoz(nfcTag: LinkNfcTagRequest!, otp: String!): TagInfoMoz
+    linkNfcTagMoz(nfcTag: LinkNfcTagRequest, identifier: String, accountNumber: String, otp: String): TagInfoMoz
+    delinkNfcTagMoz(identifier: String!): TagInfoMoz
+    linkBankAccount(bankId: String!, branchCode: String, accountNumber: String!, accountName: String, currency: String): LinkedBankAccountMoz
+    unlinkBankAccount(id: ID!): Boolean
     topupAccountMoz(accountNumber: String!, provider: MoneyProviderMoz!, mobile: String!, amount: Float!): PaymentResponse
     cashOutToMobileMoney(accountNumber: String!, provider: MoneyProviderMoz!, mobile: String!, amount: Float!): PaymentResponse
     makePaymentMoz(paymentRequest: PaymentRequestInput!): PaymentResponse

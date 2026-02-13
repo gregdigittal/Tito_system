@@ -92,7 +92,9 @@ public class DeviceLinkMozServiceImpl implements DeviceLinkMozService {
     @Override
     @Transactional
     public TagInfoMoz linkNfcTag(LinkNfcTagRequest nfcTag, String otp) {
-        validateNfcTagForLinking(nfcTag.getDevice());
+        if (nfcTag.getDevice() != null && !nfcTag.getDevice().isBlank()) {
+            validateNfcTagForLinking(nfcTag.getDevice());
+        }
         Account account = accountRepository.findByAccountNumber(nfcTag.getAccountNumber()).stream().findFirst()
                 .orElseThrow(() -> new ICEcashException("Invalid account: " + nfcTag.getAccountNumber(), EC1022));
         EntityClass entity = entityRepository.findById(account.getEntityId())
@@ -128,6 +130,29 @@ public class DeviceLinkMozServiceImpl implements DeviceLinkMozService {
                 .setCreatedDate(nfcTag.getDateTime() != null ? nfcTag.getDateTime() : Tool.currentDateTime())
                 .setStartDate(nfcTag.getDateTime() != null ? nfcTag.getDateTime().toLocalDate() : LocalDate.now()));
         return entityMozService.getTagInfo(nfcTag.getTagNumber());
+    }
+
+    @Override
+    @Transactional
+    public TagInfoMoz delinkNfcTag(String identifier, Integer authEntityId) {
+        Initiator tag = initiatorRepository.findByIdentifier(identifier).orElseThrow(() ->
+                new ICEcashException(String.format("Tag '%s' does not exist", identifier), EC1066));
+        InitiatorStatus activeStatus = initiatorStatusRepository.findByName(ACTIVE)
+                .orElseThrow(() -> new ICEcashException("'Active' initiator status does not exist", EC1059, true));
+        InitiatorStatus unassignedStatus = initiatorStatusRepository.findByName(UNASSIGNED)
+                .orElseThrow(() -> new ICEcashException("'Unassigned' initiator status does not exist", EC1059, true));
+        if (!Objects.equals(tag.getInitiatorStatusId(), activeStatus.getId())) {
+            throw new ICEcashException("Tag is not linked: " + identifier, EC1067);
+        }
+        Account account = accountRepository.findById(tag.getAccountId()).stream().findFirst()
+                .orElseThrow(() -> new ICEcashException("Tag account not found", EC1022));
+        if (!Objects.equals(account.getEntityId(), authEntityId)) {
+            throw new ICEcashException("Tag does not belong to this user", EC1077);
+        }
+        initiatorRepository.save(tag
+                .setAccountId(null)
+                .setInitiatorStatusId(unassignedStatus.getId()));
+        return entityMozService.getTagInfo(identifier);
     }
 
     private void validateNfcTagForLinking(String deviceSerialOrCode) {

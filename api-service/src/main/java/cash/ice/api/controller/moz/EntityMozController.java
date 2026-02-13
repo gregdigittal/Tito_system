@@ -9,12 +9,15 @@ import cash.ice.api.dto.moz.*;
 import cash.ice.api.entity.moz.Route;
 import cash.ice.api.repository.moz.RouteRepository;
 import cash.ice.api.service.*;
+import cash.ice.api.dto.moz.TripMoz;
+import cash.ice.api.dto.moz.TripsPageableMoz;
 import cash.ice.api.util.MappingUtil;
 import cash.ice.common.dto.PaymentRequest;
 import cash.ice.common.dto.PaymentResponse;
 import cash.ice.common.error.ErrorCodes;
 import cash.ice.common.error.ICEcashException;
 import cash.ice.sqldb.entity.*;
+import cash.ice.api.dto.moz.LinkedBankAccountMoz;
 import cash.ice.sqldb.entity.moz.Device;
 import cash.ice.sqldb.entity.moz.Vehicle;
 import cash.ice.sqldb.repository.*;
@@ -36,6 +39,7 @@ import java.util.stream.Collectors;
 
 import static cash.ice.api.util.MappingUtil.accountBalancesMap;
 import static cash.ice.api.util.MappingUtil.itemsToCategoriesMap;
+import static cash.ice.common.error.ErrorCodes.EC1022;
 import static cash.ice.common.error.ErrorCodes.EC1072;
 import static org.springframework.http.HttpStatus.OK;
 
@@ -51,6 +55,8 @@ public class EntityMozController {
     private final AccountTransferMozService accountTransferMozService;
     private final Me60MozService me60MozService;
     private final DeviceLinkMozService deviceLinkMozService;
+    private final LinkedBankAccountMozService linkedBankAccountMozService;
+    private final TripMozService tripMozService;
     private final PermissionsGroupService permissionsGroupService;
     private final EntityTypeRepository entityTypeRepository;
     private final EntityIdTypeRepository entityIdTypeRepository;
@@ -139,9 +145,25 @@ public class EntityMozController {
     }
 
     @MutationMapping
-    public TagInfoMoz linkNfcTagMoz(@Argument LinkNfcTagRequest nfcTag, @Argument String otp) {
-        log.info("> link nfc tag: {}, otp: {}", nfcTag, otp);
-        return deviceLinkMozService.linkNfcTag(nfcTag, otp);
+    public TagInfoMoz linkNfcTagMoz(@Argument LinkNfcTagRequest nfcTag, @Argument String identifier, @Argument String accountNumber, @Argument String otp) {
+        LinkNfcTagRequest request = nfcTag;
+        if (request == null && identifier != null && accountNumber != null) {
+            request = new LinkNfcTagRequest().setDevice("").setTagNumber(identifier).setAccountNumber(accountNumber);
+        }
+        if (request == null) {
+            throw new ICEcashException("Provide either nfcTag or both identifier and accountNumber", EC1022);
+        }
+        log.info("> link nfc tag: {}, otp: {}", request, otp);
+        return deviceLinkMozService.linkNfcTag(request, otp != null ? otp : "");
+    }
+
+    @MutationMapping
+    @PreAuthorize("isAuthenticated()")
+    public TagInfoMoz delinkNfcTagMoz(@Argument String identifier) {
+        EntityClass authEntity = entityMozService.getAuthEntity(getAuthUser(), null);
+        Objects.requireNonNull(authEntity);
+        log.info("> delink nfc tag: {}, entity: {} ({})", identifier, authEntity.getId(), authEntity.getFirstName());
+        return deviceLinkMozService.delinkNfcTag(identifier, authEntity.getId());
     }
 
     @MutationMapping
@@ -233,6 +255,46 @@ public class EntityMozController {
         EntityClass authEntity = entityMozService.getAuthEntity(getAuthUser(), null);
         log.info("> GET transaction statistics (moz): type: {}, days: {}, entity: {} {} {}", statisticsType, days, authEntity.getId(), authEntity.getFirstName(), authEntity.getLastName());
         return transactionStatisticsService.getTransactionStatistics(authEntity, statisticsType, days);
+    }
+
+    @QueryMapping
+    @PreAuthorize("isAuthenticated()")
+    public List<LinkedBankAccountMoz> listLinkedBankAccounts() {
+        EntityClass authEntity = entityMozService.getAuthEntity(getAuthUser(), null);
+        Objects.requireNonNull(authEntity);
+        return linkedBankAccountMozService.listByEntityId(authEntity.getId());
+    }
+
+    @QueryMapping
+    @PreAuthorize("isAuthenticated()")
+    public TripsPageableMoz userTripsMoz(@Argument int page, @Argument int size) {
+        EntityClass authEntity = entityMozService.getAuthEntity(getAuthUser(), null);
+        Objects.requireNonNull(authEntity);
+        return tripMozService.getTrips(authEntity.getId(), page, size);
+    }
+
+    @QueryMapping
+    @PreAuthorize("isAuthenticated()")
+    public TripMoz currentTripMoz() {
+        EntityClass authEntity = entityMozService.getAuthEntity(getAuthUser(), null);
+        Objects.requireNonNull(authEntity);
+        return tripMozService.getCurrentTrip(authEntity.getId());
+    }
+
+    @MutationMapping
+    @PreAuthorize("isAuthenticated()")
+    public LinkedBankAccountMoz linkBankAccount(@Argument String bankId, @Argument String branchCode, @Argument String accountNumber, @Argument String accountName, @Argument String currency) {
+        EntityClass authEntity = entityMozService.getAuthEntity(getAuthUser(), null);
+        Objects.requireNonNull(authEntity);
+        return linkedBankAccountMozService.link(authEntity.getId(), bankId, branchCode, accountNumber, accountName, currency);
+    }
+
+    @MutationMapping
+    @PreAuthorize("isAuthenticated()")
+    public Boolean unlinkBankAccount(@Argument Integer id) {
+        EntityClass authEntity = entityMozService.getAuthEntity(getAuthUser(), null);
+        Objects.requireNonNull(authEntity);
+        return linkedBankAccountMozService.unlink(id, authEntity.getId());
     }
 
     @BatchMapping(typeName = "Device", field = "account")

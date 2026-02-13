@@ -232,4 +232,23 @@ public class EntityMozServiceImpl implements EntityMozService {
                 "Cash-out to mobile money is not yet implemented. Provider integration pending.",
                 EC1026);
     }
+
+    @Override
+    public PaymentResponse cashOutToMobileMoneyByAccountId(Integer accountId, MoneyProviderMoz provider, String mobile, BigDecimal amount) {
+        String countryCode = StringUtils.hasText(deploymentConfigProperties.getCountryCode())
+                ? deploymentConfigProperties.getCountryCode().trim()
+                : "KE";
+        List<String> allowedProviders = topUpServiceSelector.getAllowedProviderIds(countryCode);
+        if (!allowedProviders.contains(provider.name())) {
+            throw new ICEcashException(
+                    String.format("Cash-out provider %s is not available for country %s", provider.name(), countryCode),
+                    EC1001);
+        }
+        Account account = accountRepository.findById(accountId)
+                .orElseThrow(() -> new ICEcashException(EC1022, "Account id=" + accountId + " does not exist"));
+        // No auth-entity check: caller is EOD/sweep. When provider is implemented, call me60 outbound here.
+        throw new ICEcashException(
+                "Cash-out to mobile money is not yet implemented. Provider integration pending.",
+                EC1026);
+    }
 }
