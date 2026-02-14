@@ -28,12 +28,14 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.Duration;
+import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -106,8 +108,76 @@ class MfaServiceImplTest {
     }
 
     @Test
+    void handleLogin_whenOtpType_sendsSmsPinCode() throws LockLoginException {
+        AccessTokenResponse token = new AccessTokenResponse();
+        token.setToken("access-token");
+        when(securityPvvService.acquirePvv(any(), any())).thenReturn("pvv-value");
+
+        mfaService.handleLogin(LOGIN, token, MfaType.OTP, SECRET_CODE, MSISDN, mfaProperties);
+
+        verify(notificationService).sendSmsPinCode(any(), eq(MSISDN));
+    }
+
+    @Test
     void enterMfaCode_whenTokenExpired_throws() {
         loginData.setToken(null);
+        when(loginDataStore.findByLogin(LOGIN)).thenReturn(Optional.of(loginData));
+
+        assertThrows(cash.ice.common.error.ICEcashException.class,
+                () -> mfaService.enterMfaCode(LOGIN, "123456", mfaProperties));
+    }
+
+    @Test
+    void enterMfaCode_whenTotpCodeValid_returnsSuccess() throws LockLoginException {
+        loginData.setMfaType(MfaType.TOTP).setMfaSecretCode(SECRET_CODE).setToken(new AccessTokenResponse());
+        loginData.setTokenExpireTime(Instant.now().plus(Duration.ofMinutes(5)));
+        when(loginDataStore.findByLogin(LOGIN)).thenReturn(Optional.of(loginData));
+        when(verifier.isValidCode(SECRET_CODE, "123456")).thenReturn(true);
+
+        LoginResponse response = mfaService.enterMfaCode(LOGIN, "123456", mfaProperties);
+
+        assertThat(response.getStatus()).isEqualTo(LoginResponse.Status.SUCCESS);
+        assertThat(response.getAccessToken()).isNotNull();
+    }
+
+    @Test
+    void enterMfaCode_whenWrongCode_incrementsFailedAttempt() throws LockLoginException {
+        loginData.setToken(new AccessTokenResponse()).setTokenExpireTime(Instant.now().plus(Duration.ofMinutes(5)));
+        loginData.setTokenReceiveTime(Instant.now().minus(Duration.ofMinutes(1)));
+        loginData.setOtpPvv("stored-pvv");
+        mfaProperties.setOtpCodeExpiration(Duration.ofMinutes(5));
+        when(loginDataStore.findByLogin(LOGIN)).thenReturn(Optional.of(loginData));
+        when(securityPvvService.acquirePvv(any(), eq("wrong"))).thenReturn("other-pvv");
+
+        assertThrows(NotAuthorizedException.class,
+                () -> mfaService.enterMfaCode(LOGIN, "wrong", mfaProperties));
+        verify(loginDataStore).save(loginDataCaptor.capture());
+        assertThat(loginDataCaptor.getValue().getFailedLoginAttempts()).isNotEmpty();
+    }
+
+    @Test
+    void enterMfaCode_whenThreeWrongAttempts_locksAccount() throws LockLoginException {
+        loginData.setToken(new AccessTokenResponse()).setTokenExpireTime(Instant.now().plus(Duration.ofMinutes(5)));
+        loginData.setTokenReceiveTime(Instant.now().minus(Duration.ofMinutes(1)));
+        loginData.setOtpPvv("stored-pvv");
+        mfaProperties.setOtpCodeExpiration(Duration.ofMinutes(5));
+        when(loginDataStore.findByLogin(LOGIN)).thenReturn(Optional.of(loginData));
+        when(securityPvvService.acquirePvv(any(), any())).thenReturn("other-pvv");
+
+        assertThrows(NotAuthorizedException.class,
+                () -> mfaService.enterMfaCode(LOGIN, "wrong1", mfaProperties));
+        assertThrows(NotAuthorizedException.class,
+                () -> mfaService.enterMfaCode(LOGIN, "wrong2", mfaProperties));
+        assertThrows(LockLoginException.class,
+                () -> mfaService.enterMfaCode(LOGIN, "wrong3", mfaProperties));
+    }
+
+    @Test
+    void enterMfaCode_whenOtpExpired_throws() {
+        loginData.setMfaType(MfaType.OTP).setOtpPvv("pvv").setToken(new AccessTokenResponse());
+        loginData.setTokenReceiveTime(Instant.now().minus(Duration.ofMinutes(10)));
+        loginData.setTokenExpireTime(Instant.now().plus(Duration.ofMinutes(5)));
+        mfaProperties.setOtpCodeExpiration(Duration.ofMinutes(5));
         when(loginDataStore.findByLogin(LOGIN)).thenReturn(Optional.of(loginData));
 
         assertThrows(cash.ice.common.error.ICEcashException.class,

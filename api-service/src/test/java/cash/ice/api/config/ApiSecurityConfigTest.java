@@ -4,16 +4,18 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 /**
  * Verifies security configuration: public endpoints are accessible without auth,
- * protected endpoints require authentication.
+ * protected endpoints require authentication, GraphQL requires IP whitelist,
+ * invalid tokens return 401.
  */
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -39,5 +41,21 @@ class ApiSecurityConfigTest {
     void paymentsEndpoint_requiresAuthentication() throws Exception {
         mockMvc.perform(get("/api/v1/payments/pending/some-id"))
                 .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    void protectedEndpoint_withInvalidToken_returns401() throws Exception {
+        mockMvc.perform(get("/api/v1/payments/pending/some-id")
+                        .header("Authorization", "Bearer invalid.jwt.token"))
+                .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    void graphql_requiresIpWhitelist_orReturns4xx() throws Exception {
+        // GraphQL is protected by IP whitelist; without whitelisted IP expect 403, or 400 if request is bad
+        mockMvc.perform(post("/graphql")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{}"))
+                .andExpect(status().is4xxClientError());
     }
 }
