@@ -8,6 +8,7 @@ import cash.ice.sqldb.entity.LinkedBankAccount;
 import cash.ice.sqldb.entity.LinkedBankAccountStatus;
 import cash.ice.sqldb.repository.LinkedBankAccountRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -17,6 +18,7 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class LinkedBankAccountMozServiceImpl implements LinkedBankAccountMozService {
 
     private final LinkedBankAccountRepository linkedBankAccountRepository;
@@ -41,6 +43,8 @@ public class LinkedBankAccountMozServiceImpl implements LinkedBankAccountMozServ
                 .setStatus(LinkedBankAccountStatus.PENDING_VERIFICATION)
                 .setCreatedDate(LocalDateTime.now());
         entity = linkedBankAccountRepository.save(entity);
+        log.info("AUDIT: Bank account LINKED — entityId={}, bankId={}, accountNumber={}, linkedBankAccountId={}",
+                entityId, bankId, accountNumber, entity.getId());
         return toDto(entity);
     }
 
@@ -50,6 +54,8 @@ public class LinkedBankAccountMozServiceImpl implements LinkedBankAccountMozServ
         return linkedBankAccountRepository.findByIdAndEntityId(id, entityId)
                 .map(acc -> {
                     linkedBankAccountRepository.delete(acc);
+                    log.info("AUDIT: Bank account UNLINKED — entityId={}, bankId={}, accountNumber={}, linkedBankAccountId={}",
+                            entityId, acc.getBankId(), acc.getAccountNumber(), id);
                     return true;
                 })
                 .orElseThrow(() -> new ICEcashException("Linked bank account not found or access denied", ErrorCodes.EC1022));

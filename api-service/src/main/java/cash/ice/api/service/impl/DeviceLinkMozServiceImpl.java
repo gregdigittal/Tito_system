@@ -152,6 +152,8 @@ public class DeviceLinkMozServiceImpl implements DeviceLinkMozService {
         initiatorRepository.save(tag
                 .setAccountId(null)
                 .setInitiatorStatusId(unassignedStatus.getId()));
+        log.info("AUDIT: NFC tag DELINKED — identifier={}, entityId={}, previousAccountId={}",
+                identifier, authEntityId, account.getId());
         return entityMozService.getTagInfo(identifier);
     }
 
