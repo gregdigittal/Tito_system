@@ -8,18 +8,18 @@ ice:
         realm: payments-local
         default-client-id: icecash
         admin-client-id: admin-cli
-        admin-client-secret: fthNjF3dkIhEWO7qmtUSioWc2zduapeo
+        admin-client-secret: ${AUTH_KEYCLOAK_ENTITIES_ADMIN_CLIENT_SECRET}
       backoffice:
         auth-server-url: http://localhost:8181/
         realm: backoffice-local
         default-client-id: icecash
         admin-client-id: admin-cli
-        admin-client-secret: cgmskX1Ef65SCsaJjqPawFZ6OkraPOni
+        admin-client-secret: ${AUTH_KEYCLOAK_BACKOFFICE_ADMIN_CLIENT_SECRET}
     registration:
       sms-pin: false
       sms-pin-message: "PIN: %s"
     pvv:
-      hex-cipher-key: 19680607195506111957020119810623
+      hex-cipher-key: ${PVV_CIPHER_KEY}
 ---
 spring.config.activate.on-profile: dev-k8s, dev-mysql-k8s, uat-k8s, prod-k8s, icetech-k8s, dev-k8s-perf, dev-mysql-k8s-perf, uat-k8s-perf
 ice:

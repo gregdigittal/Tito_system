@@ -43,7 +43,7 @@ ice:
     date-format: yyyy-MM-dd'T'HH:mmXX
     ip-whitelist:
       disable-check: false
-      password: p@ssw0rd1
+      password: ${IP_WHITELIST_PASSWORD:changeme}
     cors:
       path-pattern: /**
       # Flutter web (local + Vercel). Override via env if needed (e.g. ICE_CASH_CORS_ALLOWED_ORIGINS).
@@ -179,8 +179,8 @@ spring.autoconfigure.exclude:
 spring.config.activate.on-profile: local, local-perf
 minio:
   url: http://localhost:19000/
-  access-name: admin
-  access-secret: 6CrxLxcHMU
+  access-name: ${MINIO_ACCESS_NAME:admin}
+  access-secret: ${MINIO_ACCESS_SECRET}
   bucket: test
   folder: /documents/
   payments-folder: /payments/

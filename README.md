@@ -32,6 +32,8 @@ IMPORTANT: To avoid issues with different environments, a specific Spring profil
 
 IMPORTANT: The project uses `Liquibase` jobs to migrate the database located in the `api-service` project, so api-service must be launched first! On the first launch it creates the database and all needed tables. For a local environment it also adds EcoCash/PayGO test merchants to MongoDB and creates a test user in Keycloak, so make sure MongoDB and Keycloak are up and running as well as MariaDB before launching the application for the first time. Please also note that Liquibase locks the database before it starts running and, unfortunately, does not unlock it in case of errors or manual shutdowns. In this case the database might be unlocked manually, for this, in the `DATABASECHANGELOGLOCK` MariaDB table, set the `LOCKED` field value to `false`, and other fields to `NULL`. **See [docs/FIRST_RUN_AND_LIQUIBASE.md](docs/FIRST_RUN_AND_LIQUIBASE.md) for a concise first-run and Liquibase unlock runbook.**
 
+**Secrets:** All sensitive values (PVV cipher key, Keycloak admin secrets, MinIO credentials, IP whitelist password) are externalized to environment variables. See [docs/REQUIRED_ENV_VARIABLES.md](docs/REQUIRED_ENV_VARIABLES.md) for the full list and deployment guidance.
+
 NOTE: After the first run in the local environment, a test user will be created, which can be authenticated to use all secure URLs: 
 
     John Doe 
