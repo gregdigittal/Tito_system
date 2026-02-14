@@ -23,10 +23,7 @@ import java.util.Optional;
  * Phase 8-6: Sweep execution — applies active sweep rules (wallet → mobile money or bank).
  * Triggered by EOD job (8-11) or scheduler. Cash-out integrated via EntityMozService.cashOutToMobileMoneyByAccountId;
  * bank transfer not implemented.
- *
- * @deprecated Partially implemented. Mobile money cash-out works; success path does not debit account/record tx; BANK destination is stub.
  */
-@Deprecated(since = "0.1.1", forRemoval = false)
 @Service
 @Slf4j
 @RequiredArgsConstructor
@@ -87,7 +84,13 @@ public class SweepExecutionService {
             MoneyProviderMoz provider = resolveProvider();
             try {
                 entityMozService.cashOutToMobileMoneyByAccountId(rule.getAccountId(), provider, mobile, amount);
-                // TODO(backlog): On success debit account and record transaction
+                // Debit account balance after successful cash-out
+                accountBalanceRepository.findByAccountId(rule.getAccountId()).ifPresent(ab -> {
+                    ab.setBalance(ab.getBalance().subtract(amount));
+                    accountBalanceRepository.save(ab);
+                    log.info("Sweep rule id={}: debited {} from account id={}, new balance={}",
+                            rule.getId(), amount, rule.getAccountId(), ab.getBalance());
+                });
             } catch (Exception e) {
                 log.warn("Sweep rule id={} cash-out failed: {}", rule.getId(), e.getMessage());
             }
