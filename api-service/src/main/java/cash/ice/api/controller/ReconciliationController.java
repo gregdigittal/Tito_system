@@ -8,6 +8,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -21,12 +22,13 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 /**
- * Phase 8-13: Admin read of reconciliation runs. Intended for staff/finance admin only; secure with role when auth is enabled.
+ * Phase 8-13: Admin read of reconciliation runs. Staff/finance admin only.
  */
 @RestController
 @RequestMapping("/api/v1/reconciliation")
 @RequiredArgsConstructor
 @Slf4j
+@PreAuthorize("isAuthenticated()")
 public class ReconciliationController {
 
     private final ReconciliationRunRepository reconciliationRunRepository;
@@ -36,6 +38,7 @@ public class ReconciliationController {
      * Query param date: optional (ISO date). If present, returns runs for that date only.
      */
     @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<List<ReconciliationRunDto>> list(
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
         List<ReconciliationRun> runs = date != null
