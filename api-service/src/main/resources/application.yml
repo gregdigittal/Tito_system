@@ -32,6 +32,12 @@ ice:
       default-locale: en_KE
       vehicle-terminology: Matatu
       taxi-owner-label: Matatu/Taxi Owner
+      top-up-providers-by-country:
+        KE:
+          - MPESA
+        MZ:
+          - MPESA
+          - EMOLA
       user-type-to-account-type:
         "General User": CommuterRegular
         "Matatu/Taxi Owner": MatatuOwnerBusiness

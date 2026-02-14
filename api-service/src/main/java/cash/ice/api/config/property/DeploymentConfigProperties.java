@@ -3,6 +3,7 @@ package cash.ice.api.config.property;
 import lombok.Data;
 
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -26,6 +27,12 @@ public class DeploymentConfigProperties {
 
     /** User-facing label for taxi/matatu owner type. */
     private String taxiOwnerLabel = "Matatu/Taxi Owner";
+
+    /** Country code → list of allowed top-up provider names (e.g. KE=[MPESA], MZ=[MPESA,EMOLA]). */
+    private Map<String, List<String>> topUpProvidersByCountry = Map.of(
+            "KE", List.of("MPESA"),
+            "MZ", List.of("MPESA", "EMOLA")
+    );
 
     /** Optional: map frontend user type display name → backend AccountTypeMoz value. */
     private Map<String, String> userTypeToAccountType = defaultUserTypeMapping();
