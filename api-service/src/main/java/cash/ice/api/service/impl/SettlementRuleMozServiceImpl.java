@@ -2,6 +2,7 @@ package cash.ice.api.service.impl;
 
 import cash.ice.api.dto.moz.SettlementRuleMoz;
 import cash.ice.api.service.SettlementRuleMozService;
+import cash.ice.api.util.JsonValidator;
 import cash.ice.common.error.ErrorCodes;
 import cash.ice.common.error.ICEcashException;
 import cash.ice.sqldb.entity.SettlementRule;
@@ -30,6 +31,7 @@ public class SettlementRuleMozServiceImpl implements SettlementRuleMozService {
     @Override
     @Transactional(timeout = 30)
     public SettlementRuleMoz create(Integer entityId, String ruleName, String shareJson, Boolean active) {
+        JsonValidator.requireValidJson(shareJson, "shareJson");
         SettlementRule rule = new SettlementRule()
                 .setEntityId(entityId)
                 .setRuleName(ruleName != null ? ruleName : "")
@@ -49,7 +51,10 @@ public class SettlementRuleMozServiceImpl implements SettlementRuleMozService {
             throw new ICEcashException("Settlement rule does not belong to this user", ErrorCodes.EC1077);
         }
         if (ruleName != null) rule.setRuleName(ruleName);
-        if (shareJson != null) rule.setShareJson(shareJson);
+        if (shareJson != null) {
+            JsonValidator.requireValidJson(shareJson, "shareJson");
+            rule.setShareJson(shareJson);
+        }
         if (active != null) rule.setActive(active);
         rule = settlementRuleRepository.save(rule);
         return toDto(rule);
