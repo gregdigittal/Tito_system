@@ -93,6 +93,7 @@ type Mutation {
     sendOtpToAccount(otpType: OtpType!, accountNumber: String!, resend: Boolean! = false): String
     sendOtpToEntity(otpType: OtpType!, entityId: ID!, resend: Boolean! = false): String
     sendOtp(otpType: OtpType!, msisdn: String!, resend: Boolean! = false): String
+    validateOtp(otpType: OtpType!, msisdn: String!, otp: String!): String
 
     linkTagStartMoz(device: String!, accountNumber: String!, dateTime: DateTime): String
     linkTagValidateOtpMoz(requestId: String!, otp: String!): LinkTagOtpResponse
@@ -187,7 +188,7 @@ type Mutation {
 }
 
 enum OtpType {
-    MOZ_REG_USER, MOZ_POS_LINK, MOZ_TAG_LINK, MOZ_MSISDN_UPDATE, FNDS_REG_USER
+    MOZ_REG_USER, MOZ_POS_LINK, MOZ_TAG_LINK, MOZ_MSISDN_UPDATE, FNDS_REG_USER, TAC_ACCEPTANCE
 }
 
 input SortInput {

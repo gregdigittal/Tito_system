@@ -63,6 +63,13 @@ public class OtherController {
         return "SUCCESS";
     }
 
+    @MutationMapping
+    public String validateOtp(@Argument OtpType otpType, @Argument String msisdn, @Argument String otp) {
+        log.info("> validate OTP: {}, msisdn: {}", otpType, msisdn);
+        otpService.validateOtp(otpType, msisdn, otp);
+        return "SUCCESS";
+    }
+
     @QueryMapping
     public Iterable<EntityIdType> allIdTypes(@Argument int page, @Argument int size, @Argument SortInput sort) {
         return entityIdTypeRepository.findAll(PageRequest.of(page, size, SortInput.toSort(sort)));
