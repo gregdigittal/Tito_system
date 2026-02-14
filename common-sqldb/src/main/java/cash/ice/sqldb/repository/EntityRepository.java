@@ -21,13 +21,13 @@ public interface EntityRepository extends JpaRepository<EntityClass, Integer> {
     boolean existsAccountByIdNumberAndIdType(String idNumber, Integer idType);
 
     @Query(nativeQuery = true, value = "select * from entity where id = :id " +
-            "union select * from entity where id like concat(:id,'%')" +
-            "union select * from entity where id like concat('%',:id)" +
-            "union select * from entity where id like concat('%',:id,'%')",
+            "union select * from entity where id like concat(:id,'%') escape '\\\\' " +
+            "union select * from entity where id like concat('%',:id) escape '\\\\' " +
+            "union select * from entity where id like concat('%',:id,'%') escape '\\\\'",
             countQuery = "select count(e.id) from (select * from entity where id = :id " +
-                    "union select * from entity where id like concat(:id,'%')" +
-                    "union select * from entity where id like concat('%',:id)" +
-                    "union select * from entity where id like concat('%',:id,'%')) as e")
+                    "union select * from entity where id like concat(:id,'%') escape '\\\\' " +
+                    "union select * from entity where id like concat('%',:id) escape '\\\\' " +
+                    "union select * from entity where id like concat('%',:id,'%') escape '\\\\') as e")
     Page<EntityClass> findPartialById(@Param("id") String id, Pageable pageable);
 
     List<EntityClass> findByIdNumber(String idNumber);
@@ -35,13 +35,13 @@ public interface EntityRepository extends JpaRepository<EntityClass, Integer> {
     List<EntityClass> findByIdNumberAndIdType(String idNumber, Integer idType);
 
     @Query(nativeQuery = true, value = "select * from entity where id_number = :idNumber " +
-            "union select * from entity where id_number like concat(:idNumber,'%')" +
-            "union select * from entity where id_number like concat('%',:idNumber)" +
-            "union select * from entity where id_number like concat('%',:idNumber,'%')",
+            "union select * from entity where id_number like concat(:idNumber,'%') escape '\\\\' " +
+            "union select * from entity where id_number like concat('%',:idNumber) escape '\\\\' " +
+            "union select * from entity where id_number like concat('%',:idNumber,'%') escape '\\\\'",
             countQuery = "select count(e.id) from (select * from entity where id_number = :idNumber " +
-                    "union select * from entity where id_number like concat(:idNumber,'%')" +
-                    "union select * from entity where id_number like concat('%',:idNumber)" +
-                    "union select * from entity where id_number like concat('%',:idNumber,'%')) as e")
+                    "union select * from entity where id_number like concat(:idNumber,'%') escape '\\\\' " +
+                    "union select * from entity where id_number like concat('%',:idNumber) escape '\\\\' " +
+                    "union select * from entity where id_number like concat('%',:idNumber,'%') escape '\\\\') as e")
     Page<EntityClass> findPartialByIdNumber(@Param("idNumber") String idNumber, Pageable pageable);
 
     Optional<EntityClass> findByLegacyAccountId(int legacyAccountId);
@@ -58,13 +58,13 @@ public interface EntityRepository extends JpaRepository<EntityClass, Integer> {
 
     @Query(nativeQuery = true, value = "select * from entity where first_name = :firstName and last_name = :lastName " +
             "union select * from entity where first_name = :firstName or last_name = :firstName or (:lastName != '' and (last_name = :lastName or first_name = :lastName)) " +
-            "union select * from entity where concat(coalesce(first_name, ''), ' ', coalesce(last_name, '')) like concat(:firstName,'%',:lastName,'%') " +
-            "union select * from entity where concat(coalesce(first_name, ''), ' ', coalesce(last_name, '')) like concat('%',:firstName,'%',:lastName) " +
-            "union select * from entity where concat(coalesce(first_name, ''), ' ', coalesce(last_name, '')) like concat('%',:firstName,'%',:lastName,'%') ",
+            "union select * from entity where concat(coalesce(first_name, ''), ' ', coalesce(last_name, '')) like concat(:firstName,'%',:lastName,'%') escape '\\\\' " +
+            "union select * from entity where concat(coalesce(first_name, ''), ' ', coalesce(last_name, '')) like concat('%',:firstName,'%',:lastName) escape '\\\\' " +
+            "union select * from entity where concat(coalesce(first_name, ''), ' ', coalesce(last_name, '')) like concat('%',:firstName,'%',:lastName,'%') escape '\\\\' ",
             countQuery = "select count(e.id) from (select * from entity where first_name = :firstName and last_name = :lastName " +
                     "union select * from entity where first_name = :firstName or last_name = :firstName or (:lastName != '' and (last_name = :lastName or first_name = :lastName)) " +
-                    "union select * from entity where concat(coalesce(first_name, ''), ' ', coalesce(last_name, '')) like concat(:firstName,'%',:lastName,'%') " +
-                    "union select * from entity where concat(coalesce(first_name, ''), ' ', coalesce(last_name, '')) like concat('%',:firstName,'%',:lastName) " +
-                    "union select * from entity where concat(coalesce(first_name, ''), ' ', coalesce(last_name, '')) like concat('%',:firstName,'%',:lastName,'%')) as e")
+                    "union select * from entity where concat(coalesce(first_name, ''), ' ', coalesce(last_name, '')) like concat(:firstName,'%',:lastName,'%') escape '\\\\' " +
+                    "union select * from entity where concat(coalesce(first_name, ''), ' ', coalesce(last_name, '')) like concat('%',:firstName,'%',:lastName) escape '\\\\' " +
+                    "union select * from entity where concat(coalesce(first_name, ''), ' ', coalesce(last_name, '')) like concat('%',:firstName,'%',:lastName,'%') escape '\\\\') as e")
     Page<EntityClass> findPartialByFirstNameAndLastName(@Param("firstName") String firstName, @Param("lastName") String lastName, Pageable pageable);
 }

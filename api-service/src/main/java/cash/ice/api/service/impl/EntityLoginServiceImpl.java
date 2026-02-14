@@ -21,6 +21,7 @@ import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.security.SecureRandom;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -182,12 +183,23 @@ public class EntityLoginServiceImpl implements EntityLoginService {
     @Transactional
     public EntityClass generateNewEntityPassword(Integer entityId) {
         EntityClass entity = entityService.getEntityById(entityId);
-        String newPin = Tool.generateDigits(4, false);
+        String newPin = generateSecurePassword();
         EntityClass savedEntity = entityRepository.save(entity
                 .setPvv(securityPvvService.acquirePvv(entity.getInternalId(), newPin)));
         updateKeycloakUser(savedEntity, newPin);
         notificationService.sendSmsPinCode(newPin, getMsisdn(entity));
         return savedEntity;
+    }
+
+    /** Generates a 12-character password with letters, digits and special chars (satisfies typical PIN policy). */
+    private static String generateSecurePassword() {
+        SecureRandom random = new SecureRandom();
+        String chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%";
+        StringBuilder password = new StringBuilder(12);
+        for (int i = 0; i < 12; i++) {
+            password.append(chars.charAt(random.nextInt(chars.length())));
+        }
+        return password.toString();
     }
 
     @Override

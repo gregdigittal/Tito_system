@@ -97,8 +97,9 @@ public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
 
     @ExceptionHandler(value = {Exception.class})
     public ResponseEntity<ErrorResponse> handleException(Exception ex) {
-        log.error("Unhandled exception in: [{}], message: {}", ex.getClass().getName(), ex.getMessage(), ex);
-        return new ResponseEntity<>(new ErrorResponse(ErrorCodes.EC1004, ex.getMessage()),
+        log.error("Unhandled exception", ex);
+        return new ResponseEntity<>(
+                new ErrorResponse(ErrorCodes.EC1004, "An internal error occurred. Please try again later."),
                 HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
@@ -109,7 +110,7 @@ public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
 
     @ExceptionHandler(value = {ConstraintViolationException.class})
     public ResponseEntity<ErrorResponse> handleException(ConstraintViolationException ex) {
-        return new ResponseEntity<>(new ErrorResponse(ErrorCodes.EC1001, "Validation failed: " + ex.getMessage()), HttpStatus.BAD_REQUEST);
+        return new ResponseEntity<>(new ErrorResponse(ErrorCodes.EC1001, "Validation failed. Please check your input."), HttpStatus.BAD_REQUEST);
     }
 
     @Override

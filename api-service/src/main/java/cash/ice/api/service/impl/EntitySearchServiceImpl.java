@@ -6,6 +6,7 @@ import cash.ice.api.errors.UnexistingUserException;
 import cash.ice.api.service.EntitySearchService;
 import cash.ice.common.error.ErrorCodes;
 import cash.ice.common.error.ICEcashException;
+import cash.ice.common.util.SqlUtil;
 import cash.ice.sqldb.entity.Account;
 import cash.ice.sqldb.entity.EntityClass;
 import cash.ice.sqldb.entity.EntityMsisdn;
@@ -54,7 +55,7 @@ public class EntitySearchServiceImpl implements EntitySearchService {
                 List<EntityClass> entities = entityRepository.findById(index).map(List::of).orElseGet(List::of);
                 return new PageImpl<>(entities, pageable, entities.size());
             } else {
-                return entityRepository.findPartialById(searchInput, pageable);
+                return entityRepository.findPartialById(SqlUtil.escapeLikeParam(searchInput), pageable);
             }
         } catch (NumberFormatException e) {
             throw new ICEcashException("Wrong entityId: " + searchInput, ErrorCodes.EC1048);
@@ -84,7 +85,8 @@ public class EntitySearchServiceImpl implements EntitySearchService {
         if (exactMatch) {
             return entityRepository.findByFirstNameAndLastName(firstName, lastName, pageable);
         } else {
-            return entityRepository.findPartialByFirstNameAndLastName(firstName, lastName, pageable);
+            return entityRepository.findPartialByFirstNameAndLastName(
+                    SqlUtil.escapeLikeParam(firstName), SqlUtil.escapeLikeParam(lastName), pageable);
         }
     }
 
@@ -110,7 +112,7 @@ public class EntitySearchServiceImpl implements EntitySearchService {
             List<EntityClass> entities = entityRepository.findByIdNumber(searchInput);
             return new PageImpl<>(entities, pageable, entities.size());
         } else {
-            return entityRepository.findPartialByIdNumber(searchInput, pageable);
+            return entityRepository.findPartialByIdNumber(SqlUtil.escapeLikeParam(searchInput), pageable);
         }
     }
 
