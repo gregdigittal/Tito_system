@@ -19,8 +19,11 @@ import static cash.ice.sqldb.entity.AccountType.TITO_REVENUE;
 
 /**
  * Phase 8-10: TiTo revenue account; EOD deduction of fees and device rental.
- * Fee rules and TiTo revenue account type wired; actual debit/credit posting TODO.
+ * Fee rules and TiTo revenue account type wired; actual debit/credit posting not implemented.
+ *
+ * @deprecated Incomplete implementation. Fee rules are loaded but no ledger posting is performed.
  */
+@Deprecated(since = "0.1.1", forRemoval = false)
 @Service
 @Slf4j
 @RequiredArgsConstructor
@@ -48,6 +51,10 @@ public class TitoRevenueFeeService {
             return;
         }
         log.info("EOD fee run for business date {}: {} rule(s), TiTo revenue account type id={} (stub — posting not yet implemented)", businessDate, rules.size(), titoRevenueType.getId());
-        // TODO: For each rule, resolve source account type; iterate source accounts with balance; compute fee (percent or fixed); debit source, credit TiTo revenue account; record tx
+        // TODO(backlog): Implement actual fee posting logic
+        //   - For each rule, resolve source account type
+        //   - Iterate source accounts with balance; compute fee (percent or fixed)
+        //   - Debit source, credit TiTo revenue account
+        //   - Record transactions
     }
 }

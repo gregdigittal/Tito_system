@@ -12,8 +12,10 @@ import java.time.LocalDateTime;
 
 /**
  * Phase 8-13: Daily reconciliation — server vs device. Stub: persists a run with 0 counts.
- * TODO: Load server transactions for date; load device data (8-14); match; set counts and detail_json.
+ *
+ * @deprecated Incomplete implementation. Run is persisted with zero counts; no server/device comparison performed.
  */
+@Deprecated(since = "0.1.1", forRemoval = false)
 @Service
 @Slf4j
 @RequiredArgsConstructor
@@ -30,7 +32,10 @@ public class ReconciliationService {
                 .setStatus("RUNNING");
         run = reconciliationRunRepository.save(run);
         try {
-            // TODO: load server tx, device data, compare, compute counts
+            // TODO(backlog): Implement reconciliation logic
+            //   - Load server transactions for date
+            //   - Load device data (8-14)
+            //   - Match and set counts and detail_json
             run.setServerCount(0);
             run.setDeviceCount(0);
             run.setMatchedCount(0);
