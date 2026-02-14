@@ -68,7 +68,7 @@ public class JournalServiceImpl implements JournalService {
     }
 
     @Override
-    @Transactional
+    @Transactional(timeout = 30)
     public Journal createJournal(Journal journal, List<JournalFee> fees, String url, boolean sendEmail, StaffMember creatorStaffMember) {
         validate(creatorStaffMember, journal);
         Account drAccount = accountRepository.findById(journal.getDrAccountId()).orElseThrow(() ->
@@ -141,7 +141,7 @@ public class JournalServiceImpl implements JournalService {
     }
 
     @Override
-    @Transactional
+    @Transactional(timeout = 30)
     public Journal rejectJournal(Integer journalId, StaffMember staffMember) {
         Journal journal = getJournal(journalId);
         if (journal.getStatus() != JournalStatus.PENDING) {
@@ -154,7 +154,7 @@ public class JournalServiceImpl implements JournalService {
     }
 
     @Override
-    @Transactional
+    @Transactional(timeout = 30)
     public Journal acceptJournal(Integer journalId, StaffMember staffMember) {
         Journal journal = getJournal(journalId);
         if (journal.getStatus() != JournalStatus.PENDING) {

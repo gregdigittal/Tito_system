@@ -39,7 +39,7 @@ public class SweepExecutionService {
     /**
      * Run sweep for rules that are due for the given business date (e.g. SCHEDULE with cron match, or THRESHOLD).
      */
-    @Transactional
+    @Transactional(timeout = 30)
     public void runScheduledForDate(LocalDate businessDate) {
         List<SweepRule> allActive = sweepRuleRepository.findAll().stream()
                 .filter(SweepRule::getActive)

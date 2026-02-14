@@ -52,7 +52,7 @@ public class EntityRegistrationMozServiceImpl implements EntityRegistrationMozSe
     private final MozProperties mozProperties;
 
     @Override
-    @Transactional
+    @Transactional(timeout = 30)
     @Deprecated
     public RegisterResponse registerEntity(RegisterEntityMozRequest request) {
         validateRequest(request);
@@ -99,7 +99,7 @@ public class EntityRegistrationMozServiceImpl implements EntityRegistrationMozSe
     }
 
     @Override
-    @Transactional
+    @Transactional(timeout = 30)
     public RegisterMozResponse registerUser(RegisterEntityMozRequest request, OptionalEntityRegisterData optionalData, AuthUser authUser, String otp, boolean removeDocumentsOnFail) {
         try {
             if (needValidateOtp(authUser)) {
@@ -146,7 +146,7 @@ public class EntityRegistrationMozServiceImpl implements EntityRegistrationMozSe
     }
 
     @Override
-    @Transactional
+    @Transactional(timeout = 30)
     public RegisterMozResponse registerCorporateUser(RegisterCompanyMozRequest company, RegisterEntityMozRequest representative, OptionalEntityRegisterData optionalData, AuthUser authUser, String otp, boolean removeDocumentsOnFail) {
         try {
             if (needValidateOtp(authUser)) {

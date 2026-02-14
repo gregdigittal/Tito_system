@@ -48,7 +48,7 @@ public class EntityRegistrationServiceImpl implements EntityRegistrationService 
     private boolean smsPin;
 
     @Override
-    @Transactional
+    @Transactional(timeout = 30)
     public RegisterResponse registerEntity(RegisterEntityRequest request) {
         validateRequest(request);
         String pin = Tool.generateDigits(4, false);
@@ -69,7 +69,7 @@ public class EntityRegistrationServiceImpl implements EntityRegistrationService 
     }
 
     @Override
-    @Transactional
+    @Transactional(timeout = 30)
     public RegisterResponse registerEntity(RegisterEntityRequest request, String pin, String internalId, String pvv, String accountNumber, String currencyCode, boolean sendPinBySms) {
         Currency currency = currencyRepository.findByIsoCode(currencyCode).orElseThrow(() ->
                 new RegistrationException(EC1062, String.format("Currency '%s' does not exist", currencyCode)));
@@ -77,7 +77,7 @@ public class EntityRegistrationServiceImpl implements EntityRegistrationService 
     }
 
     @Override
-    @Transactional
+    @Transactional(timeout = 30)
     public RegisterResponse registerEntity(RegisterEntityRequest request, String pin, String internalId, String pvv, String accountNumber, Currency currency, boolean sendPinBySms) {
         EntityClass entity = saveEntity(request, internalId, pvv, Map.of());
         if (request.getMobile() != null) {

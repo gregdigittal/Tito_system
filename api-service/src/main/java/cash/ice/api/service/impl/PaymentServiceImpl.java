@@ -31,7 +31,7 @@ public class PaymentServiceImpl implements PaymentService {
 
     @Override
     public void addPayment(PaymentRequest paymentRequest) {
-        log.debug("> " + paymentRequest);
+        log.debug("> {}", paymentRequest);
         try {
             kafkaSender.sendPaymentRequest(paymentRequest.getVendorRef(), paymentRequest);
         } catch (Exception e) {

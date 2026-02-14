@@ -69,6 +69,13 @@ public class KeycloakServiceImpl implements KeycloakService {
         updatePerfStopwatch = new PerfStopwatch();
     }
 
+    @PreDestroy
+    public void cleanup() {
+        if (adminKeycloak != null) {
+            adminKeycloak.close();
+        }
+    }
+
     @Override
     public String createStaffMember(String entityId, String password, String firstName, String lastName, String email) {
         return createUser(userNamePrefix, entityId, password, firstName, lastName, email);

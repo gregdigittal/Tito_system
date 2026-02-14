@@ -32,7 +32,7 @@ public class SweepRuleMozServiceImpl implements SweepRuleMozService {
     }
 
     @Override
-    @Transactional
+    @Transactional(timeout = 30)
     public SweepRuleMoz create(Integer accountId, Integer authEntityId, String destinationType, String destinationRef, String triggerType,
                                String scheduleExpression, BigDecimal thresholdAmount, Boolean active) {
         ensureAccountOwnedByEntity(accountId, authEntityId);
@@ -50,7 +50,7 @@ public class SweepRuleMozServiceImpl implements SweepRuleMozService {
     }
 
     @Override
-    @Transactional
+    @Transactional(timeout = 30)
     public SweepRuleMoz update(Integer id, Integer authEntityId, String destinationType, String destinationRef,
                                String triggerType, String scheduleExpression, BigDecimal thresholdAmount, Boolean active) {
         SweepRule rule = sweepRuleRepository.findById(id)
@@ -67,7 +67,7 @@ public class SweepRuleMozServiceImpl implements SweepRuleMozService {
     }
 
     @Override
-    @Transactional
+    @Transactional(timeout = 30)
     public boolean delete(Integer id, Integer authEntityId) {
         return sweepRuleRepository.findById(id)
                 .filter(r -> {

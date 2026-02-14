@@ -157,7 +157,7 @@ public class EntityMozServiceImpl implements EntityMozService {
     }
 
     @Override
-    @Transactional
+    @Transactional(timeout = 30)
     public EntityClass addOrUpdateMsisdn(EntityClass entity, MsisdnType type, String mobile, String oldMobile, String description, String otp) {
         if (mozProperties.isLinkTagCheckOtp()) {
             otpService.validateOtp(OtpType.MOZ_MSISDN_UPDATE, mobile, otp);

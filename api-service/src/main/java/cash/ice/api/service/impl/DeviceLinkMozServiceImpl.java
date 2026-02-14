@@ -90,7 +90,7 @@ public class DeviceLinkMozServiceImpl implements DeviceLinkMozService {
     }
 
     @Override
-    @Transactional
+    @Transactional(timeout = 30)
     public TagInfoMoz linkNfcTag(LinkNfcTagRequest nfcTag, String otp) {
         if (nfcTag.getDevice() != null && !nfcTag.getDevice().isBlank()) {
             validateNfcTagForLinking(nfcTag.getDevice());
@@ -133,7 +133,7 @@ public class DeviceLinkMozServiceImpl implements DeviceLinkMozService {
     }
 
     @Override
-    @Transactional
+    @Transactional(timeout = 30)
     public TagInfoMoz delinkNfcTag(String identifier, Integer authEntityId) {
         Initiator tag = initiatorRepository.findByIdentifier(identifier).orElseThrow(() ->
                 new ICEcashException(String.format("Tag '%s' does not exist", identifier), EC1066));

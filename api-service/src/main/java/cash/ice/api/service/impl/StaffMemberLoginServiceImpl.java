@@ -44,7 +44,7 @@ public class StaffMemberLoginServiceImpl implements StaffMemberLoginService {
     private final StaffProperties staffProperties;
 
     @Override
-    @Transactional
+    @Transactional(timeout = 30)
     public StaffMember registerStaffMember(StaffMember staffMember, String password) {
         if (staffMemberService.isStaffMemberExist(staffMember.getEmail())) {
             throw new RegistrationException("such email already registered", ErrorCodes.EC1042);
@@ -165,7 +165,7 @@ public class StaffMemberLoginServiceImpl implements StaffMemberLoginService {
     }
 
     @Override
-    @Transactional
+    @Transactional(timeout = 30)
     public boolean forgotPassword(String email, String url, boolean sendEmail, String ip) {
         StaffMember staffMember = staffMemberService.findStaffMemberOrElse(email, () -> {
             log.warn("Forgot password attempt for unknown email: {}, IP: {}", email, ip);
@@ -185,7 +185,7 @@ public class StaffMemberLoginServiceImpl implements StaffMemberLoginService {
     }
 
     @Override
-    @Transactional
+    @Transactional(timeout = 30)
     public StaffMember resetStaffMemberPassword(String key, String newPassword) {
         checkPinIsValid(newPassword);
         String login = mfaService.lookupLoginByForgotPasswordKey(key);
@@ -197,7 +197,7 @@ public class StaffMemberLoginServiceImpl implements StaffMemberLoginService {
     }
 
     @Override
-    @Transactional
+    @Transactional(timeout = 30)
     public StaffMember updateStaffMemberPassword(AuthUser authUser, String oldPassword, String newPassword) {
         checkPinIsValid(newPassword);
         StaffMember staffMember = permissionsService.getAuthStaffMember(authUser);
@@ -213,7 +213,7 @@ public class StaffMemberLoginServiceImpl implements StaffMemberLoginService {
     }
 
     @Override
-    @Transactional
+    @Transactional(timeout = 30)
     public StaffMember updateStaffMemberLoginStatus(String email, LoginStatus loginStatus) {
         StaffMember staffMember = staffMemberService.findStaffMember(email);
         if (loginStatus == LoginStatus.ACTIVE && staffMember.getLoginStatus() != LoginStatus.ACTIVE) {

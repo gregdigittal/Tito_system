@@ -36,7 +36,7 @@ public class EntityLoginServiceMozImpl extends EntityLoginServiceImpl {
     }
 
     @Override
-    @Transactional
+    @Transactional(timeout = 30)
     public LoginResponse makePosDeviceLogin(String deviceSerial, LoginEntityRequest loginEntityRequest) {
         LoginResponse loginResponse = makeLogin(loginEntityRequest);
         Device device = deviceRepository.findBySerial(deviceSerial).orElseThrow(() ->

@@ -99,7 +99,7 @@ public class DocumentsServiceMinioImpl implements DocumentsService {
         return documentRepository.findJournalsDocuments(journalIds != null ? journalIds : List.of(), pageable);
     }
 
-    @Transactional
+    @Transactional(timeout = 30)
     @Override
     public Document uploadJournalDocument(byte[] content, Document document) throws DocumentUploadingException {
         DocumentType journalType = documentTypeRepository.findByName("Journal").orElseThrow(() ->
@@ -108,7 +108,7 @@ public class DocumentsServiceMinioImpl implements DocumentsService {
         return uploadDocument(content, document);
     }
 
-    @Transactional
+    @Transactional(timeout = 30)
     @Override
     public Document uploadKenDocument(byte[] content, String documentType, Document document) throws DocumentUploadingException {
         Country kenCountry = countryRepository.findByIsoCode(Country.KEN).orElseThrow(() ->
@@ -131,7 +131,7 @@ public class DocumentsServiceMinioImpl implements DocumentsService {
         }
     }
 
-    @Transactional
+    @Transactional(timeout = 30)
     @Override
     public Document uploadDocument(byte[] content, Document document) throws DocumentUploadingException {
         checkDocumentIds(document);
@@ -152,7 +152,7 @@ public class DocumentsServiceMinioImpl implements DocumentsService {
         }
     }
 
-    @Transactional
+    @Transactional(timeout = 30)
     @Override
     public void updateDocument(DocumentView documentView) {
         Document document = documentRepository.findById(documentView.getId()).orElseThrow(() ->
@@ -165,7 +165,7 @@ public class DocumentsServiceMinioImpl implements DocumentsService {
         documentRepository.save(document);
     }
 
-    @Transactional
+    @Transactional(timeout = 30)
     @Override
     public void deleteDocument(Integer id) throws Exception {
         Document document = documentRepository.findById(id).orElseThrow(() -> new DocumentNotFoundException(id));

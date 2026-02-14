@@ -109,7 +109,7 @@ public class StaffMemberServiceImpl implements StaffMemberService {
     }
 
     @Override
-    @Transactional
+    @Transactional(timeout = 30)
     public StaffMember createNewStaffMember(StaffMember staffMember, String url, boolean sendEmail) {
         if (isStaffMemberExist(staffMember.getEmail())) {
             throw new RegistrationException("such email already registered", ErrorCodes.EC1042);
@@ -147,7 +147,7 @@ public class StaffMemberServiceImpl implements StaffMemberService {
     }
 
     @Override
-    @Transactional
+    @Transactional(timeout = 30)
     public StaffMember updateStaffMember(StaffMember staffMember, StaffMember staffMemberDetails, @Nullable StaffMember updater, @Nullable ConfigInput config, boolean sendEmail) {
         boolean emailChanged = !Objects.equals(staffMemberDetails.getEmail(), staffMember.getEmail());
         List<String> changeDescriptions = getChangeDescriptions(staffMemberDetails, staffMember);
@@ -236,13 +236,13 @@ public class StaffMemberServiceImpl implements StaffMemberService {
     }
 
     @Override
-    @Transactional
+    @Transactional(timeout = 30)
     public StaffMember deleteStaffMember(Integer id) {
         return deleteStaffMember(getStaffMemberById(id));
     }
 
     @Override
-    @Transactional
+    @Transactional(timeout = 30)
     public StaffMember deleteStaffMember(AuthUser authUser) {
         return deleteStaffMember(permissionsService.getAuthStaffMember(authUser));
     }

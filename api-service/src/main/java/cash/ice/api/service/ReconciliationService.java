@@ -21,7 +21,7 @@ public class ReconciliationService {
 
     private final ReconciliationRunRepository reconciliationRunRepository;
 
-    @Transactional
+    @Transactional(timeout = 30)
     public void runForDate(LocalDate businessDate) {
         LocalDateTime started = LocalDateTime.now();
         ReconciliationRun run = new ReconciliationRun()

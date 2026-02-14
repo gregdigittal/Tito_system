@@ -83,13 +83,13 @@ public class EntityKenController {
 
     @MutationMapping
     public PaymentResponse makePaymentFNDS(@Argument PaymentRequest paymentRequest) {
-        log.info("> " + paymentRequest);
+        log.info("> {}", paymentRequest);
         return entityKenService.makePayment(paymentRequest);
     }
 
     @MutationMapping
     public PaymentResponse makeBulkPaymentFNDS(@Argument List<PaymentRequest> payments) {
-        log.info("> bulk payment: " + payments);
+        log.info("> bulk payment: {}", payments);
         return entityKenService.makeBulkPayment(payments);
     }
 

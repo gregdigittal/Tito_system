@@ -48,7 +48,7 @@ public class EntityLoginServiceImpl implements EntityLoginService {
     private final EntitiesProperties entitiesProperties;
 
     @Override
-    @Transactional
+    @Transactional(timeout = 30)
     public AccessTokenResponse simpleLogin(LoginEntityRequest request) {
         EntityClass entity = findActiveEntity(request.getUsername());
         if (entity.getLoginStatus() != LoginStatus.ACTIVE) {
@@ -64,7 +64,7 @@ public class EntityLoginServiceImpl implements EntityLoginService {
     }
 
     @Override
-    @Transactional
+    @Transactional(timeout = 30)
     public LoginResponse makeLogin(LoginEntityRequest request) {
         EntityClass entity = findActiveEntity(request.getUsername());
         // Keycloak resource-owner password grant expects the plain password, not the PVV (stored hash)
@@ -148,7 +148,7 @@ public class EntityLoginServiceImpl implements EntityLoginService {
         return savedEntity;
     }
 
-    @Transactional
+    @Transactional(timeout = 30)
     @Override
     public EntityClass updateEntityPassword(AuthUser authUser, String oldPassword, String newPassword) {
         checkPinIsValid(newPassword);
@@ -164,7 +164,7 @@ public class EntityLoginServiceImpl implements EntityLoginService {
         }
     }
 
-    @Transactional
+    @Transactional(timeout = 30)
     @Override
     public EntityClass updateEntityLoginStatus(String enterId, LoginStatus loginStatus) {
         EntityClass entity = findEntity(enterId);
@@ -180,7 +180,7 @@ public class EntityLoginServiceImpl implements EntityLoginService {
     }
 
     @Override
-    @Transactional
+    @Transactional(timeout = 30)
     public EntityClass generateNewEntityPassword(Integer entityId) {
         EntityClass entity = entityService.getEntityById(entityId);
         String newPin = generateSecurePassword();

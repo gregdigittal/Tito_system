@@ -29,7 +29,7 @@ public class LinkedBankAccountMozServiceImpl implements LinkedBankAccountMozServ
     }
 
     @Override
-    @Transactional
+    @Transactional(timeout = 30)
     public LinkedBankAccountMoz link(Integer entityId, String bankId, String branchCode, String accountNumber, String accountName, String currency) {
         LinkedBankAccount entity = new LinkedBankAccount()
                 .setEntityId(entityId)
@@ -45,7 +45,7 @@ public class LinkedBankAccountMozServiceImpl implements LinkedBankAccountMozServ
     }
 
     @Override
-    @Transactional
+    @Transactional(timeout = 30)
     public boolean unlink(Integer id, Integer entityId) {
         return linkedBankAccountRepository.findByIdAndEntityId(id, entityId)
                 .map(acc -> {

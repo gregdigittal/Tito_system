@@ -28,7 +28,7 @@ public class SettlementRuleMozServiceImpl implements SettlementRuleMozService {
     }
 
     @Override
-    @Transactional
+    @Transactional(timeout = 30)
     public SettlementRuleMoz create(Integer entityId, String ruleName, String shareJson, Boolean active) {
         SettlementRule rule = new SettlementRule()
                 .setEntityId(entityId)
@@ -41,7 +41,7 @@ public class SettlementRuleMozServiceImpl implements SettlementRuleMozService {
     }
 
     @Override
-    @Transactional
+    @Transactional(timeout = 30)
     public SettlementRuleMoz update(Integer id, Integer authEntityId, String ruleName, String shareJson, Boolean active) {
         SettlementRule rule = settlementRuleRepository.findById(id)
                 .orElseThrow(() -> new ICEcashException("Settlement rule not found", ErrorCodes.EC1022));
@@ -56,7 +56,7 @@ public class SettlementRuleMozServiceImpl implements SettlementRuleMozService {
     }
 
     @Override
-    @Transactional
+    @Transactional(timeout = 30)
     public boolean delete(Integer id, Integer authEntityId) {
         return settlementRuleRepository.findById(id)
                 .filter(r -> r.getEntityId().equals(authEntityId))

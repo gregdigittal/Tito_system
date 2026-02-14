@@ -93,7 +93,7 @@ public class FileMozServiceImpl implements FileMozService {
         }
     }
 
-    @Transactional
+    @Transactional(timeout = 30)
     @Override
     public Document uploadKycDocument(IdTypeMoz idType, String idNumber, byte[] bytes, Document documentData) {
         if (idType != null) {

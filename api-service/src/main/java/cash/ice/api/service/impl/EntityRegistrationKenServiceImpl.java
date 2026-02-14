@@ -49,7 +49,7 @@ public class EntityRegistrationKenServiceImpl implements EntityRegistrationKenSe
     private final KenProperties kenProperties;
 
     @Override
-    @Transactional
+    @Transactional(timeout = 30)
     public RegisterKenResponse registerUser(RegisterEntityKenRequest request, AuthUser authUser, String otp, boolean removeDocumentsOnFail) {
         try {
             validateRequest(request, otp);

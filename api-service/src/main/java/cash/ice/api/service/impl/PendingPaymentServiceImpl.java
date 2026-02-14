@@ -82,7 +82,7 @@ public class PendingPaymentServiceImpl implements PendingPaymentService {
     }
 
     @Override
-    @Transactional
+    @Transactional(timeout = 30)
     public PaymentView createPayment(PaymentView paymentView, AuthUser authUser) {
         EntityClass authEntity = permissionsService.getAuthEntity(authUser);
         log.debug("  authEntity: {}, {} {}, account: {}, realm: {}", authEntity.getId(), authEntity.getFirstName(), authEntity.getLastName(),
@@ -111,7 +111,7 @@ public class PendingPaymentServiceImpl implements PendingPaymentService {
     }
 
     @Override
-    @Transactional
+    @Transactional(timeout = 30)
     public PaymentView updatePayment(PaymentView paymentView, AuthUser authUser) {
         EntityClass authEntity = permissionsService.getAuthEntity(authUser);
         log.debug("  authEntity: {}, {} {}, account: {}, realm: {}", authEntity.getId(), authEntity.getFirstName(), authEntity.getLastName(),
@@ -165,7 +165,7 @@ public class PendingPaymentServiceImpl implements PendingPaymentService {
     }
 
     @Override
-    @Transactional
+    @Transactional(timeout = 30)
     public PaymentView uploadPaymentLines(Integer paymentId, String template, InputStream inputStream, AuthUser authUser) throws BulkPaymentParseException {
         Payment payment = getPayment(paymentId);
         if (!permissionsService.checkWriteRights(authUser, payment.getAccountId())) {
@@ -191,7 +191,7 @@ public class PendingPaymentServiceImpl implements PendingPaymentService {
     }
 
     @Override
-    @Transactional
+    @Transactional(timeout = 30)
     public PaymentView approvePayment(Integer paymentId, AuthUser authUser) {
         return approvePayment(getPayment(paymentId), authUser);
     }
@@ -243,7 +243,7 @@ public class PendingPaymentServiceImpl implements PendingPaymentService {
     }
 
     @Override
-    @Transactional
+    @Transactional(timeout = 30)
     public PaymentCollectionView createPaymentCollection(PaymentCollectionView collectionView, AuthUser authUser) {
         PaymentCollection paymentCollection = paymentCollectionRepository.save(
                 collectionView.toPaymentCollection().setCreatedDate(Tool.currentDateTime()));
@@ -261,7 +261,7 @@ public class PendingPaymentServiceImpl implements PendingPaymentService {
     }
 
     @Override
-    @Transactional
+    @Transactional(timeout = 30)
     public void rejectPaymentCollection(Integer paymentCollectionId, AuthUser authUser) {
         if (!paymentCollectionRepository.existsById(paymentCollectionId)) {
             throw new ICEcashException("Unknown payment collection ID", EC1024);
@@ -274,7 +274,7 @@ public class PendingPaymentServiceImpl implements PendingPaymentService {
     }
 
     @Override
-    @Transactional
+    @Transactional(timeout = 30)
     public void approvePaymentCollection(Integer paymentCollectionId, AuthUser authUser) {
         if (!paymentCollectionRepository.existsById(paymentCollectionId)) {
             throw new ICEcashException("Unknown payment collection ID", EC1024);

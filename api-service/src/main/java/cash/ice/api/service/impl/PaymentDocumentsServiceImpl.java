@@ -61,7 +61,7 @@ public class PaymentDocumentsServiceImpl implements PaymentDocumentsService {
     }
 
     @Override
-    @Transactional
+    @Transactional(timeout = 30)
     public void uploadDocument(String filename, byte[] content, Integer paymentId, AuthUser authUser) throws DocumentUploadingException {
         Payment payment = getPayment(paymentId);
         if (!permissionsService.checkWriteRights(authUser, payment.getAccountId())) {
@@ -91,7 +91,7 @@ public class PaymentDocumentsServiceImpl implements PaymentDocumentsService {
     }
 
     @Override
-    @Transactional
+    @Transactional(timeout = 30)
     public void deleteDocument(Integer paymentId, String documentId, AuthUser authUser) throws Exception {
         Payment payment = getPayment(paymentId);
         if (!permissionsService.checkWriteRights(authUser, payment.getAccountId())) {

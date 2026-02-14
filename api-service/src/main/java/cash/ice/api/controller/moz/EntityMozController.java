@@ -198,13 +198,13 @@ public class EntityMozController {
 
     @MutationMapping
     public PaymentResponse makePaymentMoz(@Argument PaymentRequest paymentRequest) {
-        log.info("> " + paymentRequest);
+        log.info("> {}", paymentRequest);
         return me60MozService.makePayment(paymentRequest);
     }
 
     @MutationMapping
     public PaymentResponse makeBulkPaymentMoz(@Argument List<PaymentRequest> payments) {
-        log.info("> bulk payment: " + payments);
+        log.info("> bulk payment: {}", payments);
         return me60MozService.makeBulkPayments(payments);
     }
 
