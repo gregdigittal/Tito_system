@@ -59,6 +59,9 @@ ice:
         - http://localhost:5000
         - http://localhost:3000
         - https://tito-ui-client.vercel.app
+      # Vercel preview/branch URLs (e.g. tito-ui-client-3j859rdqw-digittal.vercel.app)
+      allowed-origin-patterns:
+        - https://*.vercel.app
       allowed-methods: GET,POST,PUT,DELETE,PATCH
     notification:
       fake-sms-mobiles: 000000000000, 263000000000, 263000000001
