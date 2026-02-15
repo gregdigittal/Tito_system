@@ -77,7 +77,7 @@ public class EntityKenController {
 
     @QueryMapping
     public List<EntityProduct> deviceProductsFNDS(@Argument String deviceSerialOrCode) {
-        log.info("> GET products (FNDS) for device: " + deviceSerialOrCode);
+        log.info("> GET products (FNDS) for device: {}", deviceSerialOrCode);
         return entityKenService.getDeviceProductsFNDS(deviceSerialOrCode);
     }
 

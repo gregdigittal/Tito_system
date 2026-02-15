@@ -46,7 +46,7 @@ public class UserPinUatRestController {
 
     @GetMapping
     public List<String> getUserPin(@RequestParam String accountNumber) {
-        log.info("GET pin for accountNumber: " + accountNumber);
+        log.info("GET pin for accountNumber: {}", accountNumber);
         List<Account> accounts = accountRepository.findByAccountNumber(accountNumber);
         return accounts.stream().map(account -> {
             EntityClass entity = entityRepository.findById(account.getEntityId())
@@ -57,14 +57,14 @@ public class UserPinUatRestController {
 
     @GetMapping("/entity")
     public String getEntityPassword(@RequestParam String username) {
-        log.info("GET password for entity: " + username);
+        log.info("GET password for entity: {}", username);
         EntityClass entity = entityLoginService.findEntity(username);
         return securityPvvService.restorePin(entity.getInternalId(), entity.getPvv(), entitiesProperties.getPasswordDigitsAmount());
     }
 
     @GetMapping("/entity/otp")
     public String getEntityOtpPin(@RequestParam String entityId) {
-        log.info("GET pin for entity OTP: " + entityId);
+        log.info("GET pin for entity OTP: {}", entityId);
         LoginData loginData = loginDataStore.findByLogin(entityId)
                 .orElseThrow(() -> new UnexistingUserException(entityId));
         if (loginData.getOtpPvv() == null) {
@@ -75,14 +75,14 @@ public class UserPinUatRestController {
 
     @GetMapping("/entity/mfa/secret")
     public String getEntitySecretCode(@RequestParam String entityId) {
-        log.info("GET secretCode for entity: " + entityId);
+        log.info("GET secretCode for entity: {}", entityId);
         EntityClass entity = entityRepository.findById(Integer.valueOf(entityId)).orElseThrow();
         return entity.getMfaSecretCode();
     }
 
     @GetMapping("/staff")
     public String getStaffPin(@RequestParam String email) {
-        log.info("GET pin for staff member: " + email);
+        log.info("GET pin for staff member: {}", email);
         StaffMember staffMember = staffMemberRepository.findStaffMemberByEmail(email)
                 .orElseThrow(() -> new UnexistingUserException(email));
         return securityPvvService.restorePin(staffMember.getPinKey(), staffMember.getPvv(), staffProperties.getPasswordDigitsAmount());
@@ -90,7 +90,7 @@ public class UserPinUatRestController {
 
     @GetMapping("/staff/otp")
     public String getOtpPin(@RequestParam String email) {
-        log.info("GET pin for staff member OTP: " + email);
+        log.info("GET pin for staff member OTP: {}", email);
         LoginData loginData = loginDataStore.findByLogin(email)
                 .orElseThrow(() -> new UnexistingUserException(email));
         if (loginData.getOtpPvv() == null) {
@@ -101,7 +101,7 @@ public class UserPinUatRestController {
 
     @GetMapping("/staff/email/key")
     public String getForgotPasswordEmailKey(@RequestParam String email) {
-        log.info("GET forgot password email key: " + email);
+        log.info("GET forgot password email key: {}", email);
         LoginData loginData = loginDataStore.findByLogin(email)
                 .orElseThrow(() -> new UnexistingUserException(email));
         if (loginData.getForgotPasswordKey() == null) {
@@ -112,7 +112,7 @@ public class UserPinUatRestController {
 
     @GetMapping("/initiator")
     public String getInitiatorPin(@RequestParam String initiator) {
-        log.info("GET pin for initiator: " + initiator);
+        log.info("GET pin for initiator: {}", initiator);
         Initiator card = initiatorRepository.findByIdentifier(initiator).orElseThrow(() ->
                 new ICEcashException(String.format("Initiator: %s does not exist", initiator), ErrorCodes.EC1012));
         return securityPvvService.restorePin(initiator, card.getPvv(), 4);

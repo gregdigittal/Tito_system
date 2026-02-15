@@ -24,7 +24,7 @@ public class PaymentDocumentsUatRestController extends PaymentDocumentsRestContr
     @Override
     protected AuthUser getAuthUser() {
         if (authUser != null) {
-            log.info("Replacing auth token to: " + authUser);
+            log.info("Replacing auth token to: {}", authUser);
             return authUser;
         } else {
             return super.getAuthUser();

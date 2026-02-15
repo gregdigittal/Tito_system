@@ -20,7 +20,7 @@ public class EntityLoginMozController {
 
     @MutationMapping
     public LoginResponse loginUserMoz(@Argument LoginEntityRequest request) {
-        log.info("> User Login (Moz) request: " + request);
+        log.info("> User Login (Moz) request: {}", request);
         return entityLoginServiceMoz.makeLogin(request);
     }
 

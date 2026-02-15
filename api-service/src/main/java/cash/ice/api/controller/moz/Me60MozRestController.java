@@ -41,7 +41,7 @@ public class Me60MozRestController {
     @PostMapping("/device/register")
     @ResponseStatus(code = OK)
     public String registerNewDevice(@Valid @RequestBody MozAutoRegisterDeviceRequest request) {
-        log.info("> device register: " + request);
+        log.info("> device register: {}", request);
         return me60MozService.registerDevice(request);
     }
 
@@ -62,42 +62,42 @@ public class Me60MozRestController {
     @PostMapping("/tag/link/register")
     @ResponseStatus(code = OK)
     public String linkTagRegisterTag(@Valid @RequestBody LinkNfcTagRequest request) {
-        log.info("> link tag register (3rd step): " + request);
+        log.info("> link tag register (3rd step): {}", request);
         return String.valueOf(me60MozService.linkTagRegister(request));
     }
 
     @GetMapping("/account/info")
     @ResponseStatus(code = OK)
     public MozAccountInfoResponse accountInfo(@Valid @RequestBody LinkNfcTagRequest request) {
-        log.info("> GET account info: " + request.getDeviceSerial());
+        log.info("> GET account info: {}", request.getDeviceSerial());
         return me60MozService.getAccountInfo(request.getDeviceSerial());
     }
 
     @PostMapping("/account/info")
     @ResponseStatus(code = OK)
     public MozAccountInfoResponse accountInfoByDeviceSerial(@Valid @RequestBody LinkNfcTagRequest request) {
-        log.info("> POST account info: " + request.getDeviceSerial());
+        log.info("> POST account info: {}", request.getDeviceSerial());
         return me60MozService.getAccountInfo(request.getDeviceSerial());
     }
 
     @PostMapping("/payment")
     @ResponseStatus(code = OK)
     public PaymentResponse makePayment(@Valid @RequestBody PaymentRequestMoz paymentRequestMoz) {
-        log.debug("> moz payment: " + paymentRequestMoz);
+        log.debug("> moz payment: {}", paymentRequestMoz);
         return me60MozService.makePayment(paymentRequestMoz.toPaymentRequest());
     }
 
     @PostMapping("/payment/bulk")
     @ResponseStatus(code = OK)
     public List<PaymentResponse> makeBulkPayment(@Valid @RequestBody List<PaymentRequestMoz> paymentRequestMozList) {
-        log.debug("> moz bulk payment: " + paymentRequestMozList);
+        log.debug("> moz bulk payment: {}", paymentRequestMozList);
         return me60MozService.makeBulkPayment(paymentRequestMozList.stream().map(PaymentRequestMoz::toPaymentRequest).toList());
     }
 
     @PostMapping("/payment/offload")
     @ResponseStatus(code = OK)
     public PaymentResponse makeOffloadPayment(@Valid @RequestBody OffloadPaymentRequestMoz offloadPaymentRequest) {
-        log.debug("> moz offload payment: " + offloadPaymentRequest);
+        log.debug("> moz offload payment: {}", offloadPaymentRequest);
         return me60MozService.makeOffloadPayment(offloadPaymentRequest);
     }
 

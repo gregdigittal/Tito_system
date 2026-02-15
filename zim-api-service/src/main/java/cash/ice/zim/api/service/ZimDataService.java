@@ -175,7 +175,7 @@ public class ZimDataService {
         return spResult;
     }
 
-    @Transactional
+    @Transactional(timeout = 30)
     public void cancelPaymentApprovement(PaymentRequestZim request, PaymentResponseZim response, Object spResult) {
         if (spResult instanceof Map spResultMap) {
             if ("p_Create_Transaction_Card".equals(spResultMap.get("spName"))) {

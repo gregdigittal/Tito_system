@@ -22,7 +22,7 @@ import java.util.Optional;
 /**
  * Phase 8-6: Sweep execution — applies active sweep rules (wallet → mobile money or bank).
  * Triggered by EOD job (8-11) or scheduler. Cash-out integrated via EntityMozService.cashOutToMobileMoneyByAccountId;
- * bank transfer not implemented.
+ * bank transfer (BANK destination) not yet implemented — see TODO in executeRule().
  */
 @Service
 @Slf4j
@@ -96,6 +96,9 @@ public class SweepExecutionService {
             }
         } else if ("BANK".equalsIgnoreCase(rule.getDestinationType())) {
             // TODO(backlog): Implement bank transfer when provider available
+            //   - Integrate with bank transfer API
+            //   - Debit account balance on success
+            //   - Record transaction
             log.info("Sweep rule id={} BANK destination (stub — bank transfer not yet implemented)", rule.getId());
         } else {
             log.debug("Sweep rule id={} destinationType={} unsupported", rule.getId(), rule.getDestinationType());

@@ -25,6 +25,7 @@ spring:
 spring.graphql.schema.printer.enabled: true
 ice:
   cash:
+    # security-disabled: false is the default for all profiles; only the 'local' profile may set it true (see profile block below).
     # Phase 6: deployment config (country, terminology, currencies, locale). Override via env (e.g. ICE_CASH_DEPLOYMENT_COUNTRY_CODE).
     deployment:
       country-code: KE

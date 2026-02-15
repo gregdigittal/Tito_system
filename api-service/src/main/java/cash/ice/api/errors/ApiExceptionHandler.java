@@ -21,6 +21,10 @@ import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
+
+import jakarta.validation.ConstraintViolation;
 
 @ControllerAdvice
 @Slf4j
@@ -110,7 +114,35 @@ public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
 
     @ExceptionHandler(value = {ConstraintViolationException.class})
     public ResponseEntity<ErrorResponse> handleException(ConstraintViolationException ex) {
-        return new ResponseEntity<>(new ErrorResponse(ErrorCodes.EC1001, "Validation failed. Please check your input."), HttpStatus.BAD_REQUEST);
+        String userMessage = formatConstraintViolations(ex.getConstraintViolations());
+        return new ResponseEntity<>(new ErrorResponse(ErrorCodes.EC1001, userMessage), HttpStatus.BAD_REQUEST);
+    }
+
+    /**
+     * Maps constraint violations to a single user-friendly message (field: message) without exposing internal details.
+     */
+    private static String formatConstraintViolations(Set<? extends ConstraintViolation<?>> violations) {
+        if (violations == null || violations.isEmpty()) {
+            return "Validation failed. Please check your input.";
+        }
+        String details = violations.stream()
+                .map(v -> {
+                    String path = getPropertyPath(v);
+                    String message = v.getMessage();
+                    return path != null && !path.isEmpty() ? path + ": " + message : message;
+                })
+                .collect(Collectors.joining("; "));
+        return "Validation failed. " + details;
+    }
+
+    private static String getPropertyPath(ConstraintViolation<?> v) {
+        String name = null;
+        for (jakarta.validation.Path.Node node : v.getPropertyPath()) {
+            if (node.getName() != null && !node.getName().isEmpty()) {
+                name = node.getName();
+            }
+        }
+        return name;
     }
 
     @Override

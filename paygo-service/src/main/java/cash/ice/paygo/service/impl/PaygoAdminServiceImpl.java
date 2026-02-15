@@ -43,7 +43,7 @@ public class PaygoAdminServiceImpl implements PaygoAdminService {
     }
 
     @Override
-    @Transactional
+    @Transactional(timeout = 30)
     public Merchant addMerchant(MerchantCreate request) {
         PaygoMerchant paygoMerchant = paygoMerchantRepository.save(new PaygoMerchant());
         request.setMspReference(paygoMerchant.getId());
@@ -64,7 +64,7 @@ public class PaygoAdminServiceImpl implements PaygoAdminService {
     }
 
     @Override
-    @Transactional
+    @Transactional(timeout = 30)
     public Merchant updateMerchant(Merchant merchant) {
         PaygoMerchant paygoMerchant = paygoMerchantRepository.findByMerchantId(merchant.getId()).orElseThrow();
         merchant.setMspReference(paygoMerchant.getId());
@@ -108,7 +108,7 @@ public class PaygoAdminServiceImpl implements PaygoAdminService {
     }
 
     @Override
-    @Transactional
+    @Transactional(timeout = 30)
     public Credential addCredential(CredentialCreate request) {
         String merchantId = request.getMerchantId();
         request.setMerchantId(null);
@@ -140,7 +140,7 @@ public class PaygoAdminServiceImpl implements PaygoAdminService {
     }
 
     @Override
-    @Transactional
+    @Transactional(timeout = 30)
     public void updateCredential(Credential credential) {
         PaygoMerchant paygoMerchant = paygoMerchantRepository.findByMerchantId(credential.getMerchantId()).orElseThrow();
         String merchantCredentialId = credential.getMerchantCredentialId();

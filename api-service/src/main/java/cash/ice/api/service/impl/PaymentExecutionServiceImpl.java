@@ -71,7 +71,7 @@ public class PaymentExecutionServiceImpl implements PaymentExecutionService {
     }
 
     private void sendPaymentRequest(PaymentRequest paymentRequest) {
-        log.info("  sending payment: " + paymentRequest);
+        log.info("  sending payment: {}", paymentRequest);
         kafkaSender.sendPaymentRequest(paymentRequest.getVendorRef(), paymentRequest);
     }
 }

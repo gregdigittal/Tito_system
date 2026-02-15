@@ -37,7 +37,7 @@ public class LedgerPaymentService implements PaymentService {
     private final TransactionLinesRepository transactionLinesRepository;
     private final AccountBalanceService accountBalanceService;
 
-    @Transactional
+    @Transactional(timeout = 30)
     @Override
     public void processPayment(FeesData feesData, Headers headers) {
         log.info("Ledger process payment for vendorRef: {}", feesData.getVendorRef());
@@ -98,7 +98,7 @@ public class LedgerPaymentService implements PaymentService {
         accountBalanceService.updateAccountBalances(accountBalanceChangeMap);
     }
 
-    @Transactional
+    @Transactional(timeout = 30)
     @Override
     public void processRefund(ErrorData errorData) {
         log.info(">>>>>> Ledger process refund for vendorRef: {}", errorData.getFeesData().getVendorRef());

@@ -323,9 +323,4 @@ public class KeycloakServiceImpl implements KeycloakService {
         passwordCredentials.setValue(password);
         return passwordCredentials;
     }
-
-    @PreDestroy
-    public void preDestroy() {
-        adminKeycloak.close();
-    }
 }

@@ -65,7 +65,7 @@ public class PaymentsController {
 
     @MutationMapping
     public TransactionLimit addOrUpdateTransactionLimit(@Argument TransactionLimitView transactionLimit) {
-        log.info("> Update TransactionLimit: " + transactionLimit);
+        log.info("> Update TransactionLimit: {}", transactionLimit);
         return transactionLimitService.addOrUpdate(transactionLimit);
     }
 
@@ -77,7 +77,7 @@ public class PaymentsController {
 
     @MutationMapping
     public TransactionLimit deleteTransactionLimit(@Argument Integer id) {
-        log.info("> Delete TransactionLimit: " + id);
+        log.info("> Delete TransactionLimit: {}", id);
         return transactionLimitService.delete(id);
     }
 

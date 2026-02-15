@@ -19,13 +19,13 @@ public interface AccountRepository extends JpaRepository<Account, Integer> {
     List<Account> findByAccountNumberIn(List<String> accountNumbers);
 
     @Query(nativeQuery = true, value = "select * from account where account_number = :accountNumber " +
-            "union select * from account where account_number like concat(:accountNumber,'%')" +
-            "union select * from account where account_number like concat('%',:accountNumber)" +
-            "union select * from account where account_number like concat('%',:accountNumber,'%')",
+            "union select * from account where account_number like concat(:accountNumber,'%') escape '\\\\' " +
+            "union select * from account where account_number like concat('%',:accountNumber) escape '\\\\' " +
+            "union select * from account where account_number like concat('%',:accountNumber,'%') escape '\\\\'",
             countQuery = "select count(a.id) from (select * from account where account_number = :accountNumber " +
-                    "union select * from account where account_number like concat(:accountNumber,'%')" +
-                    "union select * from account where account_number like concat('%',:accountNumber)" +
-                    "union select * from account where account_number like concat('%',:accountNumber,'%')) as a")
+                    "union select * from account where account_number like concat(:accountNumber,'%') escape '\\\\' " +
+                    "union select * from account where account_number like concat('%',:accountNumber) escape '\\\\' " +
+                    "union select * from account where account_number like concat('%',:accountNumber,'%') escape '\\\\') as a")
     Page<Account> findPartialByAccountNumber(@Param("accountNumber") String accountNumber, Pageable pageable);
 
     Optional<Account> findByEntityIdAndAccountTypeId(Integer entityId, Integer accountTypeId);

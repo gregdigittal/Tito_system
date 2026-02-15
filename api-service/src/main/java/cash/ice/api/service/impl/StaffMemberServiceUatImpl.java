@@ -42,7 +42,7 @@ public class StaffMemberServiceUatImpl extends StaffMemberServiceImpl {
         if (config == null || !config.isNoEmails()) {
             super.sendUpdatedStaffMemberEmail(staffMember, updater, changeDescriptions, config, sendEmail);
         } else {
-            log.debug("  skip sending update email, changes: " + changeDescriptions);
+            log.debug("  skip sending update email, changes: {}", changeDescriptions);
         }
     }
 }

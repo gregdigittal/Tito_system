@@ -50,7 +50,7 @@ public class PendingPaymentRestController {
     @PostMapping
     @ResponseStatus(code = HttpStatus.CREATED)
     public PaymentView createPayment(@Valid @RequestBody PaymentView paymentView) {
-        log.debug("> POST " + paymentView);
+        log.debug("> POST {}", paymentView);
         AuthUser authUser = getAuthUser();
         return pendingPaymentService.createPayment(paymentView, authUser);
     }
@@ -90,7 +90,7 @@ public class PendingPaymentRestController {
     @PostMapping("/collections")
     @ResponseStatus(code = HttpStatus.CREATED)
     public PaymentCollectionView createPaymentCollection(@Valid @RequestBody PaymentCollectionView paymentCollection) {
-        log.debug("> POST " + paymentCollection);
+        log.debug("> POST {}", paymentCollection);
         AuthUser authUser = getAuthUser();
         return pendingPaymentService.createPaymentCollection(paymentCollection, authUser);
     }

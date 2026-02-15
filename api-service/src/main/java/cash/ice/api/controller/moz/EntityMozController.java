@@ -102,7 +102,7 @@ public class EntityMozController {
     @QueryMapping
     @ResponseStatus(code = OK)
     public MozAccountInfoResponse userSimpleAccountInfoMoz(@Argument String device) {
-        log.info("> GET simple account info (moz): " + device);
+        log.info("> GET simple account info (moz): {}", device);
         return me60MozService.getAccountInfo(device);
     }
 
@@ -120,7 +120,7 @@ public class EntityMozController {
 
     @MutationMapping
     public String registerDeviceMoz(@Argument MozAutoRegisterDeviceRequest request) {
-        log.info("> device register (moz): " + request);
+        log.info("> device register (moz): {}", request);
         return me60MozService.registerDevice(request);
     }
 
@@ -211,7 +211,7 @@ public class EntityMozController {
     @QueryMapping
     @PreAuthorize("@MozProperties.securityDisabled || isAuthenticated()")
     public EntityClass userMoz(@Argument Integer id, @Argument ConfigInput config) {
-        log.info("> GET user (moz): {}{}", id != null ? id : "current", config != null ? ", config: " + config : "");
+        log.info("> GET user (moz): {}, config: {}", id != null ? id : "current", config);
         EntityClass authEntity = entityMozService.getAuthEntity(getAuthUser(), config);
         return id == null ? authEntity : entityMozService.getEntityById(id);
     }
@@ -230,7 +230,7 @@ public class EntityMozController {
     @QueryMapping
     @PreAuthorize("@MozProperties.securityDisabled || isAuthenticated()")
     public Page<Initiator> userPaymentDevicesMoz(@Argument Integer id, @Argument ConfigInput config, @Argument int page, @Argument int size, @Argument SortInput sort) {
-        log.info("> GET user payment devices (moz): {}{}, page: {}, size: {}, sort: {}", id != null ? id : "current", config != null ? ", config: " + config : "", page, size, sort);
+        log.info("> GET user payment devices (moz): {}, config: {}, page: {}, size: {}, sort: {}", id != null ? id : "current", config, page, size, sort);
         EntityClass authEntity = entityMozService.getAuthEntity(getAuthUser(), config);
         return entityMozService.getEntityInitiators(authEntity, page, size, sort);
     }
@@ -244,7 +244,7 @@ public class EntityMozController {
     @QueryMapping
     @PreAuthorize("@MozProperties.securityDisabled || isAuthenticated()")
     public Page<Device> userPosDevicesMoz(@Argument boolean linkedToVehicle, @Argument Integer id, @Argument ConfigInput config, @Argument int page, @Argument int size, @Argument SortInput sort) {
-        log.info("> GET pos devices (moz): {}{}, linkedToVehicle: {}, page: {}, size: {}, sort: {}", id != null ? id : "current", config != null ? ", config: " + config : "", linkedToVehicle, page, size, sort);
+        log.info("> GET pos devices (moz): {}, config: {}, linkedToVehicle: {}, page: {}, size: {}, sort: {}", id != null ? id : "current", config, linkedToVehicle, page, size, sort);
         EntityClass authEntity = entityMozService.getAuthEntity(getAuthUser(), config);
         return entityMozService.getEntityDevices(authEntity, linkedToVehicle, page, size, sort);
     }

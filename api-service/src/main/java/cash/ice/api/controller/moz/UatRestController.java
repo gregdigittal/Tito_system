@@ -63,28 +63,28 @@ public class UatRestController {
     @GetMapping("/api/v1/user/backoffice/forgot/key")
     @ResponseStatus(code = OK)
     public String getBackofficeForgotKey(@RequestParam String login) {
-        log.info("> get backoffice forgot key: " + login);
+        log.info("> get backoffice forgot key: {}", login);
         return mfaService.getForgotPasswordKey(login);
     }
 
     @GetMapping("/api/v1/user/totp/code")
     @ResponseStatus(code = OK)
     public String getTotpCode(@RequestParam String mfaSecretCode) {
-        log.info("> get totp code: " + mfaSecretCode);
+        log.info("> get totp code: {}", mfaSecretCode);
         return mfaService.getTotpCode(mfaSecretCode);
     }
 
     @GetMapping("/api/v1/moz/me60/tag/link/otp")
     @ResponseStatus(code = OK)
     public String linkTagGetOtp(@RequestParam String requestId) {
-        log.info("> get otp: " + requestId);
+        log.info("> get otp: {}", requestId);
         return me60MozService.getOtp(requestId);
     }
 
     @PostMapping("/api/v1/moz/me60/tag/link/clear")
     @ResponseStatus(code = OK)
     public Initiator addClearTag(@RequestParam String tag) {
-        log.info("> add/clear tag: " + tag);
+        log.info("> add/clear tag: {}", tag);
         return me60MozService.addClearTag(tag);
     }
 
@@ -207,7 +207,7 @@ public class UatRestController {
             try {
                 keycloakService.removeUser(entity.getKeycloakId());
             } catch (NotFoundException e) {
-                log.warn("Keycloak records is absent for entityId: " + entityId);
+                log.warn("Keycloak records is absent for entityId: {}", entityId);
             }
         }
         documentsService.deleteDocumentsByEntityId(entityId);

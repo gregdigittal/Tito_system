@@ -46,37 +46,37 @@ public class UserRestController {
     @ResponseStatus(code = HttpStatus.CREATED)
     public RegisterResponse registerUser(@Valid @RequestBody RegisterEntityRequest request) {
         try {
-            log.info("Received Register new user request: " + request);
+            log.info("Received Register new user request: {}", request);
             return entityRegistrationService.registerEntity(request);
 
         } catch (ICEcashException e) {
-            log.info("User registration error: " + e.getMessage(), e);
+            log.error("User registration error", e);
             return RegisterResponse.error(e.getErrorCode(), e.getMessage());
         }
     }
 
     @PostMapping("/login")
     public AccessTokenResponse loginUser(@Valid @RequestBody LoginEntityRequest request) {
-        log.info("Received Login request: " + request);
+        log.info("Received Login request: {}", request);
         return entityLoginService.simpleLogin(request);
     }
 
     @PostMapping(value = "/login/form", consumes = {MediaType.APPLICATION_FORM_URLENCODED_VALUE})
     public AccessTokenResponse loginUserForm(@Valid LoginEntityRequest request) {
-        log.info("Received Login form request: " + request);
+        log.info("Received Login form request: {}", request);
         return entityLoginService.simpleLogin(request);
     }
 
     @PostMapping(value = "/backoffice/login/form", consumes = {MediaType.APPLICATION_FORM_URLENCODED_VALUE})
     public AccessTokenResponse loginStaffMemberForm(@Valid LoginEntityRequest request) {
-        log.info("Received Login StaffMember form request: " + request);
+        log.info("Received Login StaffMember form request: {}", request);
         return staffMemberLoginService.loginFormStaffMember(request);
     }
 
     @PostMapping("/auth")
     @ResponseStatus(code = HttpStatus.CREATED)
     public UserAuthRegisterResponse registerUserAuthentication(@Valid @RequestBody UserAuthRequest request) {
-        log.info("Received register user auth request: " + request);
+        log.info("Received register user auth request: {}", request);
         String keycloakId = keycloakService.createUser(request.getUsername(), request.getPvv(),
                 request.getFirstName(), request.getLastName(), request.getEmail());
         return new UserAuthRegisterResponse()
@@ -86,7 +86,7 @@ public class UserRestController {
 
     @PutMapping("/auth")
     public void updateUserAuthentication(@Valid @RequestBody UserAuthRequest request) {
-        log.info("Received update user auth request: " + request);
+        log.info("Received update user auth request: {}", request);
         keycloakService.updateUser(request.getKeycloakId(), request.getPvv(),
                 request.getFirstName(), request.getLastName(), request.getEmail());
     }
@@ -94,7 +94,7 @@ public class UserRestController {
     @DeleteMapping("/auth")
     @ResponseStatus(code = HttpStatus.NO_CONTENT)
     public void deleteUserAuthentication(@RequestParam String id) {
-        log.info("Received delete user auth request. KeycloakId: " + id);
+        log.info("Received delete user auth request. KeycloakId: {}", id);
         keycloakService.removeUser(id);
     }
 
@@ -134,13 +134,13 @@ public class UserRestController {
     @GetMapping("/sme")
     @PreAuthorize("isAuthenticated()")
     public AuthUser getAuthUserSecured() {
-        log.info("me: " + authUserService.getAuthUser());
+        log.info("me: {}", authUserService.getAuthUser());
         return authUserService.getAuthUser();
     }
 
     @GetMapping("/me")
     public AuthUser getAuthUser() {
-        log.info("me: " + authUserService.getAuthUser());
+        log.info("me: {}", authUserService.getAuthUser());
         return authUserService.getAuthUser();
     }
 }

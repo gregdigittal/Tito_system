@@ -15,13 +15,13 @@ public class RegisterUserDbMigrationTask extends DbMigrationTask {
     private String userJson;
 
     public void execute(Database database) {
-        log.info("> Register user: " + userJson);
+        log.info("> Register user: {}", userJson);
         try {
             EntityRegistrationService entityRegistrationService = applicationContext.getBean(EntityRegistrationService.class);
             ObjectMapper objectMapper = applicationContext.getBean("objectMapper", ObjectMapper.class);
             Map<String, String> map = objectMapper.readValue(userJson, Map.class);
             RegisterEntityRequest registerEntityRequest = objectMapper.readValue(userJson, RegisterEntityRequest.class);
-            log.debug("Parsed user: " + registerEntityRequest);
+            log.debug("Parsed user: {}", registerEntityRequest);
             entityRegistrationService.registerEntity(
                     registerEntityRequest,
                     map.get("pin"),

@@ -95,7 +95,7 @@ public class PaymentRequest implements VendorRefAware {
                 ", partnerId='" + partnerId +
                 ", apiVersion='" + apiVersion +
                 ", date=" + date +
-                ", meta=" + meta +
+                ", meta=" + (meta != null ? "[size=" + meta.size() + "]" : "null") +
                 '}';
     }
 }

@@ -20,7 +20,7 @@ public class EntityLoginKenController {
 
     @MutationMapping
     public LoginResponse loginUserFNDS(@Argument LoginEntityRequest request) {
-        log.info("> User Login (FNDS) request: " + request);
+        log.info("> User Login (FNDS) request: {}", request);
         return entityLoginService.makeLogin(request);
     }
 }

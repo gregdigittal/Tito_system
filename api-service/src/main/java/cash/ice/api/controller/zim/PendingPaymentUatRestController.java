@@ -26,7 +26,7 @@ public class PendingPaymentUatRestController extends PendingPaymentRestControlle
 
     @PostMapping("/auth")
     public AuthUser authenticateTestUser(@RequestBody AuthUser authUser) {
-        log.debug("> Authenticating: " + authUser);
+        log.debug("> Authenticating: {}", authUser);
         PendingPaymentUatRestController.authUser = authUser;
         return authUser;
     }
@@ -40,7 +40,7 @@ public class PendingPaymentUatRestController extends PendingPaymentRestControlle
     @Override
     protected AuthUser getAuthUser() {
         if (authUser != null) {
-            log.info("Replacing auth token to: " + authUser);
+            log.info("Replacing auth token to: {}", authUser);
             return authUser;
         } else {
             return super.getAuthUser();

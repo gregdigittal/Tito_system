@@ -38,7 +38,7 @@ public class FeeServiceImpl implements FeeService {
     private final EntityRepository entityRepository;
     private final TransactionLimitCheckService transactionLimitCheckService;
 
-    @Transactional
+    @Transactional(timeout = 30)
     @Override
     public FeesData process(PaymentRequest paymentRequest) {
         if (paymentRequest.getAmount().compareTo(BigDecimal.ZERO) <= 0) {

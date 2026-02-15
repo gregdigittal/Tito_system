@@ -37,7 +37,7 @@ public class StaffController {
     @QueryMapping
     @PreAuthorize("@StaffProperties.securityDisabled || hasRole('ROLE_BACKOFFICE')")
     public StaffMember staffMember(@Argument Integer id, @Argument ConfigInput config) {
-        log.info("> GET staff member: {}{}", id != null ? id : "current", config != null ? ", config: " + config : "");
+        log.info("> GET staff member: {}, config: {}", id != null ? id : "current", config);
         StaffMember authStaffMember = staffMemberService.getAuthStaffMember(getAuthUser(), config);
         return id == null ? authStaffMember : staffMemberService.getStaffMemberById(id);
     }
@@ -46,7 +46,7 @@ public class StaffController {
     @PreAuthorize("@StaffProperties.securityDisabled || hasRole('ROLE_BACKOFFICE')")
     public Iterable<StaffMember> searchStaffMembers(@Argument String searchText, @Argument LoginStatus status,
                                                     @Argument int page, @Argument int size, @Argument SortInput sort, @Argument ConfigInput config) {
-        log.info("> Search staff members: {}, status: {}, (pg={},sz={},sr={}){}", searchText, status, page, size, sort, config != null ? ", config: " + config : "");
+        log.info("> Search staff members: {}, status: {}, (pg={},sz={},sr={}), config: {}", searchText, status, page, size, sort, config);
         return staffMemberService.searchStaffMembers(searchText, status, page, size, sort);
     }
 
@@ -63,20 +63,20 @@ public class StaffController {
 
     @MutationMapping
     public StaffMember activateNewStaffMember(@Argument String key, @Argument String newPassword) {
-        log.info("> Activate new staff member: key=" + key);
+        log.info("> Activate new staff member: key={}", key);
         return staffMemberLoginService.activateNewStaffMember(key, newPassword);
     }
 
     @MutationMapping
     public StaffMember registerStaffMember(@Argument StaffMember staffMember, @Argument String password) {
-        log.info("> Register new staff member: " + staffMember);
+        log.info("> Register new staff member: {}", staffMember);
         return staffMemberLoginService.registerStaffMember(staffMember, password);
     }
 
     @MutationMapping
     @PreAuthorize("@StaffProperties.securityDisabled || hasRole('ROLE_BACKOFFICE')")
     public StaffMember updateStaffMember(@Argument Integer id, @Argument StaffMember staffMember, @Argument ConfigInput config, @Argument boolean sendEmail) {
-        log.info("> Update staff member: {}, sendEmail: {}, {}{}", id != null ? id : "current", staffMember, sendEmail, config != null ? ", config: " + config : "");
+        log.info("> Update staff member: {}, staffMember: {}, sendEmail: {}, config: {}", id != null ? id : "current", staffMember, sendEmail, config);
         StaffMember updater = staffMemberService.getAuthStaffMember(getAuthUser(), config);
         StaffMember updating = id != null ? staffMemberService.getStaffMemberById(id) : updater;
         return staffMemberService.updateStaffMember(updating, staffMember, updater, config, sendEmail);
@@ -85,7 +85,7 @@ public class StaffController {
     @MutationMapping
     @PreAuthorize("@StaffProperties.securityDisabled || hasRole('ROLE_BACKOFFICE')")
     public StaffMember updateStaffMemberMsisdn(@Argument String msisdn, @Argument ConfigInput config) {
-        log.info("> Update staff member msisdn: {}{}", msisdn, config != null ? ", config: " + config : "");
+        log.info("> Update staff member msisdn: {}, config: {}", msisdn, config);
         StaffMember staffMember = staffMemberService.getAuthStaffMember(getAuthUser(), config);
         return staffMemberService.updateMsisdn(staffMember, msisdn);
     }
@@ -93,7 +93,7 @@ public class StaffController {
     @MutationMapping
     @PreAuthorize("@StaffProperties.securityDisabled || hasRole('ROLE_BACKOFFICE')")
     public StaffMember updateStaffMemberMfaType(@Argument MfaType mfaType, @Argument ConfigInput config) {
-        log.info("> Update staff member mfaType: {}{}", mfaType, config != null ? ", config: " + config : "");
+        log.info("> Update staff member mfaType: {}, config: {}", mfaType, config);
         StaffMember staffMember = staffMemberService.getAuthStaffMember(getAuthUser(), config);
         return staffMemberService.updateMfaType(staffMember, mfaType);
     }
@@ -116,7 +116,7 @@ public class StaffController {
     @MutationMapping
     @PreAuthorize("@StaffProperties.securityDisabled || hasRole('ROLE_BACKOFFICE')")
     public StaffMember generateNewBackupCodesForId(@Argument Integer id) {
-        log.info("> Generate new backup codes for: " + id);
+        log.info("> Generate new backup codes for: {}", id);
         return staffMemberService.generateNewBackupCodes(id);
     }
 
@@ -124,14 +124,14 @@ public class StaffController {
     @PreAuthorize("@StaffProperties.securityDisabled || hasRole('ROLE_BACKOFFICE')")
     public StaffMember generateNewBackupCodes() {
         AuthUser authUser = getAuthUser();
-        log.info("> Generate new backup codes, authUser: " + authUser);
+        log.info("> Generate new backup codes, authUser: {}", authUser);
         return staffMemberService.generateNewBackupCodes(authUser);
     }
 
     @MutationMapping
     @PreAuthorize("@StaffProperties.securityDisabled || hasRole('ROLE_BACKOFFICE')")
     public StaffMember deleteStaffMember(@Argument Integer id) {
-        log.info("> Delete staff member: " + id);
+        log.info("> Delete staff member: {}", id);
         return staffMemberService.deleteStaffMember(id);
     }
 
@@ -139,7 +139,7 @@ public class StaffController {
     @PreAuthorize("@StaffProperties.securityDisabled || hasRole('ROLE_BACKOFFICE')")
     public StaffMember deleteCurrentStaffMember() {
         AuthUser authUser = getAuthUser();
-        log.info("> Delete current staff member: " + authUser);
+        log.info("> Delete current staff member: {}", authUser);
         return staffMemberService.deleteStaffMember(authUser);
     }
 
@@ -153,19 +153,19 @@ public class StaffController {
 
     @MutationMapping
     public LoginResponse loginStaffMember(@Argument LoginEntityRequest request) {
-        log.info("> Login staff member: " + request);
+        log.info("> Login staff member: {}", request);
         return staffMemberLoginService.loginStaffMember(request);
     }
 
     @MutationMapping
     public LoginResponse enterLoginMfaCode(@Argument LoginMfaRequest mfaRequest) {
-        log.info("> Enter login mfa code request: " + mfaRequest);
+        log.info("> Enter login mfa code request: {}", mfaRequest);
         return staffMemberLoginService.enterLoginMfaCode(mfaRequest);
     }
 
     @MutationMapping
     public LoginResponse enterLoginBackupCode(@Argument LoginMfaRequest mfaRequest) {
-        log.info("> Enter login mfa backup code request: " + mfaRequest);
+        log.info("> Enter login mfa backup code request: {}", mfaRequest);
         return staffMemberLoginService.enterLoginMfaBackupCode(mfaRequest);
     }
 
@@ -193,7 +193,7 @@ public class StaffController {
 
     @MutationMapping
     public boolean resendOtpCode(@Argument String username) {
-        log.info("> Resend OTP code request: " + username);
+        log.info("> Resend OTP code request: {}", username);
         return staffMemberLoginService.resendOtpCode(username);
     }
 

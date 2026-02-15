@@ -159,7 +159,7 @@ public class TestPerformanceDbService {
                 "Payment description", BigDecimal.valueOf(amount)));
     }
 
-    @Transactional
+    @Transactional(timeout = 30)
     public void performLedgerService(int accountId, Integer transactionLines, Map<Integer, Transaction> createdTransactions, Map<Integer, TransactionLines> createdLines) {
         transactionLinesRepository.getBalance(accountId);
         Transaction transaction = transactionRepository.save(new Transaction().setTransactionCodeId(1).setSessionId("tst1")
@@ -172,7 +172,7 @@ public class TestPerformanceDbService {
         }
     }
 
-    @Transactional
+    @Transactional(timeout = 30)
     public void clearDatabase() {
         transactionLinesRepository.deleteAll();
         transactionRepository.deleteAll();

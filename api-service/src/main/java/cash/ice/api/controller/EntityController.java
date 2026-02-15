@@ -47,13 +47,13 @@ public class EntityController {
 
     @MutationMapping
     public EntityClass registerEntity(@Argument RegisterEntityRequest entity) {
-        log.info("Received Register new entity request: " + entity);
+        log.info("Received Register new entity request: {}", entity);
         return entityRegistrationService.registerEntity(entity).getEntity();
     }
 
     @MutationMapping
     public EntityClass simpleRegisterEntity(@Argument RegisterEntityRequest entity) {
-        log.info("Received simple Register new entity request: " + entity);
+        log.info("Received simple Register new entity request: {}", entity);
         return entityRegistrationService.registerEntity(entity).getEntity();
     }
 
@@ -92,14 +92,14 @@ public class EntityController {
     @MutationMapping
     @PreAuthorize("@EntitiesProperties.securityDisabled || isAuthenticated()")
     public EntityClass updateEntityLocale(@Argument Locale locale) {
-        log.info("> Update entity locale: " + locale);
+        log.info("> Update entity locale: {}", locale);
         return entityService.updateEntityLocale(getAuthUser(), locale);
     }
 
     @MutationMapping
     @PreAuthorize("@EntitiesProperties.securityDisabled || isAuthenticated()")
     public EntityClass generateNewBackupCodesForEntityId(@Argument Integer id) {
-        log.info("> Generate new backup codes for entity: " + id);
+        log.info("> Generate new backup codes for entity: {}", id);
         return entityService.generateNewBackupCodes(id);
     }
 
@@ -107,7 +107,7 @@ public class EntityController {
     @PreAuthorize("@EntitiesProperties.securityDisabled || isAuthenticated()")
     public EntityClass generateNewBackupCodesForCurrentEntity() {
         AuthUser authUser = getAuthUser();
-        log.info("> Generate new backup codes, authUser: " + authUser);
+        log.info("> Generate new backup codes, authUser: {}", authUser);
         return entityService.generateNewBackupCodes(authUser);
     }
 
@@ -115,7 +115,7 @@ public class EntityController {
     @PreAuthorize("@EntitiesProperties.securityDisabled || isAuthenticated()")
     public EntityClass deleteCurrentEntity() {
         AuthUser authUser = getAuthUser();
-        log.info("> Delete current entity: " + authUser);
+        log.info("> Delete current entity: {}", authUser);
         return entityService.deleteEntity(authUser);
     }
 

@@ -37,11 +37,11 @@ public class LoginEntityRequest {
 
     @Override
     public String toString() {
-        return "LoginUserRequest(" +
+        return "LoginEntityRequest(" +
                 "username=" + username +
-                ", password=" + (Objects.isNull(password) ? null : "*".repeat(password.length())) +
+                ", password=" + (Objects.isNull(password) ? null : "****") +
                 ", clientId=" + clientId +
-                ", clientSecret=" + clientSecret +
+                ", clientSecret=" + (clientSecret != null ? "****" : null) +
                 ", grantType=" + grantType +
                 ", scope=" + scope +
                 ')';

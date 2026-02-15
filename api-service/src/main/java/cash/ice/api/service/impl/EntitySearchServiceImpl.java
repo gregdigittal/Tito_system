@@ -72,7 +72,7 @@ public class EntitySearchServiceImpl implements EntitySearchService {
                     .map(Account::getEntityId).distinct().map(this::getEntityById).toList();
             return new PageImpl<>(accounts, pageable, accounts.size());
         } else {
-            Page<Account> accounts = accountRepository.findPartialByAccountNumber(searchInput, pageable);
+            Page<Account> accounts = accountRepository.findPartialByAccountNumber(SqlUtil.escapeLikeParam(searchInput), pageable);
             return new PageImpl<>(accounts.stream().map(Account::getEntityId).distinct()
                     .map(this::getEntityById).toList(), pageable, accounts.getTotalElements());
         }
@@ -96,7 +96,7 @@ public class EntitySearchServiceImpl implements EntitySearchService {
             List<Initiator> initiatorsList = initiatorRepository.findByIdentifier(searchInput).map(List::of).orElseGet(List::of);
             initiators = new PageImpl<>(initiatorsList, pageable, initiatorsList.size());
         } else {
-            initiators = initiatorRepository.findPartialByIdentifier(searchInput, pageable);
+            initiators = initiatorRepository.findPartialByIdentifier(SqlUtil.escapeLikeParam(searchInput), pageable);
         }
         List<EntityClass> entities = initiators.stream()
                 .filter(initiator -> Objects.nonNull(initiator.getAccountId()))
@@ -122,7 +122,7 @@ public class EntitySearchServiceImpl implements EntitySearchService {
             List<EntityMsisdn> msisdnList = entityMsisdnRepository.findByMsisdn(searchInput);
             phones = new PageImpl<>(msisdnList, pageable, msisdnList.size());
         } else {
-            phones = entityMsisdnRepository.findPartialByMsisdn(searchInput, pageable);
+            phones = entityMsisdnRepository.findPartialByMsisdn(SqlUtil.escapeLikeParam(searchInput), pageable);
         }
         List<EntityClass> entities = phones.stream().filter(msisdn -> Objects.nonNull(msisdn.getEntityId())).map(msisdn ->
                 entityRepository.findById(msisdn.getEntityId()).orElse(null)

@@ -28,7 +28,7 @@ public class PendingPaymentsController {
     @MutationMapping
     @PreAuthorize("isAuthenticated()")
     public PaymentView addPendingPayment(@Argument PaymentView payment) {
-        log.debug("> POST " + payment);
+        log.debug("> POST {}", payment);
         AuthUser authUser = getAuthUser();
         return pendingPaymentService.createPayment(payment, authUser);
     }
@@ -77,7 +77,7 @@ public class PendingPaymentsController {
     @MutationMapping
     @PreAuthorize("isAuthenticated()")
     public PaymentCollectionView createPaymentCollection(@Argument PaymentCollectionView paymentCollection) {
-        log.debug("> POST " + paymentCollection);
+        log.debug("> POST {}", paymentCollection);
         AuthUser authUser = getAuthUser();
         return pendingPaymentService.createPaymentCollection(paymentCollection, authUser);
     }

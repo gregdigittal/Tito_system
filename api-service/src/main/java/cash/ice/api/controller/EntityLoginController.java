@@ -40,19 +40,19 @@ public class EntityLoginController {
 
     @MutationMapping
     public LoginResponse loginEntity(@Argument LoginEntityRequest request) {
-        log.info("> Entity Login request: " + request);
+        log.info("> Entity Login request: {}", request);
         return entityLoginService.makeLogin(request);
     }
 
     @MutationMapping
     public LoginResponse enterEntityLoginMfaCode(@Argument LoginMfaRequest mfaRequest) {
-        log.info("> Enter login mfa code request: " + mfaRequest);
+        log.info("> Enter login mfa code request: {}", mfaRequest);
         return entityLoginService.enterLoginMfaCode(mfaRequest);
     }
 
     @MutationMapping
     public LoginResponse enterEntityLoginBackupCode(@Argument LoginMfaRequest mfaRequest) {
-        log.info("> Enter login mfa backup code request: " + mfaRequest);
+        log.info("> Enter login mfa backup code request: {}", mfaRequest);
         return entityLoginService.enterLoginMfaBackupCode(mfaRequest);
     }
 
@@ -65,7 +65,7 @@ public class EntityLoginController {
 
     @MutationMapping
     public boolean resendEntityOtpCode(@Argument String username) {
-        log.info("> Resend OTP code request: " + username);
+        log.info("> Resend OTP code request: {}", username);
         return entityLoginService.resendOtpCode(username);
     }
 
@@ -89,7 +89,7 @@ public class EntityLoginController {
 
     @MutationMapping
     public EntityClass generateNewEntityPassword(@Argument Integer id) {
-        log.info("> Generate new password for entity: " + id);
+        log.info("> Generate new password for entity: {}", id);
         return entityLoginService.generateNewEntityPassword(id);
     }
 

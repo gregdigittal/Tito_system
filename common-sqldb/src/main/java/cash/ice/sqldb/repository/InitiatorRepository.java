@@ -17,13 +17,13 @@ public interface InitiatorRepository extends JpaRepository<Initiator, Integer> {
     Optional<Initiator> findByIdentifierAndInitiatorTypeId(String identifier, Integer initiatorTypeId);
 
     @Query(nativeQuery = true, value = "select * from initiator where identifier = :identifier " +
-            "union select * from initiator where identifier like concat(:identifier,'%')" +
-            "union select * from initiator where identifier like concat('%',:identifier)" +
-            "union select * from initiator where identifier like concat('%',:identifier,'%')",
+            "union select * from initiator where identifier like concat(:identifier,'%') escape '\\\\' " +
+            "union select * from initiator where identifier like concat('%',:identifier) escape '\\\\' " +
+            "union select * from initiator where identifier like concat('%',:identifier,'%') escape '\\\\'",
             countQuery = "select count(i.id) from (select * from initiator where identifier = :identifier " +
-                    "union select * from initiator where identifier like concat(:identifier,'%')" +
-                    "union select * from initiator where identifier like concat('%',:identifier)" +
-                    "union select * from initiator where identifier like concat('%',:identifier,'%')) as i")
+                    "union select * from initiator where identifier like concat(:identifier,'%') escape '\\\\' " +
+                    "union select * from initiator where identifier like concat('%',:identifier) escape '\\\\' " +
+                    "union select * from initiator where identifier like concat('%',:identifier,'%') escape '\\\\') as i")
     Page<Initiator> findPartialByIdentifier(@Param("identifier") String identifier, Pageable pageable);
 
     List<Initiator> findByAccountIdIn(List<Integer> accountIds);

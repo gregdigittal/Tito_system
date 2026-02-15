@@ -27,12 +27,12 @@ public interface EntityMsisdnRepository extends JpaRepository<EntityMsisdn, Inte
     List<EntityMsisdn> findByMsisdn(String msisdn);
 
     @Query(nativeQuery = true, value = "select * from entity_msisdn where msisdn = :msisdn " +
-            "union select * from entity_msisdn where msisdn like concat(:msisdn,'%')" +
-            "union select * from entity_msisdn where msisdn like concat('%',:msisdn)" +
-            "union select * from entity_msisdn where msisdn like concat('%',:msisdn,'%')",
+            "union select * from entity_msisdn where msisdn like concat(:msisdn,'%') escape '\\\\' " +
+            "union select * from entity_msisdn where msisdn like concat('%',:msisdn) escape '\\\\' " +
+            "union select * from entity_msisdn where msisdn like concat('%',:msisdn,'%') escape '\\\\'",
             countQuery = "select count(m.id) from (select * from entity_msisdn where msisdn = :msisdn " +
-                    "union select * from entity_msisdn where msisdn like concat(:msisdn,'%')" +
-                    "union select * from entity_msisdn where msisdn like concat('%',:msisdn)" +
-                    "union select * from entity_msisdn where msisdn like concat('%',:msisdn,'%')) as m")
+                    "union select * from entity_msisdn where msisdn like concat(:msisdn,'%') escape '\\\\' " +
+                    "union select * from entity_msisdn where msisdn like concat('%',:msisdn) escape '\\\\' " +
+                    "union select * from entity_msisdn where msisdn like concat('%',:msisdn,'%') escape '\\\\') as m")
     Page<EntityMsisdn> findPartialByMsisdn(@Param("msisdn") String msisdn, Pageable pageable);
 }
