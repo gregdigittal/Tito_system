@@ -18,6 +18,7 @@ import org.springframework.graphql.data.method.annotation.Argument;
 import org.springframework.graphql.data.method.annotation.BatchMapping;
 import org.springframework.graphql.data.method.annotation.MutationMapping;
 import org.springframework.graphql.data.method.annotation.QueryMapping;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 
 import java.util.List;
@@ -37,6 +38,7 @@ public class PaymentsController {
     private final InitiatorTypeRepository initiatorTypeRepository;
 
     @MutationMapping
+    @PreAuthorize("isAuthenticated()")
     public PaymentResponse makePayment(@Argument PaymentRequest paymentRequest, @Argument boolean waitForResponse) {
         if (waitForResponse) {
             return paymentService.makePaymentSynchronous(paymentRequest);
@@ -48,34 +50,40 @@ public class PaymentsController {
     }
 
     @QueryMapping
+    @PreAuthorize("isAuthenticated()")
     public PaymentRequest paymentRequest(@Argument String vendorRef) {
         return paymentService.getPaymentRequest(vendorRef);
     }
 
     @QueryMapping
+    @PreAuthorize("isAuthenticated()")
     public PaymentResponse paymentResponse(@Argument String vendorRef) {
         return paymentService.getPaymentResponse(vendorRef);
     }
 
     @QueryMapping
+    @PreAuthorize("isAuthenticated()")
     public Page<TransactionLimit> transactionLimits(@Argument TransactionLimitView filter, @Argument int page, @Argument int size, @Argument SortInput sort) {
         log.info("> GET TransactionLimits: {}, page: {}, size: {}, sort: {}", filter.criteriaToString(), page, size, sort);
         return transactionLimitService.get(filter, PageRequest.of(page, size, SortInput.toSort(sort)));
     }
 
     @MutationMapping
+    @PreAuthorize("hasAnyRole('ADMIN','FINANCE_ADMIN')")
     public TransactionLimit addOrUpdateTransactionLimit(@Argument TransactionLimitView transactionLimit) {
         log.info("> Update TransactionLimit: {}", transactionLimit);
         return transactionLimitService.addOrUpdate(transactionLimit);
     }
 
     @MutationMapping
+    @PreAuthorize("hasAnyRole('ADMIN','FINANCE_ADMIN')")
     public TransactionLimit setTransactionLimitActive(@Argument TransactionLimitView transactionLimit, @Argument boolean active) {
         log.info("> Set TransactionLimit active: {}, {}", active, transactionLimit.criteriaToString());
         return transactionLimitService.setActive(transactionLimit, active);
     }
 
     @MutationMapping
+    @PreAuthorize("hasAnyRole('ADMIN','FINANCE_ADMIN')")
     public TransactionLimit deleteTransactionLimit(@Argument Integer id) {
         log.info("> Delete TransactionLimit: {}", id);
         return transactionLimitService.delete(id);

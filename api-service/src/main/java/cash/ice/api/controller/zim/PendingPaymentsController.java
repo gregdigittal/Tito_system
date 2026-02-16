@@ -59,7 +59,7 @@ public class PendingPaymentsController {
     }
 
     @MutationMapping
-    @PreAuthorize("isAuthenticated()")
+    @PreAuthorize("hasAnyRole('ADMIN','FINANCE_ADMIN')")
     public PaymentView approvePayment(@Argument int paymentId) {
         log.debug("> Approve payment id={}", paymentId);
         AuthUser authUser = getAuthUser();
@@ -67,7 +67,7 @@ public class PendingPaymentsController {
     }
 
     @MutationMapping
-    @PreAuthorize("isAuthenticated()")
+    @PreAuthorize("hasAnyRole('ADMIN','FINANCE_ADMIN')")
     public PaymentView rejectPayment(@Argument int paymentId) {
         log.debug("> Reject payment id={}", paymentId);
         AuthUser authUser = getAuthUser();
@@ -83,7 +83,7 @@ public class PendingPaymentsController {
     }
 
     @MutationMapping
-    @PreAuthorize("isAuthenticated()")
+    @PreAuthorize("hasAnyRole('ADMIN','FINANCE_ADMIN')")
     public Boolean rejectPaymentCollection(@Argument int collectionId) {
         log.debug("> Reject payment collection id={}", collectionId);
         AuthUser authUser = getAuthUser();
@@ -92,7 +92,7 @@ public class PendingPaymentsController {
     }
 
     @MutationMapping
-    @PreAuthorize("isAuthenticated()")
+    @PreAuthorize("hasAnyRole('ADMIN','FINANCE_ADMIN')")
     public Boolean approvePaymentCollection(@Argument int collectionId) {
         log.debug("> Approve payment collection id={}", collectionId);
         AuthUser authUser = getAuthUser();

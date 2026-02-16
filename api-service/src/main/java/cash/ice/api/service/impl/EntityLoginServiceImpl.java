@@ -286,6 +286,9 @@ public class EntityLoginServiceImpl implements EntityLoginService {
                     null);
         } catch (NotAuthorizedException e) {
             return null;
+        } catch (Exception e) {
+            log.error("Keycloak login failed for entity: {}", e.getMessage(), e);
+            throw new ICEcashException("Authentication service unavailable", ErrorCodes.EC1004, e);
         }
     }
 

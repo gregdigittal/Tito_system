@@ -46,7 +46,9 @@ public class ApiSecurityConfig {
                 .oauth2ResourceServer(oauth2 -> oauth2.authenticationManagerResolver(
                         new JwtIssuerAuthenticationManagerResolver(getAuthManagers()::get)))
                 .authorizeHttpRequests(authorizeHttpRequests -> authorizeHttpRequests
-                        .requestMatchers("/actuator/health", "/actuator/info", "/api/v1/config/**", "/api/v1/user/**", "/api/v1/users/**", "/api/v1/moz/**", "/api/v1/me60/**", "/api/v1/ken/**").permitAll()
+                        .requestMatchers("/actuator/health", "/actuator/info", "/api/v1/config/**", "/api/v1/user/**", "/api/v1/moz/**", "/api/v1/me60/**", "/api/v1/ken/**").permitAll()
+                        .requestMatchers("/api/v1/users/login", "/api/v1/users/login/form", "/api/v1/users/backoffice/login/form", "/api/v1/users/register").permitAll()
+                        .requestMatchers("/api/v1/users/**").authenticated()
                         .requestMatchers("/actuator/**", "/docs/**", "/api/v1/unsecure/**")
                         .access(HttpUtils.getWebExpressionAuthorizationManager(applicationContext, "@IpWhitelist.check()"))
                         .requestMatchers("/api/v1/payments/pending/**", "/api/v1/documents/**").authenticated()

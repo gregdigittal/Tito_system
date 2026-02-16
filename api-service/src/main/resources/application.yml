@@ -4,11 +4,11 @@ server:
 management:
   endpoint:
     health:
-      show-details: always
+      show-details: when-authorized
   endpoints:
     web:
       exposure:
-        include: "*"
+        include: health,info,metrics
 spring:
   lifecycle:
     timeout-per-shutdown-phase: 1m
@@ -16,8 +16,10 @@ spring:
     allow-circular-references: true
   graphql:
     graphiql:
-      enabled: true
-      path: /graphiql
+      enabled: false
+    schema:
+      introspection:
+        enabled: false
   servlet:
     multipart:
       max-file-size: 32MB
@@ -50,7 +52,7 @@ ice:
     date-format: yyyy-MM-dd'T'HH:mmXX
     ip-whitelist:
       disable-check: false
-      password: ${IP_WHITELIST_PASSWORD:changeme}
+      password: ${IP_WHITELIST_PASSWORD}
     cors:
       path-pattern: /**
       # Flutter web (local + Vercel). Override via env if needed (e.g. ICE_CASH_CORS_ALLOWED_ORIGINS).
@@ -59,9 +61,9 @@ ice:
         - http://localhost:5000
         - http://localhost:3000
         - https://tito-ui-client.vercel.app
-      # Vercel preview/branch URLs (e.g. tito-ui-client-3j859rdqw-digittal.vercel.app)
+      # Vercel preview/branch URLs for this project only
       allowed-origin-patterns:
-        - https://*.vercel.app
+        - https://tito-ui-client*.vercel.app
       allowed-methods: GET,POST,PUT,DELETE,PATCH
     notification:
       fake-sms-mobiles: 000000000000, 263000000000, 263000000001

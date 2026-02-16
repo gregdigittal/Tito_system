@@ -75,6 +75,7 @@ public class UserRestController {
 
     @PostMapping("/auth")
     @ResponseStatus(code = HttpStatus.CREATED)
+    @PreAuthorize("hasRole('ADMIN')")
     public UserAuthRegisterResponse registerUserAuthentication(@Valid @RequestBody UserAuthRequest request) {
         log.info("Received register user auth request: {}", request);
         String keycloakId = keycloakService.createUser(request.getUsername(), request.getPvv(),
@@ -85,6 +86,7 @@ public class UserRestController {
     }
 
     @PutMapping("/auth")
+    @PreAuthorize("hasRole('ADMIN')")
     public void updateUserAuthentication(@Valid @RequestBody UserAuthRequest request) {
         log.info("Received update user auth request: {}", request);
         keycloakService.updateUser(request.getKeycloakId(), request.getPvv(),
@@ -93,12 +95,14 @@ public class UserRestController {
 
     @DeleteMapping("/auth")
     @ResponseStatus(code = HttpStatus.NO_CONTENT)
+    @PreAuthorize("hasRole('ADMIN')")
     public void deleteUserAuthentication(@RequestParam String id) {
         log.info("Received delete user auth request. KeycloakId: {}", id);
         keycloakService.removeUser(id);
     }
 
     @GetMapping("/export/csv")
+    @PreAuthorize("hasRole('ADMIN')")
     public void exportUsersToCsv(HttpServletResponse response,
                                  @RequestParam(required = false) String searchText,
                                  @RequestParam(required = false) LoginStatus status,

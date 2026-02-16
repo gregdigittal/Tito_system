@@ -77,16 +77,24 @@ public class StaffMemberLoginServiceImpl implements StaffMemberLoginService {
     }
 
     @Override
+    @Transactional(timeout = 10)
     public StaffMember activateNewStaffMember(String key, String newPassword) {
         checkPinIsValid(newPassword);
         String login = mfaService.lookupLoginByForgotPasswordKey(key);
         StaffMember staffMember = staffMemberService.findStaffMember(login);
 
+        if (staffMember.getKeycloakId() != null && !staffMember.getKeycloakId().isEmpty()) {
+            try {
+                backofficeKeycloakService.removeUser(staffMember.getKeycloakId());
+            } catch (Exception e) {
+                log.warn("Could not remove existing Keycloak user before reactivation: {}", e.getMessage());
+            }
+        }
         String pvv = securityPvvService.acquirePvv(staffMember.getPinKey(), newPassword);
         String keycloakId = backofficeKeycloakService.createStaffMember(staffMember.getEmail(), pvv,
                 staffMember.getFirstName(), staffMember.getLastName(), staffMember.getEmail());
         return staffMemberService.save(staffMember
-                .setPvv(securityPvvService.acquirePvv(staffMember.getPinKey(), newPassword))
+                .setPvv(pvv)
                 .setKeycloakId(keycloakId));
     }
 
@@ -98,6 +106,7 @@ public class StaffMemberLoginServiceImpl implements StaffMemberLoginService {
     }
 
     @Override
+    @Transactional(timeout = 10)
     public LoginResponse loginStaffMember(LoginEntityRequest loginRequest) {
         StaffMember staffMember = staffMemberService.findActiveStaffMember(loginRequest.getUsername());
         if (staffMember.getKeycloakId() == null) {
